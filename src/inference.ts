@@ -223,19 +223,6 @@ export function inferSingle(
 
         console.group('Suggestion', i, 'of', suggestions.length - 1);
 
-        const { cards } = suggestion;
-
-        // See if we know anything about what was asked
-        const relevantKnown = knowns.filter(
-            known =>
-                // Known suspects
-                (known.cardType === CardType.Suspect && known.card === cards[CardType.Suspect]) ||
-                // Known weapons
-                (known.cardType === CardType.Weapon && known.card === cards[CardType.Weapon]) ||
-                // Known rooms
-                (known.cardType === CardType.Room && known.card === cards[CardType.Room]),
-        );
-
         for (const [j, response] of suggestion.responses.entries()) {
             console.group('Response', j, 'of', suggestion.responses.length - 1);
 
@@ -264,19 +251,6 @@ export function inferSingle(
                 console.groupEnd();
                 continue;
             }
-
-            // If we do not know the card type and have no info about other cards, there is nothing to do
-            if (!relevantKnown.length) {
-                console.groupEnd();
-                continue;
-            }
-
-            // const shownByPlayer = relevantKnown.filter(
-            //     known => known.type === 'innocent' && known.player === response.player,
-            // );
-            // const shownByOthers = relevantKnown.filter(
-            //     known => known.type === 'guilty' || known.player !== response.player,
-            // );
 
             const missingCards = suggestion.cards
                 .map((card, type) => packCard(type, card))
