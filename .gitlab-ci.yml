@@ -11,7 +11,6 @@ cache:
         - node_modules/
         - public/
         - smui/
-        - /usr/local/lib/
 
 .changes: &changes
     - src/**/*
@@ -38,7 +37,7 @@ pnpm_install:
 lint:
     stage: lint
     script:
-        - pnpm run lint
+        - npm run lint
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
@@ -48,7 +47,7 @@ lint:
 build:
     stage: build
     script:
-        - pnpm run build
+        - npm run build
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
