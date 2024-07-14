@@ -11,6 +11,7 @@ cache:
         - node_modules/
         - public/
         - smui/
+        - /usr/local/lib/
 
 .changes: &changes
     - src/**/*
@@ -28,7 +29,6 @@ pnpm_install:
     script:
         - npm install --global pnpm
         - pnpm install --frozen-lockfile
-        - npm list -g
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
