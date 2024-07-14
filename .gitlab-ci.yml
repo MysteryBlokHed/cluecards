@@ -9,7 +9,7 @@ stages:
 cache:
     paths:
         - node_modules/
-        - dist/
+        - public/
         - smui/
 
 .changes: &changes
@@ -28,6 +28,7 @@ pnpm_install:
     script:
         - npm install --global pnpm
         - pnpm install --frozen-lockfile
+        - npm list -g
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
@@ -59,7 +60,7 @@ pages:
     script:
         - echo 'Deploying...'
     artifacts:
-        paths: ['dist/']
+        paths: ['public/']
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
