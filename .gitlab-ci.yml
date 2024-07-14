@@ -26,6 +26,7 @@ cache:
 pnpm_install:
     stage: install
     script:
+        - npm install --global pnpm
         - pnpm install --frozen-lockfile
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
