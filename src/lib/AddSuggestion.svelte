@@ -1,0 +1,216 @@
+<script lang="ts">
+    import Button, { Label, Icon } from '@smui/button';
+    import Select, { Option } from '@smui/select';
+    import Paper from '@smui/paper';
+    import Tooltip, { Wrapper } from '@smui/tooltip';
+
+    import { players, set, suggestions } from '../stores';
+    import {
+        CardType,
+        RevealMethod,
+        type GameSet,
+        type Suggestion,
+        type SuggestionResponse,
+    } from '../types';
+    import { packCard, unpackCard } from '../cards';
+    import IconButton from '@smui/icon-button';
+
+    interface WorkingSuggestionRespose extends Partial<SuggestionResponse> {
+        player: number;
+        packed?: number | undefined;
+        cardType?: CardType | undefined;
+        card?: number | undefined;
+        source?: RevealMethod | undefined;
+    }
+
+    let setContents: GameSet;
+    $: setContents = $set[1];
+
+    let player: number | null = null;
+    let suspect: number | null = null;
+    let weapon: number | null = null;
+    let room: number | null = null;
+    let responses: WorkingSuggestionRespose[] = [];
+
+    function addResponse() {
+        // Auto-select either the player after the most recent response, or just the player after the suggestor
+        let responder: number;
+        if (responses.length) {
+            responder = responses.at(-1)!.player + 1;
+        } else {
+            responder = (player ?? 0) + 1;
+        }
+
+        // Do not overflow
+        if (responder > $players.length - 1) {
+            responder = 0;
+        }
+
+        // If there is a response before this one whose card type is unknown, switch it to none
+        // Done for convenience since only one player should be showing a card at a time
+        const previous = responses.at(-1);
+        if (previous && previous.packed === -1) previous.packed = -2;
+
+        responses = [
+            ...responses,
+            {
+                player: responder,
+                packed: -1,
+            },
+        ];
+    }
+
+    function addNoneResponses() {
+        // Create list of players (numbers) except for suggestor
+        const responders: number[] = new Array($players.length);
+        for (let i = 0; i < $players.length; i++) responders[i] = i;
+
+        console.log('Prerotate:', structuredClone(responders));
+
+        // Rotate array so that the suggestor is listed last
+        for (let i = 0; i < (player ?? 0) + 1; i++) {
+            responders.push(responders.shift()!);
+        }
+
+        console.log('Rotated:', structuredClone(responders));
+
+        // Remove suggestor
+        responders.pop();
+
+        // Create responses
+        for (const responder of responders) {
+            responses.push({ player: responder, packed: CardType.Nothing });
+        }
+
+        responses = responses;
+    }
+
+    function saveSuggestion() {
+        if (player == null || suspect == null || weapon == null || room == null) return;
+
+        for (const response of responses) {
+            if (response.packed! < 0) {
+                response.cardType = response.packed;
+                response.card = -1;
+            } else {
+                [response.cardType, response.card] = unpackCard(response.packed!);
+            }
+
+            delete response.packed;
+        }
+
+        const suggestion: Suggestion = {
+            player,
+            cards: [suspect, weapon, room],
+            responses: responses as SuggestionResponse[],
+        };
+
+        $suggestions = [...$suggestions, suggestion];
+
+        player = suspect = weapon = room = null;
+        responses = [];
+    }
+</script>
+
+<Paper>
+    <h2>Add Suggestion</h2>
+    <Select bind:value={player} label="Player" style="width: 150px;">
+        {#each $players as playerName, i}
+            <Option value={i}>{playerName}</Option>
+        {/each}
+    </Select>
+    suggests
+    <Select bind:value={suspect} label="Suspect" style="width: 150px;">
+        {#each setContents.suspects as suspect, i}
+            <Option value={i}>{suspect}</Option>
+        {/each}
+    </Select>
+    used
+    <Select bind:value={weapon} label="Weapon" style="width: 150px;">
+        {#each setContents.weapons as weapon, i}
+            <Option value={i}>{weapon}</Option>
+        {/each}
+    </Select>
+    in
+    <Select bind:value={room} label="Room">
+        {#each setContents.rooms as room, i}
+            <Option value={i}>{room}</Option>
+        {/each}
+    </Select>
+
+    <h3>
+        Responses
+        <Button on:click={addResponse} variant="raised">
+            <Label>Add</Label>
+            <Icon class="material-icons">add_circle</Icon>
+        </Button>
+        <Wrapper>
+            <Button on:click={addNoneResponses} variant="raised" color="secondary">
+                <Label>No Responses</Label>
+                <Icon class="material-icons">help</Icon>
+            </Button>
+            <Tooltip>None of the players showed a card.</Tooltip>
+        </Wrapper>
+    </h3>
+    {#if responses.length === 0}
+        You must specify a response (including no cards shown).
+    {/if}
+    {#each responses as response, i}
+        <Select bind:value={response.player} label="Player" style="width: 150px;">
+            {#each $players as playerName, i}
+                <Option value={i}>{playerName}</Option>
+            {/each}
+        </Select>
+        shows card
+        <Select bind:value={response.packed} label="Card" style="width: 150px;">
+            <!-- Unknown card -->
+            <Wrapper>
+                <Option value={-1}>Unknown</Option>
+                <Tooltip xPos="end" yPos="above">
+                    The player showed a card that is not known to you.
+                </Tooltip>
+            </Wrapper>
+            <!-- Suggested suspect card -->
+            {#if suspect != null}
+                <Option value={packCard(CardType.Suspect, suspect)}>
+                    {setContents.suspects[suspect]}
+                </Option>
+            {/if}
+            <!-- Suggested weapon card -->
+            {#if weapon != null}
+                <Option value={packCard(CardType.Weapon, weapon)}>
+                    {setContents.weapons[weapon]}
+                </Option>
+            {/if}
+            <!-- Suggested room card -->
+            {#if room != null}
+                <Option value={packCard(CardType.Room, room)}>
+                    {setContents.rooms[room]}
+                </Option>
+            {/if}
+            <!-- Nothing was shown -->
+            <Wrapper>
+                <Option value={-2}>None</Option>
+                <Tooltip xPos="end" yPos="below">
+                    The player had the opportunity to show a card, and showed nothing (none of the
+                    cards are in their hand).
+                </Tooltip>
+            </Wrapper>
+        </Select>
+        <IconButton
+            class="material-icons"
+            on:click={() => {
+                responses.splice(i, 1);
+                responses = responses;
+            }}>delete</IconButton
+        >
+        <br />
+    {/each}
+
+    <br />
+
+    <Button on:click={saveSuggestion} disabled={!responses.length} variant="raised">
+        <Label>Save Suggestion</Label>
+        <Icon class="material-icons">save</Icon>
+    </Button>
+</Paper>
