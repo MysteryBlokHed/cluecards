@@ -1,0 +1,64 @@
+image: node:latest
+
+stages:
+    - install
+    - lint
+    - build
+    - deploy
+
+cache:
+    paths:
+        - node_modules/
+        - dist/
+        - smui/
+
+.changes: &changes
+    - src/**/*
+    - '*.config.js'
+    - index.html
+    - package.json
+    - tsconfig*.json
+    - vite.config.ts
+    - pnpm-lock.yaml
+    - .gitlab-ci.yml
+    - .prettier*
+
+pnpm_install:
+    stage: install
+    script:
+        - pnpm install --frozen-lockfile
+    rules:
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+          changes: *changes
+        - if: $CI_MERGE_REQUEST_ID
+          changes: *changes
+
+lint:
+    stage: lint
+    script:
+        - pnpm run lint
+    rules:
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+          changes: *changes
+        - if: $CI_MERGE_REQUEST_ID
+          changes: *changes
+
+build:
+    stage: build
+    script:
+        - pnpm run build
+    rules:
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+          changes: *changes
+        - if: $CI_MERGE_REQUEST_ID
+          changes: *changes
+
+pages:
+    stage: deploy
+    script:
+        - echo 'Deploying...'
+    artifacts:
+        paths: ['dist/']
+    rules:
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+          changes: *changes
