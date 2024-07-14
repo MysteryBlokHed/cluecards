@@ -1,10 +1,6 @@
 <script lang="ts">
-    import Accordion, { Panel, Header, Content } from '@smui-extra/accordion';
-    import Button, { Icon, Label } from '@smui/button';
-    import Paper from '@smui/paper';
-    import IconButton from '@smui/icon-button';
+    import { Panel, Header, Content } from '@smui-extra/accordion';
     import Select, { Option } from '@smui/select';
-    import Textfield from '@smui/textfield';
 
     import SETS from '../sets';
     import { set } from '../stores';

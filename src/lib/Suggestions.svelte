@@ -2,12 +2,10 @@
     import Accordion, { Panel, Header, Content } from '@smui-extra/accordion';
     import Button, { Icon, Label } from '@smui/button';
     import Paper from '@smui/paper';
-    import Textfield from '@smui/textfield';
-    import IconButton from '@smui/icon-button';
     import Tooltip, { Wrapper } from '@smui/tooltip';
 
     import { players, set } from '../stores';
-    import { CardType, RevealMethod, type GameSet, type Suggestion } from '../types';
+    import { RevealMethod, type GameSet, type Suggestion } from '../types';
     import { cardTypeToKey, cardTypeToString } from '../cards';
 
     export let suggestions: Suggestion[];
