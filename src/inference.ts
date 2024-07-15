@@ -248,17 +248,23 @@ export function inferSingle(
                 .filter(card => hands[response.player].missing.has(card))
                 .map(unpackCard);
 
-            console.log('Missing cards:', missingCards);
-
             // If two cards are missing from this player's hand, then we know for ceratin what this card is
             if (missingCards.length === 2) {
-                console.log('Length checks out--infer?');
+                console.log('Length checks out--amending suggestion');
                 // Figure out which card type must have been shown
                 const shownType = ([0, 1, 2] as const).filter(
                     type => !missingCards.some(card => card[0] === type),
                 )[0];
 
                 const shownCard = suggestion.cards[shownType];
+
+                // Amend suggestion response
+                newSuggestions[i].responses[j] = {
+                    ...response,
+                    cardType: shownType,
+                    card: shownCard,
+                    source: RevealMethod.InferSuggestion,
+                };
 
                 // Make sure that this is not already known
                 if (
@@ -268,15 +274,7 @@ export function inferSingle(
                     continue;
                 }
 
-                console.log("We don't know about this yet--making inference");
-
-                // Amend suggestion response
-                newSuggestions[i].responses[j] = {
-                    ...response,
-                    cardType: shownType,
-                    card: shownCard,
-                    source: RevealMethod.InferSuggestion,
-                };
+                console.log("We don't know about this yet--updating knowns");
 
                 // Update knowns
                 newKnowns.push({
