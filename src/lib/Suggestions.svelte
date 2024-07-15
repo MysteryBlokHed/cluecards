@@ -20,11 +20,11 @@
 
 <Paper>
     <h2 style="margin-bottom: 0;">{title}</h2>
-    <Button on:click={() => (open = true)}>
+    <Button on:click={() => (open = true)} disabled={!suggestions.length}>
         <Label>Expand All</Label>
         <Icon class="material-icons">unfold_more</Icon>
     </Button>
-    <Button on:click={() => (open = false)}>
+    <Button on:click={() => (open = false)} disabled={!suggestions.length}>
         <Label>Collapse All</Label>
         <Icon class="material-icons">unfold_less</Icon>
     </Button>

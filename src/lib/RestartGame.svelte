@@ -7,6 +7,7 @@
     let open: boolean;
 
     function restart() {
+        // Note: $playerHands is updated automatically thru App.svelte and does not need to be manually reset
         sessionStorage.clear();
         $players = [''];
         $suggestions = [];
