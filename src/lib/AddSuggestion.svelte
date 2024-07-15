@@ -94,6 +94,9 @@
                 response.card = -1;
             } else {
                 [response.cardType, response.card] = unpackCard(response.packed!);
+                // Specify source of card info
+                if (response.player === 0) response.source = RevealMethod.Self;
+                else response.source = RevealMethod.Direct;
             }
 
             delete response.packed;

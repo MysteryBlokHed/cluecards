@@ -6,7 +6,7 @@
     import { players, playerHands, set } from '../stores';
     import { CardType, RevealMethod, type GameSet, type Suggestion } from '../types';
     import { cardTypeToKey, cardTypeToString, packCard } from '../cards';
-    import InferTooltip from './InferTooltip.svelte';
+    import SourceTooltip from './SourceTooltip.svelte';
 
     export let suggestions: Suggestion[];
     export let showExtraPossible = false;
@@ -79,7 +79,9 @@
                                 {@const possibleCards = getPossibleCards(cards, response.player)}
                                 <b>{possibleCards.join(' or ')}</b>
                                 {#if possibleCards.length === 2}
-                                    <InferTooltip plural />
+                                    <SourceTooltip
+                                        text="These cards were inferred. It is not known exactly which one was shown."
+                                    />
                                 {/if}
                             {:else}
                                 <b>{cardTypeToString(response.cardType)}</b>
@@ -92,7 +94,11 @@
                             {/if}
                             <!-- If the data was inferred, show a tooltip -->
                             {#if response.source === RevealMethod.InferSuggestion}
-                                <InferTooltip />
+                                <SourceTooltip text="This card was inferred." />
+                            {:else if response.source === RevealMethod.Direct}
+                                <SourceTooltip text="This card was shown to you." />
+                            {:else if response.source === RevealMethod.Self}
+                                <SourceTooltip text="This is your card." />
                             {/if}
                             <br />
                         </div>
