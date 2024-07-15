@@ -65,6 +65,10 @@
                         No cards here...did something go wrong?
                     {/if}
                     {#each responses as response}
+                        {@const style =
+                            response.source === RevealMethod.InferSuggestion
+                                ? 'color: lightseagreen;'
+                                : ''}
                         <!--
                         FUN FACT! 
                         Without this <div> element, the <Tooltip> will occasionally
@@ -84,17 +88,17 @@
                                     />
                                 {/if}
                             {:else}
-                                <b>{cardTypeToString(response.cardType)}</b>
+                                <b {style}>{cardTypeToString(response.cardType)}</b>
                             {/if}
                             <!-- Show card name if available -->
                             {#if response.cardType >= 0}
-                                <b>
+                                <b {style}>
                                     {setContents[cardTypeToKey(response.cardType)][response.card]}
                                 </b>
                             {/if}
                             <!-- If the data was inferred, show a tooltip -->
                             {#if response.source === RevealMethod.InferSuggestion}
-                                <SourceTooltip text="This card was inferred." />
+                                <SourceTooltip {style} text="This card was inferred." />
                             {:else if response.source === RevealMethod.Direct}
                                 <SourceTooltip text="This card was shown to you." />
                             {:else if response.source === RevealMethod.Self}
