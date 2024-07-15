@@ -54,6 +54,7 @@
                 suggestions={amendedSuggestions}
                 title="Game Log"
                 remove={removeSuggestion}
+                showExtraPossible
                 open
             />
             <br />

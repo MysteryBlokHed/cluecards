@@ -2,13 +2,14 @@
     import Accordion, { Panel, Header, Content } from '@smui-extra/accordion';
     import Button, { Icon, Label } from '@smui/button';
     import Paper from '@smui/paper';
-    import Tooltip, { Wrapper } from '@smui/tooltip';
 
-    import { players, set } from '../stores';
-    import { RevealMethod, type GameSet, type Suggestion } from '../types';
-    import { cardTypeToKey, cardTypeToString } from '../cards';
+    import { players, playerHands, set } from '../stores';
+    import { CardType, RevealMethod, type GameSet, type Suggestion } from '../types';
+    import { cardTypeToKey, cardTypeToString, packCard } from '../cards';
+    import InferTooltip from './InferTooltip.svelte';
 
     export let suggestions: Suggestion[];
+    export let showExtraPossible = false;
     export let title: string;
     export let open = false;
 
@@ -16,6 +17,24 @@
 
     let setContents: GameSet;
     $: setContents = $set[1];
+
+    function getPossibleCards(cards: Suggestion['cards'], player: number): string[] {
+        // Convert suggestion cards to [type, card] format
+        const cardsConverted = cards.map(
+            (card, type) => [type, card] as [type: CardType, card: number],
+        );
+
+        return (
+            cardsConverted
+                // Filter out cards that the responder is explicitly missing
+                .filter(card => !$playerHands[player].missing.has(packCard(...card)))
+                // Convert cards to human-readable strings (in the form "CardType Name")
+                .map(
+                    ([type, card]) =>
+                        `${cardTypeToString(type)} ${setContents[cardTypeToKey(type)][card]}`,
+                )
+        );
+    }
 </script>
 
 <Paper>
@@ -48,31 +67,32 @@
                     {#each responses as response}
                         <!--
                         FUN FACT! 
-                        ithout this <div> element, the <Tooltip> will occasionally
+                        Without this <div> element, the <Tooltip> will occasionally
                         crap itself entirely and cause the entire page to crash.
                         That was a fun one to figure out!
                         -->
                         <div>
                             <b>{$players[response.player]}</b>
                             showed
-                            <b>{cardTypeToString(response.cardType)}</b>
+                            {#if showExtraPossible && response.cardType === CardType.Unknown}
+                                <!-- Show which cards it may have been -->
+                                {@const possibleCards = getPossibleCards(cards, response.player)}
+                                <b>{possibleCards.join(' or ')}</b>
+                                {#if possibleCards.length === 2}
+                                    <InferTooltip plural />
+                                {/if}
+                            {:else}
+                                <b>{cardTypeToString(response.cardType)}</b>
+                            {/if}
                             <!-- Show card name if available -->
                             {#if response.cardType >= 0}
-                                <b>{setContents[cardTypeToKey(response.cardType)][response.card]}</b
-                                >
+                                <b>
+                                    {setContents[cardTypeToKey(response.cardType)][response.card]}
+                                </b>
                             {/if}
                             <!-- If the data was inferred, show a tooltip -->
                             {#if response.source === RevealMethod.InferSuggestion}
-                                <Wrapper>
-                                    <!-- prettier-ignore -->
-                                    <span
-                                    tabindex="0"
-                                    role="button"
-                                    style="font-size: 1em; user-select: none;"
-                                    class="material-icons">help</span>
-
-                                    <Tooltip unbounded>This card was inferred.</Tooltip>
-                                </Wrapper>
+                                <InferTooltip />
                             {/if}
                             <br />
                         </div>
