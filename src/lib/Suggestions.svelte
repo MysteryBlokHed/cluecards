@@ -100,7 +100,7 @@
                             {#if response.source === RevealMethod.InferSuggestion}
                                 <SourceTooltip {style} text="This card was inferred." />
                             {:else if response.source === RevealMethod.Direct}
-                                <SourceTooltip text="This card was shown to you." />
+                                <SourceTooltip text="This card was directly shown." />
                             {:else if response.source === RevealMethod.Self}
                                 <SourceTooltip text="This is your card." />
                             {/if}
