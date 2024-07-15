@@ -116,15 +116,6 @@ export function createHands(
         toRemove.forEach(card => hand.maybe.delete(card));
     }
 
-    // If a player has exactly one "maybe" card across the board, they must have it
-    for (const hand of hands) {
-        if (hand.maybe.size === 1) {
-            const loneMaybe = hand.maybe.values().next().value as number;
-            hand.maybe.delete(loneMaybe);
-            hand.has.add(loneMaybe);
-        }
-    }
-
     // If a player is confirmed to have a card, mark it as missing for everyone else
     for (const hand of hands) {
         for (const card of hand.has) {
