@@ -39,11 +39,25 @@
 
 <Paper>
     <h2 style="margin-bottom: 0;">{title}</h2>
-    <Button on:click={() => (open = true)} disabled={!suggestions.length}>
+    <Button
+        on:click={() => {
+            // Set to opposite first in case some panels are manually closed
+            open = false;
+            open = true;
+        }}
+        disabled={!suggestions.length}
+    >
         <Label>Expand All</Label>
         <Icon class="material-icons">unfold_more</Icon>
     </Button>
-    <Button on:click={() => (open = false)} disabled={!suggestions.length}>
+    <Button
+        on:click={() => {
+            // Set to opposite first in case some panels are manually open
+            open = true;
+            open = false;
+        }}
+        disabled={!suggestions.length}
+    >
         <Label>Collapse All</Label>
         <Icon class="material-icons">unfold_less</Icon>
     </Button>
