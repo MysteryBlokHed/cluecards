@@ -1,3 +1,6 @@
+import 'core-js/actual/set/intersection';
+import 'core-js/actual/set/symmetric-difference';
+import 'core-js/actual/set/union';
 import './app.css';
 import App from './App.svelte';
 
