@@ -5,12 +5,14 @@ stages:
     - deploy
 
 cache:
-    paths:
-        - node_modules/
-        - .yarn/
-        - .cache/
-        - dist/
-        - smui/
+    - key:
+          files:
+              - yarn.lock
+      paths:
+          - node_modules/
+          - .yarn/
+          - dist/
+          - smui/
 
 .changes: &changes
     - src/**/*
