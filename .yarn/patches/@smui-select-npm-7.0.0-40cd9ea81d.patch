@@ -1,13 +1,13 @@
-diff --git a/src/Select.svelte b/src/Select.svelte
-index 4650498459afff848ba0578dab0001508875c62c..410a6ce3fde99f2de3df19f0a96970e3690199db 100644
---- a/src/Select.svelte
-+++ b/src/Select.svelte
-@@ -333,7 +333,7 @@
-   export let noLabel = false;
-   export let label: string | undefined = undefined;
-   export let value: any = '';
--  export let key: (item: any) => string = (item) => item;
-+  export let key: (item: any) => string = (item) => item?.toString?.();
-   export let dirty = false;
- 
-   // Some trickery to detect uninitialized values but also have the right types.
+diff --git a/dist/Select.svelte b/dist/Select.svelte
+index f2e1bbbb6e57dc1d2f87971bd7a5c72361421ea0..efe0ebc47cd0c0b1f7e52ae2b539ecf0cc47b180 100644
+--- a/dist/Select.svelte
++++ b/dist/Select.svelte
+@@ -251,7 +251,7 @@ export let variant = 'standard';
+ export let noLabel = false;
+ export let label = undefined;
+ export let value = '';
+-export let key = (item) => item;
++export let key = (item) => item?.toString?.();
+ export let dirty = false;
+ // Some trickery to detect uninitialized values but also have the right types.
+ export let invalid = uninitializedValue;

@@ -1187,7 +1187,7 @@ __metadata:
 
 "@smui/select@patch:@smui/select@npm%3A7.0.0#~/.yarn/patches/@smui-select-npm-7.0.0-40cd9ea81d.patch":
   version: 7.0.0
-  resolution: "@smui/select@patch:@smui/select@npm%3A7.0.0#~/.yarn/patches/@smui-select-npm-7.0.0-40cd9ea81d.patch::version=7.0.0&hash=d2e589"
+  resolution: "@smui/select@patch:@smui/select@npm%3A7.0.0#~/.yarn/patches/@smui-select-npm-7.0.0-40cd9ea81d.patch::version=7.0.0&hash=462b87"
   dependencies:
     "@material/feature-targeting": "npm:^14.0.0"
     "@material/ripple": "npm:^14.0.0"
@@ -1203,7 +1203,7 @@ __metadata:
     "@smui/notched-outline": "npm:^7.0.0"
     "@smui/ripple": "npm:^7.0.0"
     svelte2tsx: "npm:^0.7.8"
-  checksum: 10c0/a3e8105f88cc567c5874ecf8c5b82caff4818644c11406375b012f02c23cb75c24b35626687957b8562939cd650bf120676d7ec5595353181f6a59eae2fcc438
+  checksum: 10c0/0da886ae0acc5f391fc396caefe4da9449183799f77d3c8424002d2068702bb35bfd5e2de20d831c0df4190eb3340f670854716fb5f78440e6333b1163a31fa8
   languageName: node
   linkType: hard
 
