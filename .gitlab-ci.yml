@@ -10,9 +10,9 @@ cache:
               - yarn.lock
       paths:
           - node_modules/
-          - .yarn/
           - dist/
           - smui/
+          - .yarn/install-state.gz
 
 .changes: &changes
     - src/**/*
