@@ -41,6 +41,7 @@ pages:
     image: alpine:latest
     script:
         - echo 'Deploying...'
+        - mv dist public
     artifacts:
         paths: ['public/']
     rules:

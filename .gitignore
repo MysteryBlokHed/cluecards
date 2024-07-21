@@ -10,8 +10,8 @@ lerna-debug.log*
 .yarn/install-state.gz
 
 node_modules
-public
 smui
+dist
 dist-ssr
 *.local
 
