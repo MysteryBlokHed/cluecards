@@ -7,7 +7,6 @@
     import { players, set, startingKnowns } from '../stores';
     import { CardType, RevealMethod } from '../types';
     import { cardTypeToKey, cardTypeToString } from '../cards';
-    import { key } from '../ui';
 
     let player: number = 0;
     let cards: Array<[type?: CardType, card?: number]> = [];

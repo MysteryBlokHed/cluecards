@@ -7,7 +7,6 @@
 
     import SETS from '../sets';
     import { customSets, getSet, set } from '../stores';
-    import { key } from '../ui';
 
     let setName = $set[0];
     $: $set = [setName, getSet(setName)];

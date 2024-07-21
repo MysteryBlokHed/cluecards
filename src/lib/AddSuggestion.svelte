@@ -14,7 +14,6 @@
         type SuggestionResponse,
     } from '../types';
     import { packCard, unpackCard } from '../cards';
-    import { key } from '../ui';
 
     interface WorkingSuggestionRespose extends Partial<SuggestionResponse> {
         player: number;
