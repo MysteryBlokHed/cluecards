@@ -23,7 +23,7 @@
     <Content>
         <span>The version of the game being used.</span>
         <br />
-        <Select {key} bind:value={setName}>
+        <Select bind:value={setName}>
             <!-- Builtin sets -->
             {#each Object.keys(SETS) as name}
                 <Option value={name}>{name}</Option>

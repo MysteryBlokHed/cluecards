@@ -37,7 +37,7 @@
     <Content>
         <span>Add cards to your hand at the start of the game.</span>
         <br />
-        <Select {key} bind:value={player} label="Player">
+        <Select bind:value={player} label="Player">
             {#each $players as player, i}
                 <Option value={i}>{player}</Option>
             {/each}
@@ -45,14 +45,14 @@
         <br />
         {#each cards as card, i}
             <!-- Choose card type -->
-            <Select {key} bind:value={card[0]} label="Card Type">
+            <Select bind:value={card[0]} label="Card Type">
                 <Option value={CardType.Suspect}>Suspect</Option>
                 <Option value={CardType.Weapon}>Weapon</Option>
                 <Option value={CardType.Room}>Room</Option>
             </Select>
             {#if card[0] != null}
                 <!-- Choose actual card -->
-                <Select {key} bind:value={card[1]} label={cardTypeToString(card[0])}>
+                <Select bind:value={card[1]} label={cardTypeToString(card[0])}>
                     {#each $set[1][cardTypeToKey(card[0])] as cardName, j}
                         <Option value={j}>{cardName}</Option>
                     {/each}

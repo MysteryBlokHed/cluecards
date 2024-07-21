@@ -118,25 +118,25 @@
 
 <Paper>
     <h2>Add Suggestion</h2>
-    <Select {key} bind:value={player} label="Player" style="width: 150px;">
+    <Select bind:value={player} label="Player" style="width: 150px;">
         {#each $players as playerName, i}
             <Option value={i}>{playerName}</Option>
         {/each}
     </Select>
     suggests
-    <Select {key} bind:value={suspect} label="Suspect" style="width: 150px;">
+    <Select bind:value={suspect} label="Suspect" style="width: 150px;">
         {#each setContents.suspects as suspect, i}
             <Option value={i}>{suspect}</Option>
         {/each}
     </Select>
     used
-    <Select {key} bind:value={weapon} label="Weapon" style="width: 150px;">
+    <Select bind:value={weapon} label="Weapon" style="width: 150px;">
         {#each setContents.weapons as weapon, i}
             <Option value={i}>{weapon}</Option>
         {/each}
     </Select>
     in
-    <Select {key} bind:value={room} label="Room">
+    <Select bind:value={room} label="Room">
         {#each setContents.rooms as room, i}
             <Option value={i}>{room}</Option>
         {/each}
@@ -160,13 +160,13 @@
         You must specify a response (including no cards shown).
     {/if}
     {#each responses as response, i}
-        <Select {key} bind:value={response.player} label="Player" style="width: 150px;">
+        <Select bind:value={response.player} label="Player" style="width: 150px;">
             {#each $players as playerName, i}
                 <Option value={i}>{playerName}</Option>
             {/each}
         </Select>
         shows card
-        <Select {key} bind:value={response.packed} label="Card" style="width: 150px;">
+        <Select bind:value={response.packed} label="Card" style="width: 150px;">
             <!-- Unknown card -->
             <Wrapper>
                 <Option value={-1}>Unknown</Option>

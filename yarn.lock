@@ -1630,7 +1630,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@smui/select@npm:^7.0.0":
+"@smui/select@npm:7.0.0":
   version: 7.0.0
   resolution: "@smui/select@npm:7.0.0"
   dependencies:
@@ -1649,6 +1649,28 @@ __metadata:
     "@smui/ripple": "npm:^7.0.0"
     svelte2tsx: "npm:^0.7.8"
   checksum: 10c0/65525a6efefc21388b59bcf2cfd880d9fc4e59edadca3170aef497279c67adfb9d958c24a05856bb4a5300658394d5a84e23f5fa673d7c519f7756e88c271829
+  languageName: node
+  linkType: hard
+
+"@smui/select@patch:@smui/select@npm%3A7.0.0#~/.yarn/patches/@smui-select-npm-7.0.0-40cd9ea81d.patch":
+  version: 7.0.0
+  resolution: "@smui/select@patch:@smui/select@npm%3A7.0.0#~/.yarn/patches/@smui-select-npm-7.0.0-40cd9ea81d.patch::version=7.0.0&hash=d2e589"
+  dependencies:
+    "@material/feature-targeting": "npm:^14.0.0"
+    "@material/ripple": "npm:^14.0.0"
+    "@material/rtl": "npm:^14.0.0"
+    "@material/select": "npm:^14.0.0"
+    "@material/theme": "npm:^14.0.0"
+    "@smui/common": "npm:^7.0.0"
+    "@smui/floating-label": "npm:^7.0.0"
+    "@smui/line-ripple": "npm:^7.0.0"
+    "@smui/list": "npm:^7.0.0"
+    "@smui/menu": "npm:^7.0.0"
+    "@smui/menu-surface": "npm:^7.0.0"
+    "@smui/notched-outline": "npm:^7.0.0"
+    "@smui/ripple": "npm:^7.0.0"
+    svelte2tsx: "npm:^0.7.8"
+  checksum: 10c0/a3e8105f88cc567c5874ecf8c5b82caff4818644c11406375b012f02c23cb75c24b35626687957b8562939cd650bf120676d7ec5595353181f6a59eae2fcc438
   languageName: node
   linkType: hard
 
@@ -2260,7 +2282,7 @@ __metadata:
     "@smui/layout-grid": "npm:^7.0.0"
     "@smui/list": "npm:^7.0.0"
     "@smui/paper": "npm:^7.0.0"
-    "@smui/select": "npm:^7.0.0"
+    "@smui/select": "patch:@smui/select@npm%3A7.0.0#~/.yarn/patches/@smui-select-npm-7.0.0-40cd9ea81d.patch"
     "@smui/textfield": "npm:^7.0.0"
     "@smui/tooltip": "npm:^7.0.0"
     "@sveltejs/vite-plugin-svelte": "npm:^3.1.1"

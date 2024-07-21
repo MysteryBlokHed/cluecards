@@ -25,7 +25,7 @@
         "@smui/layout-grid": "^7.0.0",
         "@smui/list": "^7.0.0",
         "@smui/paper": "^7.0.0",
-        "@smui/select": "^7.0.0",
+        "@smui/select": "patch:@smui/select@npm%3A7.0.0#~/.yarn/patches/@smui-select-npm-7.0.0-40cd9ea81d.patch",
         "@smui/textfield": "^7.0.0",
         "@smui/tooltip": "^7.0.0",
         "@sveltejs/vite-plugin-svelte": "^3.1.1",
@@ -49,5 +49,8 @@
     "dependencies": {
         "svelte-material-ui": "^7.0.0"
     },
-    "packageManager": "yarn@4.3.1+sha512.af78262d7d125afbfeed740602ace8c5e4405cd7f4735c08feb327286b2fdb2390fbca01589bfd1f50b1240548b74806767f5a063c94b67e431aabd0d86f7774"
+    "packageManager": "yarn@4.3.1+sha512.af78262d7d125afbfeed740602ace8c5e4405cd7f4735c08feb327286b2fdb2390fbca01589bfd1f50b1240548b74806767f5a063c94b67e431aabd0d86f7774",
+    "resolutions": {
+        "@smui/select@npm:^7.0.0": "patch:@smui/select@npm%3A7.0.0#~/.yarn/patches/@smui-select-npm-7.0.0-40cd9ea81d.patch"
+    }
 }
