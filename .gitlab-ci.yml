@@ -9,7 +9,7 @@ cache:
         - node_modules/
         - .yarn/
         - .cache/
-        - public/
+        - dist/
         - smui/
 
 .changes: &changes
@@ -29,6 +29,7 @@ install_lint_build:
         - corepack install --global yarn@stable
         - yarn install --immutable --check-cache --check-resolutions
         - yarn run lint
+        - yarn run check
         - yarn run build
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -41,9 +42,9 @@ pages:
     image: alpine:latest
     script:
         - echo 'Deploying...'
-        - mv dist public
     artifacts:
-        paths: ['public/']
+        paths: ['dist']
+    publish: dist
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
