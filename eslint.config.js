@@ -28,6 +28,6 @@ export default [
         },
     },
     {
-        ignores: ['build/', '.svelte-kit/', 'public/'],
+        ignores: ['.svelte-kit/', 'dist/', 'smui/'],
     },
 ];
