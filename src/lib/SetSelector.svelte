@@ -7,6 +7,7 @@
 
     import SETS from '../sets';
     import { customSets, getSet, set } from '../stores';
+    import { key } from '../ui';
 
     let setName = $set[0];
     $: $set = [setName, getSet(setName)];
@@ -22,7 +23,7 @@
     <Content>
         <span>The version of the game being used.</span>
         <br />
-        <Select bind:value={setName}>
+        <Select {key} bind:value={setName}>
             <!-- Builtin sets -->
             {#each Object.keys(SETS) as name}
                 <Option value={name}>{name}</Option>

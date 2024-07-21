@@ -3,6 +3,7 @@
     import Select, { Option } from '@smui/select';
     import Paper from '@smui/paper';
     import Tooltip, { Wrapper } from '@smui/tooltip';
+    import IconButton from '@smui/icon-button';
 
     import { players, set, suggestions } from '../stores';
     import {
@@ -13,7 +14,7 @@
         type SuggestionResponse,
     } from '../types';
     import { packCard, unpackCard } from '../cards';
-    import IconButton from '@smui/icon-button';
+    import { key } from '../ui';
 
     interface WorkingSuggestionRespose extends Partial<SuggestionResponse> {
         player: number;
@@ -117,25 +118,25 @@
 
 <Paper>
     <h2>Add Suggestion</h2>
-    <Select bind:value={player} label="Player" style="width: 150px;">
+    <Select {key} bind:value={player} label="Player" style="width: 150px;">
         {#each $players as playerName, i}
             <Option value={i}>{playerName}</Option>
         {/each}
     </Select>
     suggests
-    <Select bind:value={suspect} label="Suspect" style="width: 150px;">
+    <Select {key} bind:value={suspect} label="Suspect" style="width: 150px;">
         {#each setContents.suspects as suspect, i}
             <Option value={i}>{suspect}</Option>
         {/each}
     </Select>
     used
-    <Select bind:value={weapon} label="Weapon" style="width: 150px;">
+    <Select {key} bind:value={weapon} label="Weapon" style="width: 150px;">
         {#each setContents.weapons as weapon, i}
             <Option value={i}>{weapon}</Option>
         {/each}
     </Select>
     in
-    <Select bind:value={room} label="Room">
+    <Select {key} bind:value={room} label="Room">
         {#each setContents.rooms as room, i}
             <Option value={i}>{room}</Option>
         {/each}
@@ -159,13 +160,13 @@
         You must specify a response (including no cards shown).
     {/if}
     {#each responses as response, i}
-        <Select bind:value={response.player} label="Player" style="width: 150px;">
+        <Select {key} bind:value={response.player} label="Player" style="width: 150px;">
             {#each $players as playerName, i}
                 <Option value={i}>{playerName}</Option>
             {/each}
         </Select>
         shows card
-        <Select bind:value={response.packed} label="Card" style="width: 150px;">
+        <Select {key} bind:value={response.packed} label="Card" style="width: 150px;">
             <!-- Unknown card -->
             <Wrapper>
                 <Option value={-1}>Unknown</Option>

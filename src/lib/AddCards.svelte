@@ -7,9 +7,12 @@
     import { players, set, startingKnowns } from '../stores';
     import { CardType, RevealMethod } from '../types';
     import { cardTypeToKey, cardTypeToString } from '../cards';
+    import { key } from '../ui';
 
     let player: number = 0;
     let cards: Array<[type?: CardType, card?: number]> = [];
+
+    $: console.log(cards);
 
     function saveCards() {
         for (const card of cards) {
@@ -34,7 +37,7 @@
     <Content>
         <span>Add cards to your hand at the start of the game.</span>
         <br />
-        <Select bind:value={player} label="Player">
+        <Select {key} bind:value={player} label="Player">
             {#each $players as player, i}
                 <Option value={i}>{player}</Option>
             {/each}
@@ -42,14 +45,14 @@
         <br />
         {#each cards as card, i}
             <!-- Choose card type -->
-            <Select bind:value={card[0]} label="Card Type">
+            <Select {key} bind:value={card[0]} label="Card Type">
                 <Option value={CardType.Suspect}>Suspect</Option>
                 <Option value={CardType.Weapon}>Weapon</Option>
                 <Option value={CardType.Room}>Room</Option>
             </Select>
             {#if card[0] != null}
                 <!-- Choose actual card -->
-                <Select bind:value={card[1]} label={cardTypeToString(card[0])}>
+                <Select {key} bind:value={card[1]} label={cardTypeToString(card[0])}>
                     {#each $set[1][cardTypeToKey(card[0])] as cardName, j}
                         <Option value={j}>{cardName}</Option>
                     {/each}

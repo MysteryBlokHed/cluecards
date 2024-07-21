@@ -10,11 +10,12 @@
         "lint": "prettier --check . && eslint .",
         "format": "prettier --write . && eslint --fix .",
         "prettier": "prettier",
-        "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"
+        "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
+        "prepare": "npm run smui-theme-light && npm run smui-theme-dark",
+        "smui-theme-light": "smui-theme compile smui/smui.css -i src/theme",
+        "smui-theme-dark": "smui-theme compile smui/smui-dark.css -i src/theme/dark"
     },
     "devDependencies": {
-        "@material/theme": "^14.0.0",
-        "@mdi/js": "^7.4.47",
         "@smui-extra/accordion": "^7.0.0",
         "@smui/button": "^7.0.0",
         "@smui/card": "^7.0.0",
