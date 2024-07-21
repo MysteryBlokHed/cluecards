@@ -9,25 +9,25 @@ stages:
 cache:
     paths:
         - node_modules/
+        - .yarn-cache/
+        - .cache/
         - public/
         - smui/
 
 .changes: &changes
     - src/**/*
-    - '*.config.js'
+    - '*.config.*'
     - index.html
     - package.json
     - tsconfig*.json
-    - vite.config.ts
-    - pnpm-lock.yaml
+    - yarn.lock
     - .gitlab-ci.yml
     - .prettier*
 
-pnpm_install:
+yarn_install:
     stage: install
     script:
-        - npm install --global pnpm
-        - pnpm install --frozen-lockfile
+        - yarn --frozen-lockfile --check-files --non-interactive --cache-folder .yarn-cache install
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
@@ -37,7 +37,7 @@ pnpm_install:
 lint:
     stage: lint
     script:
-        - npm run lint
+        - yarn --frozen-lockfile --check-files --non-interactive --cache-folder .yarn-cache lint
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
@@ -47,7 +47,7 @@ lint:
 build:
     stage: build
     script:
-        - npm run build
+        - yarn --frozen-lockfile --check-files --non-interactive --cache-folder .yarn-cache build
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
