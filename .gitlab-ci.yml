@@ -30,6 +30,7 @@ install_lint_build:
         - yarn install --immutable --check-cache --check-resolutions
         - yarn run lint
         - yarn run check
+        - yarn run smui
         - yarn run build
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
