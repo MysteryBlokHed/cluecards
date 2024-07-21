@@ -38,6 +38,7 @@ install_lint_build:
 
 pages:
     stage: deploy
+    image: alpine:latest
     script:
         - echo 'Deploying...'
     artifacts:
