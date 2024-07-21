@@ -1,15 +1,13 @@
 image: node:latest
 
 stages:
-    - install
-    - lint
-    - build
+    - install_lint_build
     - deploy
 
 cache:
     paths:
         - node_modules/
-        - .yarn-cache/
+        - .yarn/
         - .cache/
         - public/
         - smui/
@@ -24,30 +22,14 @@ cache:
     - .gitlab-ci.yml
     - .prettier*
 
-yarn_install:
-    stage: install
+install_lint_build:
+    stage: install_lint_build
     script:
-        - yarn --frozen-lockfile --check-files --non-interactive --cache-folder .yarn-cache install
-    rules:
-        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-          changes: *changes
-        - if: $CI_MERGE_REQUEST_ID
-          changes: *changes
-
-lint:
-    stage: lint
-    script:
-        - yarn --frozen-lockfile --check-files --non-interactive --cache-folder .yarn-cache lint
-    rules:
-        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-          changes: *changes
-        - if: $CI_MERGE_REQUEST_ID
-          changes: *changes
-
-build:
-    stage: build
-    script:
-        - yarn --frozen-lockfile --check-files --non-interactive --cache-folder .yarn-cache build
+        - corepack enable
+        - corepack install --global yarn@stable
+        - yarn install --immutable --check-cache --check-resolutions
+        - yarn run lint
+        - yarn run build
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
