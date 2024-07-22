@@ -41,12 +41,13 @@ export function createHands(
     players: number,
     set: GameSet,
     firstIsSelf = true,
-) {
+): [hands: PlayerHand[], innocents: Set<number>] {
     const hands = emptyHands(players);
 
     // Handle custom knowns
     for (const known of knowns) {
         if (known.type === 'innocent') {
+            if (known.player < 0) continue;
             hands[known.player].has.add(packCard(known.cardType, known.card));
         } else {
             for (const hand of hands) {
@@ -127,7 +128,22 @@ export function createHands(
         }
     }
 
-    return hands;
+    /** All innocent cards, derived from {@link knowns}. */
+    const allKnownInnocents = new Set(
+        knowns
+            .filter(known => known.type === 'innocent')
+            .map(known => packCard(known.cardType, known.card)),
+    );
+
+    /** All innocent cards, derived from {@link hands}. */
+    const allHandInnocents = hands
+        .map(hand => hand.has)
+        .reduce((all, current) => all.union(current));
+
+    /** All innocent cards. */
+    const allInnocents = allKnownInnocents.union(allHandInnocents);
+
+    return [hands, allInnocents];
 }
 
 /**
@@ -145,17 +161,28 @@ export function inferSingle(
     players: number,
     knowns: readonly Known[] = [],
     hands?: readonly PlayerHand[],
-): [knowns: Known[], amendments: Suggestion[], hands: PlayerHand[]] {
+    innocents?: Set<number>,
+): [knowns: Known[], amendments: Suggestion[], hands: PlayerHand[], innocents: Set<number>] {
     console.group('Running inferSingle');
 
     const newKnowns: Known[] = [];
     // const newAmendments: ResponseAmendment[] = [];
     let newSuggestions = structuredClone(suggestions) as Suggestion[];
 
-    if (!hands) {
+    if (!hands || !innocents) {
         console.log('Creating hands');
-        hands = createHands(suggestions, knowns, players, set);
+        [hands, innocents] = createHands(suggestions, knowns, players, set);
     }
+
+    const knownsInclude = (type: CardType, card: number, ignoreNegativePlayer = false) =>
+        ignoreNegativePlayer
+            ? knowns.some(
+                  known =>
+                      known.cardType === type &&
+                      known.card === card &&
+                      (known.type === 'innocent' ? known.player > -1 : true),
+              )
+            : knowns.some(known => known.cardType === type && known.card === card);
 
     // Figure out guilty knowns, if possible
     {
@@ -179,9 +206,6 @@ export function inferSingle(
         const unknownRooms = set.rooms
             .map((_, card) => card)
             .filter(card => !innocentRooms.includes(card));
-
-        const knownsInclude = (type: CardType, card: number) =>
-            knowns.some(known => known.cardType === type && known.card === card);
 
         if (unknownSuspects.length === 1 && !knownsInclude(CardType.Suspect, unknownSuspects[0])) {
             newKnowns.push({
@@ -214,18 +238,15 @@ export function inferSingle(
 
         console.group('Suggestion', i, 'of', suggestions.length - 1);
 
+        const packedSuggestions = suggestion.cards.map((card, type) => packCard(type, card));
+
         for (const [j, response] of suggestion.responses.entries()) {
             console.group('Response', j, 'of', suggestion.responses.length - 1);
 
             // Ensure that any cards we know the type of are already in the known list
             if (response.cardType >= 0) {
                 console.log('Found exact card');
-                if (
-                    !knowns.some(
-                        known =>
-                            known.cardType === response.cardType && known.card === response.card,
-                    )
-                ) {
+                if (!knownsInclude(response.cardType, response.card, true)) {
                     console.log('Card was not in known list--adding to newKnowns');
                     newKnowns.push({
                         ...response,
@@ -243,8 +264,7 @@ export function inferSingle(
                 continue;
             }
 
-            const missingCards = suggestion.cards
-                .map((card, type) => packCard(type, card))
+            const missingCards = packedSuggestions
                 .filter(card => hands[response.player].missing.has(card))
                 .map(unpackCard);
 
@@ -290,6 +310,58 @@ export function inferSingle(
             }
         }
 
+        /*
+         * ==========================================
+         * For clue variations where multiple players
+         * show cards at once
+         * ==========================================
+         */
+        const unknownResponses = suggestion.responses.filter(
+            response => response.cardType === CardType.Unknown,
+        );
+
+        // If there are one or no responses then it will have been handled above
+        if (unknownResponses.length <= 1) continue;
+
+        /** The number of responding players */
+        const respondingPlayers = new Set(unknownResponses.filter(response => response.player))
+            .size;
+
+        /**
+         * A set of cards that all responding players are missing,
+         * including cards not involved in the suggestion.
+         */
+        const allCollectiveMissing = unknownResponses
+            // Get players involved
+            .map(response => response.player)
+            // Get their sets of missing cards
+            .map(player => hands[player].missing)
+            // Figure out which cards *all* players are missing
+            .reduce((collective, current) => collective.intersection(current));
+
+        /** A set of cards involved in the suggestion that all responding players are missing. */
+        const collectiveMissing = new Set(
+            Array.from(allCollectiveMissing).filter(card => packedSuggestions.includes(card)),
+        );
+
+        // Make inferences if there are enough missing cards
+        if (3 - respondingPlayers === collectiveMissing.size) {
+            // Iterate over the suggested cards (except for the one all players did not have)
+            for (const packed of packedSuggestions.filter(card => !collectiveMissing.has(card))) {
+                const [cardType, card] = unpackCard(packed);
+
+                if (!knownsInclude(cardType, card)) {
+                    newKnowns.push({
+                        type: 'innocent',
+                        cardType,
+                        card,
+                        player: -1,
+                        source: RevealMethod.InferSuggestion,
+                    });
+                }
+            }
+        }
+
         console.groupEnd();
     }
 
@@ -303,10 +375,11 @@ export function inferSingle(
             players,
             [...knowns, ...newKnowns],
             hands,
+            innocents,
         );
 
         // Try to create hands based on new data
-        let newHands = createHands(
+        let [newHands, newInnocents] = createHands(
             recursiveSuggestions,
             [...knowns, ...newKnowns, ...recursiveKnowns],
             players,
@@ -317,26 +390,28 @@ export function inferSingle(
 
         if (!handsEqual(hands, newHands)) {
             console.log('Hands are not equal--recursing again...');
-            const [newestKnowns, newestSuggestions, newestHands] = inferSingle(
+            const [newestKnowns, newestSuggestions, newestHands, newestInnocents] = inferSingle(
                 recursiveSuggestions,
                 set,
                 players,
                 [...knowns, ...newKnowns, ...recursiveKnowns],
                 newHands,
+                newInnocents,
             );
             console.log('Recursing done. Applying new knowns and suggestions');
 
             recursiveKnowns.push(...newestKnowns);
             newSuggestions = newestSuggestions;
             newHands = newestHands;
+            newInnocents = newestInnocents;
         }
 
         console.groupEnd();
-        return [[...newKnowns, ...recursiveKnowns], newSuggestions, newHands];
+        return [[...newKnowns, ...recursiveKnowns], newSuggestions, newHands, newInnocents];
     }
 
     // Otherwise, return the empty lists
     console.log('Nothing happened this run. Returning parameters as passed');
     console.groupEnd();
-    return [newKnowns, newSuggestions, structuredClone(hands) as PlayerHand[]];
+    return [newKnowns, newSuggestions, structuredClone(hands) as PlayerHand[], innocents];
 }

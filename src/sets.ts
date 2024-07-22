@@ -4,7 +4,7 @@ import type { GameSet } from './types';
 // There may be different regional names from one set to the next
 const SETS = {
     Clue: {
-        suspects: ['Mustard', 'Green', 'Peacock', 'Scarlett', 'Rose', 'Azure'],
+        suspects: ['Mustard', 'White', 'Scarlett', 'Peacock', 'Plum', 'Green'],
         weapons: ['Candlestick', 'Dagger', 'Lead Pipe', 'Revolver', 'Rope', 'Wrench'],
         rooms: [
             'Ballroom',

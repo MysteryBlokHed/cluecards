@@ -3,7 +3,7 @@
     import { CardType } from '../../types';
     import { cardTypeToKey, cardTypeToString, packCard } from '../../cards';
 
-    import { players, playerHands, set } from '../../stores';
+    import { players, playerHands, innocents, set } from '../../stores';
 
     export let type: CardType;
 </script>
@@ -23,7 +23,7 @@
             <Row style="height: 3em;">
                 <Cell>
                     <!-- Strikethrough if any player has this -->
-                    {#if $playerHands.some(hand => hand.has.has(packed))}
+                    {#if $innocents.has(packed)}
                         <s class="red">{card}</s>
                     {:else if $playerHands.every(hand => hand.missing.has(packed))}
                         <span class="green">{card}</span>

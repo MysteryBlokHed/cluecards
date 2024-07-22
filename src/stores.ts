@@ -44,6 +44,8 @@ export const playerHands = writable<PlayerHand[]>([
     { has: new Set(), missing: new Set(), maybe: new Set() },
 ]);
 
+export const innocents = writable<Set<number>>(new Set());
+
 export const suggestions = persistent<Suggestion[]>('suggestions', []);
 
 export const startingKnowns = persistent<Known[]>('startingKnowns', []);

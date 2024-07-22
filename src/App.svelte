@@ -9,7 +9,7 @@
     import SetSelector from './lib/SetSelector.svelte';
     import Suggestions from './lib/Suggestions.svelte';
 
-    import { startingKnowns, set, suggestions, players, playerHands } from './stores';
+    import { startingKnowns, set, suggestions, players, playerHands, innocents } from './stores';
     import { inferSingle } from './inference';
     import type { Suggestion } from './types';
 
@@ -22,7 +22,7 @@
             console.log('Note: Updated suggestions list is shorter. Data will be lost');
 
         console.log('App about to run inferSingle for reactivity reasons');
-        const [, inferSuggestions, newHands] = inferSingle(
+        const [, inferSuggestions, newHands, newInnocents] = inferSingle(
             $suggestions,
             $set[1],
             $players.length,
@@ -30,6 +30,7 @@
         );
         amendedSuggestions = inferSuggestions;
         $playerHands = newHands;
+        $innocents = newInnocents;
     }
 
     function removeSuggestion(index: number) {
