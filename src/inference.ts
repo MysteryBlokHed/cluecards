@@ -306,7 +306,7 @@ export function inferSingle(
         );
 
         // Try to create hands based on new data
-        const newHands = createHands(
+        let newHands = createHands(
             recursiveSuggestions,
             [...knowns, ...newKnowns, ...recursiveKnowns],
             players,
@@ -317,7 +317,7 @@ export function inferSingle(
 
         if (!handsEqual(hands, newHands)) {
             console.log('Hands are not equal--recursing again...');
-            const [newestKnowns, newestSuggestions] = inferSingle(
+            const [newestKnowns, newestSuggestions, newestHands] = inferSingle(
                 recursiveSuggestions,
                 set,
                 players,
@@ -328,6 +328,7 @@ export function inferSingle(
 
             recursiveKnowns.push(...newestKnowns);
             newSuggestions = newestSuggestions;
+            newHands = newestHands;
         }
 
         console.groupEnd();
