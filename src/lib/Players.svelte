@@ -4,18 +4,37 @@
     import IconButton from '@smui/icon-button';
     import Textfield from '@smui/textfield';
 
-    import { players, playerHands } from '../stores';
+    import { cardsPerHandFrac } from '../cards';
+    import { players, playerHands, set } from '../stores';
+
+    let cards: number;
+    let cardsFrac: number;
+
+    $: cardsFrac = cardsPerHandFrac($set[1], $players.length);
+    $: cards = Math.ceil(cardsFrac);
 </script>
 
 <Panel>
     <Header>Players</Header>
     <Content>
+        <span style="font-weight: bold;">
+            Max Cards Per Hand:
+            <!-- Rounded -->
+            {cards}
+            <!-- Unrounded -->
+            {#if cards !== cardsFrac}
+                ({cardsFrac})
+            {/if}
+        </span>
+
         {#each $players as player, i}
             <div>
                 <Textfield bind:value={player} label={i === 0 ? 'Your Name' : 'Player Name'} />
                 <IconButton
                     class="material-icons"
+                    disabled={$players.length === 1}
                     on:click={() => {
+                        if ($players.length === 1) return;
                         $players.splice(i, 1);
                         $playerHands.splice(i, 1);
                         $players = $players;
@@ -37,5 +56,6 @@
             <Label>Add</Label>
             <Icon class="material-icons">add</Icon>
         </Button>
+        <br />
     </Content>
 </Panel>

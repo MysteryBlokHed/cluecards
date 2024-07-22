@@ -1,4 +1,4 @@
-import { packCard, unpackCard } from './cards';
+import { packSet, packCard, unpackCard, cardsPerHandFrac, packSuggestions } from './cards';
 import { CardType, RevealMethod } from './types';
 import type { GameSet, Known, PlayerHand, Suggestion } from './types';
 
@@ -34,6 +34,8 @@ export function emptyHands(players: number) {
  * @param knowns Any knowns to take into consideration (that are _not_ derived from suggestions)
  * @param hands The hands to update
  * @param firstIsSelf Whether the player at index 0 is the user
+ * @param hands Last list of hands. This value is used for recursion and is modified.
+ * It should not typically be passed by the caller
  */
 export function createHands(
     suggestions: readonly Suggestion[],
@@ -41,8 +43,14 @@ export function createHands(
     players: number,
     set: GameSet,
     firstIsSelf = true,
+    hands?: PlayerHand[],
 ): [hands: PlayerHand[], innocents: Set<number>] {
-    const hands = emptyHands(players);
+    hands ||= emptyHands(players);
+    const lastHands = structuredClone(hands);
+
+    const maxCards = cardsPerHandFrac(set, players);
+    const packedSet = packSet(set);
+    const totalCards = packedSet.length;
 
     // Handle custom knowns
     for (const known of knowns) {
@@ -58,42 +66,26 @@ export function createHands(
 
     // For the user themself, if any card is not explicitly known as innocent, they must not have it
     if (firstIsSelf) {
-        // Get amount of suspects/weapons/rooms
-        const suspects = set.suspects.length;
-        const weapons = set.weapons.length;
-        const rooms = set.rooms.length;
-
         // Mark as missing if they are not contained in the hand
-        for (let card = 0; card < suspects; card++) {
-            const packed = packCard(CardType.Suspect, card);
-            if (!hands[0].has.has(packed)) hands[0].missing.add(packed);
-        }
-        for (let card = 0; card < weapons; card++) {
-            const packed = packCard(CardType.Weapon, card);
-            if (!hands[0].has.has(packed)) hands[0].missing.add(packed);
-        }
-        for (let card = 0; card < rooms; card++) {
-            const packed = packCard(CardType.Room, card);
-            if (!hands[0].has.has(packed)) hands[0].missing.add(packed);
+        for (const card of packedSet) {
+            if (!hands[0].has.has(card)) hands[0].missing.add(card);
         }
     }
 
     // Handle suggestions
     for (const suggestion of suggestions) {
         // Find (packed) cards used for suggestion
-        const suggestionCards = suggestion.cards.map((card, type: CardType) =>
-            packCard(type, card),
-        );
+        const suggestionCards = packSuggestions(suggestion.cards);
 
         for (const response of suggestion.responses) {
             switch (response.cardType) {
                 // A player specifically _did not_ show a card
                 case CardType.Nothing:
-                    suggestionCards.forEach(card => hands[response.player].missing.add(card));
+                    suggestionCards.forEach(card => hands![response.player].missing.add(card));
                     break;
                 // A player showed a card, but we do not know which
                 case CardType.Unknown:
-                    suggestionCards.forEach(card => hands[response.player].maybe.add(card));
+                    suggestionCards.forEach(card => hands![response.player].maybe.add(card));
                     break;
                 // A player showed a card we know the type of
                 default:
@@ -103,14 +95,27 @@ export function createHands(
         }
     }
 
+    // Actions based on card count
+    for (const hand of hands) {
+        if (hand.has.size >= Math.ceil(maxCards)) {
+            // If a player has all the cards allowed in their hand, check everything else off
+            for (const card of packedSet) {
+                if (!hand.has.has(card)) hand.missing.add(card);
+            }
+        } else if (hand.missing.size >= totalCards - Math.floor(maxCards)) {
+            // If a player has every card crossed off except for the # of cards in their hand, they must have those cards
+            for (const card of packedSet) {
+                if (!hand.missing.has(card)) hand.has.add(card);
+            }
+        }
+    }
+
     // Make sure that no player has cards appearing in more than one list
     for (const hand of hands) {
         if (hand.has.intersection(hand.missing).size !== 0)
             throw new Error('A player is marked as both having and not having a card');
 
-        /** Cards in {@link hand.has} and {@link hand.maybe} */
         const hasAndMaybe = hand.has.intersection(hand.maybe);
-        /** Cards in {@link hand.missing} and {@link hand.maybe} */
         const missingAndMaybe = hand.missing.intersection(hand.maybe);
         const toRemove = hasAndMaybe.union(missingAndMaybe);
 
@@ -126,6 +131,11 @@ export function createHands(
                 // Mark card missing
                 .forEach(otherHand => otherHand.missing.add(card));
         }
+    }
+
+    // Recurse if the hands changed
+    if (!handsEqual(hands, lastHands)) {
+        [hands] = createHands(suggestions, knowns, players, set, firstIsSelf, hands);
     }
 
     /** All innocent cards, derived from {@link knowns}. */
