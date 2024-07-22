@@ -165,7 +165,7 @@ export function createHands(
  * @param hands Hands generated from {@link createHands}.
  * This should not typically be passed by an outside caller (it is used for recursion)
  */
-export function inferSingle(
+export function infer(
     suggestions: readonly Suggestion[],
     set: GameSet,
     players: number,
@@ -356,7 +356,7 @@ export function inferSingle(
 
     // If new inferences were made, then re-run this function with the new updates before continuing
     if (newKnowns.length) {
-        const [recursiveKnowns, recursiveSuggestions] = inferSingle(
+        const [recursiveKnowns, recursiveSuggestions] = infer(
             newSuggestions,
             set,
             players,
@@ -374,7 +374,7 @@ export function inferSingle(
         );
 
         if (!handsEqual(hands, newHands)) {
-            const [newestKnowns, newestSuggestions, newestHands, newestInnocents] = inferSingle(
+            const [newestKnowns, newestSuggestions, newestHands, newestInnocents] = infer(
                 recursiveSuggestions,
                 set,
                 players,

@@ -10,7 +10,7 @@
     import Suggestions from './lib/Suggestions.svelte';
 
     import { startingKnowns, set, suggestions, players, playerHands, innocents } from './stores';
-    import { inferSingle } from './inference';
+    import { infer } from './inference';
     import type { Suggestion } from './types';
 
     let amendedSuggestions: Suggestion[] = structuredClone($suggestions);
@@ -21,7 +21,7 @@
         if (newCount > 0)
             console.log('Note: Updated suggestions list is shorter. Data will be lost');
 
-        const [, inferSuggestions, newHands, newInnocents] = inferSingle(
+        const [, inferSuggestions, newHands, newInnocents] = infer(
             $suggestions,
             $set[1],
             $players.length,

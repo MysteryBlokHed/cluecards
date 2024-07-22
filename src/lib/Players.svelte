@@ -56,6 +56,5 @@
             <Label>Add</Label>
             <Icon class="material-icons">add</Icon>
         </Button>
-        <br />
     </Content>
 </Panel>
