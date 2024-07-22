@@ -76,4 +76,6 @@ export interface PlayerHand {
     missing: Set<number>;
     /** A set of {@link packCard packed} cards that the player might have. */
     maybe: Set<number>;
+    /** Associates {@link maybe maybes} to the suggestion(s) they come from. */
+    maybeGroups: Record<number, Set<number>>;
 }
