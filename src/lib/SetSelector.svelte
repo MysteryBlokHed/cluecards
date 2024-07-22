@@ -8,28 +8,28 @@
     import SetManager from './SetManager.svelte';
 
     import SETS from '../sets';
-    import { customSets, getSet, set } from '../stores';
+    import { set, sets } from '../stores';
 
     let setName = $set[0];
-    $: $set = [setName, getSet(setName)];
+    $: $set = [setName, $sets[setName]];
 
     let creatorOpen = false;
     let updating: string | null = null;
 
     function deleteSet() {
-        delete $customSets[setName];
-        setName = Object.keys($customSets)[0];
-        $set = [setName, getSet(setName)];
-        $customSets = $customSets;
+        delete $sets[setName];
+        setName = Object.keys($sets)[0];
+        $set = [setName, $sets[setName]];
+        $sets = $sets;
     }
 
     function restore() {
         for (const builtin of Object.keys(SETS) as Array<keyof typeof SETS>) {
-            $customSets[builtin] = structuredClone(SETS[builtin]);
+            $sets[builtin] = structuredClone(SETS[builtin]);
         }
 
-        $customSets = $customSets;
-        $set = [$set[0], getSet($set[0])];
+        $sets = $sets;
+        $set = [$set[0], $sets[$set[0]]];
     }
 </script>
 
@@ -40,7 +40,7 @@
         <span>The version of the game being used.</span>
         <br />
         <Select bind:value={setName}>
-            {#each Object.keys($customSets) as name}
+            {#each Object.keys($sets) as name}
                 <Option value={name}>{name}</Option>
             {/each}
         </Select>

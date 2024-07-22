@@ -7,7 +7,7 @@
 
     import { get } from 'svelte/store';
 
-    import { set as activeSet, customSets, getSet } from '../stores';
+    import { set as activeSet, sets } from '../stores';
     import type { GameSet } from '../types';
 
     export let creatorOpen = false;
@@ -17,7 +17,7 @@
 
     $: if (updating != null) {
         setName = updating;
-        set = structuredClone(get(customSets)[setName]);
+        set = structuredClone(get(sets)[setName]);
     } else {
         resetSet();
         setName = '';
@@ -63,11 +63,11 @@
     }
 
     function saveSet() {
-        $customSets[setName] = set;
-        $customSets = $customSets;
+        $sets[setName] = set;
+        $sets = $sets;
         // Reload set if we are updating the active one
         if ($activeSet[0] === updating) {
-            $activeSet = [updating, getSet(updating)];
+            $activeSet = [updating, $sets[updating]];
         }
         setName = '';
         updating = null;

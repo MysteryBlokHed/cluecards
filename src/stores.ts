@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import SETS from './sets';
 import { type Known, type GameSet, type Suggestion, type PlayerHand } from './types';
 
@@ -15,38 +15,23 @@ function persistent<T>(key: string, defaultValue: T, storage = sessionStorage) {
     return store;
 }
 
-// console.log(SETS);
-export const customSets = persistent<Record<string, GameSet>>(
+export const sets = persistent<Record<string, GameSet>>(
     'customSets',
     structuredClone(SETS),
     localStorage,
 );
-let $customSets: Record<string, GameSet>;
-customSets.subscribe(newValue => {
-    $customSets = newValue;
+let $sets: Record<string, GameSet> = get(sets);
+sets.subscribe(newValue => {
+    $sets = newValue;
     // Re-add default sets if the list is empty
-    if (Object.keys($customSets).length === 0) {
-        customSets.set(structuredClone(SETS));
+    if (Object.keys($sets).length === 0) {
+        sets.set(structuredClone(SETS));
     }
 });
 
-/**
- * Tries to retrieve a game set, giving priority to the builtin ones.
- * @param name The set's (display) name
- * @returns The set, if found
- * @throws {Error} If a set with the provided name could not be found
- */
-export function getSet(name: string): GameSet {
-    // // Start with builtin sets
-    // if (name in SETS) return SETS[name as keyof typeof SETS];
-    // Try custom sets
-    if (name in $customSets) return $customSets[name];
-    throw new Error('Could not find set with name ' + name);
-}
-
 // This is stored slightly differently and cannot use persistentStore()
 const storedSet: string = sessionStorage.setName ?? 'Clue';
-export const set = writable<[string, GameSet]>([storedSet, getSet(storedSet)]);
+export const set = writable<[string, GameSet]>([storedSet, $sets[storedSet]]);
 set.subscribe(newSet => (sessionStorage.setName = newSet[0]));
 
 export const players = persistent('players', ['']);
