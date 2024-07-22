@@ -1,7 +1,5 @@
 import type { GameSet } from './types';
 
-// Note: These sets are based on YouTube videos I watched while testing the project (following gameplay).
-// There may be different regional names from one set to the next
 const SETS = {
     Clue: {
         suspects: ['Mustard', 'White', 'Scarlett', 'Peacock', 'Plum', 'Green'],

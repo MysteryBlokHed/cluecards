@@ -15,9 +15,20 @@ function persistent<T>(key: string, defaultValue: T, storage = sessionStorage) {
     return store;
 }
 
-export const customSets = persistent<Record<string, GameSet>>('customSets', {}, localStorage);
+// console.log(SETS);
+export const customSets = persistent<Record<string, GameSet>>(
+    'customSets',
+    structuredClone(SETS),
+    localStorage,
+);
 let $customSets: Record<string, GameSet>;
-customSets.subscribe(newValue => ($customSets = newValue));
+customSets.subscribe(newValue => {
+    $customSets = newValue;
+    // Re-add default sets if the list is empty
+    if (Object.keys($customSets).length === 0) {
+        customSets.set(structuredClone(SETS));
+    }
+});
 
 /**
  * Tries to retrieve a game set, giving priority to the builtin ones.
@@ -26,8 +37,8 @@ customSets.subscribe(newValue => ($customSets = newValue));
  * @throws {Error} If a set with the provided name could not be found
  */
 export function getSet(name: string): GameSet {
-    // Start with builtin sets
-    if (name in SETS) return SETS[name as keyof typeof SETS];
+    // // Start with builtin sets
+    // if (name in SETS) return SETS[name as keyof typeof SETS];
     // Try custom sets
     if (name in $customSets) return $customSets[name];
     throw new Error('Could not find set with name ' + name);

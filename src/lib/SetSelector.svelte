@@ -7,15 +7,17 @@
 
     import SETS from '../sets';
     import { customSets, getSet, set } from '../stores';
+    import IconButton from '@smui/icon-button';
 
     let setName = $set[0];
     $: $set = [setName, getSet(setName)];
 
     let creatorOpen = false;
     let removerOpen = false;
+    let updating: string | null = null;
 </script>
 
-<SetManager bind:creatorOpen bind:removerOpen />
+<SetManager bind:creatorOpen bind:removerOpen bind:updating />
 <Panel>
     <Header>Set Selector</Header>
     <Content>
@@ -23,24 +25,32 @@
         <br />
         <Select bind:value={setName}>
             <!-- Builtin sets -->
-            {#each Object.keys(SETS) as name}
+            <!-- {#each Object.keys(SETS) as name}
                 <Option value={name}>{name}</Option>
-            {/each}
+            {/each} -->
             <!-- Custom sets -->
             {#each Object.keys($customSets) as name}
                 <Option value={name}>{name}</Option>
             {/each}
         </Select>
+        <IconButton
+            class="material-icons"
+            on:click={() => {
+                updating = setName;
+                creatorOpen = true;
+            }}>edit</IconButton
+        >
+        <IconButton class="material-icons" on:click={() => (removerOpen = true)}>delete</IconButton>
         <br />
 
-        <Button on:click={() => (creatorOpen = true)}>
+        <Button
+            on:click={() => {
+                updating = null;
+                creatorOpen = true;
+            }}
+        >
             <Label>Create New Set</Label>
             <Icon class="material-icons">add</Icon>
-        </Button>
-
-        <Button on:click={() => (removerOpen = true)}>
-            <Label>Select Set to Remove</Label>
-            <Icon class="material-icons">delete</Icon>
         </Button>
     </Content>
 </Panel>

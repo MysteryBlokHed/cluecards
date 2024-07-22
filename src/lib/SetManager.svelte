@@ -5,13 +5,24 @@
     import List, { Item } from '@smui/list';
     import Textfield from '@smui/textfield';
 
-    import { customSets } from '../stores';
+    import { get } from 'svelte/store';
+
+    import { set as activeSet, customSets, getSet } from '../stores';
     import type { GameSet } from '../types';
 
     export let creatorOpen = false;
     export let removerOpen = false;
+    export let updating: string | null = null;
     let setName: string = '';
     let set: GameSet;
+
+    $: if (updating != null) {
+        setName = updating;
+        set = structuredClone(get(customSets)[setName]);
+    } else {
+        resetSet();
+        setName = '';
+    }
 
     let setIsValid = false;
 
@@ -55,6 +66,13 @@
     function saveSet() {
         $customSets[setName] = set;
         $customSets = $customSets;
+        // Reload set if we are updating the active one
+        if ($activeSet[0] === updating) {
+            $activeSet = [updating, getSet(updating)];
+        }
+        setName = '';
+        updating = null;
+        resetSet();
     }
 
     resetSet();
@@ -72,7 +90,7 @@
     <Title id="creator-title">Set Creator</Title>
     <Content id="creator-content" style="display: flex; flex-direction: column;">
         <p>Create a custom game set.</p>
-        <Textfield bind:value={setName} label="Set Name" />
+        <Textfield bind:value={setName} label="Set Name" disabled={updating != null} />
         <table>
             <tbody>
                 <tr>
