@@ -163,8 +163,6 @@ export function inferSingle(
     hands?: readonly PlayerHand[],
     innocents?: Set<number>,
 ): [knowns: Known[], amendments: Suggestion[], hands: PlayerHand[], innocents: Set<number>] {
-    console.group('Running inferSingle');
-
     const newKnowns: Known[] = [];
     // const newAmendments: ResponseAmendment[] = [];
     let newSuggestions = structuredClone(suggestions) as Suggestion[];
@@ -246,13 +244,11 @@ export function inferSingle(
                         source: RevealMethod.Direct,
                     });
                 }
-                console.groupEnd();
                 continue;
             }
 
             // Nothing was shown--nothing to infer
             if (response.cardType === CardType.Nothing) {
-                console.groupEnd();
                 continue;
             }
 
@@ -281,7 +277,6 @@ export function inferSingle(
                 if (
                     knowns.some(known => known.cardType === shownType && known.card === shownCard)
                 ) {
-                    console.groupEnd();
                     continue;
                 }
 
@@ -347,8 +342,6 @@ export function inferSingle(
                 }
             }
         }
-
-        console.groupEnd();
     }
 
     // If new inferences were made, then re-run this function with the new updates before continuing
@@ -386,7 +379,6 @@ export function inferSingle(
             newInnocents = newestInnocents;
         }
 
-        console.groupEnd();
         return [[...newKnowns, ...recursiveKnowns], newSuggestions, newHands, newInnocents];
     }
 
