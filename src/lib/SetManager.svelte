@@ -2,7 +2,6 @@
     import Button, { Label, Icon } from '@smui/button';
     import Dialog, { Title, Content, Actions } from '@smui/dialog';
     import IconButton from '@smui/icon-button';
-    import List, { Item } from '@smui/list';
     import Textfield from '@smui/textfield';
 
     import { get } from 'svelte/store';
