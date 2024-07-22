@@ -2,16 +2,25 @@
     import Button, { Label, Icon } from '@smui/button';
     import Dialog, { Title, Content, Actions } from '@smui/dialog';
     import IconButton from '@smui/icon-button';
-    import List, { Item } from '@smui/list';
     import Textfield from '@smui/textfield';
 
-    import { customSets } from '../stores';
+    import { get } from 'svelte/store';
+
+    import { set as activeSet, sets } from '../stores';
     import type { GameSet } from '../types';
 
     export let creatorOpen = false;
-    export let removerOpen = false;
+    export let updating: string | null = null;
     let setName: string = '';
     let set: GameSet;
+
+    $: if (updating != null) {
+        setName = updating;
+        set = structuredClone(get(sets)[setName]);
+    } else {
+        resetSet();
+        setName = '';
+    }
 
     let setIsValid = false;
 
@@ -53,8 +62,15 @@
     }
 
     function saveSet() {
-        $customSets[setName] = set;
-        $customSets = $customSets;
+        $sets[setName] = set;
+        $sets = $sets;
+        // Reload set if we are updating the active one
+        if ($activeSet[0] === updating) {
+            $activeSet = [updating, $sets[updating]];
+        }
+        setName = '';
+        updating = null;
+        resetSet();
     }
 
     resetSet();
@@ -72,7 +88,7 @@
     <Title id="creator-title">Set Creator</Title>
     <Content id="creator-content" style="display: flex; flex-direction: column;">
         <p>Create a custom game set.</p>
-        <Textfield bind:value={setName} label="Set Name" />
+        <Textfield bind:value={setName} label="Set Name" disabled={updating != null} />
         <table>
             <tbody>
                 <tr>
@@ -152,26 +168,5 @@
             <Label>Save</Label>
             <Icon class="material-icons">save</Icon>
         </Button>
-    </Actions>
-</Dialog>
-
-<!-- Set Remover Dialog -->
-<Dialog bind:open={removerOpen} aria-labelledby="remover-title" aria-describedby="remover-content">
-    <Title id="remover-title">Set Remover</Title>
-    <Content>
-        <List>
-            {#each Object.keys($customSets) as name}
-                <Item
-                    on:click={() => {
-                        delete $customSets[name];
-                        $customSets = $customSets;
-                        removerOpen = false;
-                    }}>{name}</Item
-                >
-            {/each}
-        </List>
-    </Content>
-    <Actions>
-        <Button><Label>Cancel</Label></Button>
     </Actions>
 </Dialog>

@@ -1,10 +1,11 @@
 import type { GameSet } from './types';
 
-// Note: These sets are based on YouTube videos I watched while testing the project (following gameplay).
-// There may be different regional names from one set to the next
+/** Default list of suspects */
+const suspects = () => ['Green', 'Plum', 'Mustard', 'Peacock', 'Scarlett', 'White'];
+
 const SETS = {
     Clue: {
-        suspects: ['Mustard', 'White', 'Scarlett', 'Peacock', 'Plum', 'Green'],
+        suspects: suspects(),
         weapons: ['Candlestick', 'Dagger', 'Lead Pipe', 'Revolver', 'Rope', 'Wrench'],
         rooms: [
             'Ballroom',
@@ -19,7 +20,7 @@ const SETS = {
         ],
     },
     'Murder Express': {
-        suspects: ['Scarlett', 'Peacock', 'Orchid', 'Green', 'Mustard', 'Plum'],
+        suspects: suspects(),
         weapons: ['Lamp', 'Knife', 'Coal Shovel', 'Glass', 'Velvet Rope', 'Spanner'],
         rooms: [
             'Signal Box',
@@ -34,7 +35,7 @@ const SETS = {
         ],
     },
     'Tropical Mystery': {
-        suspects: ['Mustard', 'White', 'Brunette', 'Plum', 'Peach', 'Scarlett'],
+        suspects: suspects(),
         weapons: ['Harpoon', 'Diving Knife', 'Oxygen Tank', 'Flare Gun', 'Spyglass', 'Oar'],
         rooms: [
             'Helicopter Pad',
@@ -49,7 +50,7 @@ const SETS = {
         ],
     },
     Hollywood: {
-        suspects: ['Mustard', 'White', 'Moriarty', 'Green', 'Peach', 'Rose'],
+        suspects: suspects(),
         weapons: ['Award', 'Dagger', 'Lead Pipe', 'Pistol', 'Velvet Rope', 'Wrench'],
         rooms: [
             'Roman Set',

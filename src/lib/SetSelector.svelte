@@ -1,46 +1,74 @@
 <script lang="ts">
     import { Panel, Header, Content } from '@smui-extra/accordion';
     import Button, { Label, Icon } from '@smui/button';
+    import IconButton from '@smui/icon-button';
     import Select, { Option } from '@smui/select';
+    import Tooltip, { Wrapper } from '@smui/tooltip';
 
     import SetManager from './SetManager.svelte';
 
     import SETS from '../sets';
-    import { customSets, getSet, set } from '../stores';
+    import { set, sets } from '../stores';
 
     let setName = $set[0];
-    $: $set = [setName, getSet(setName)];
+    $: $set = [setName, $sets[setName]];
 
     let creatorOpen = false;
-    let removerOpen = false;
+    let updating: string | null = null;
+
+    function deleteSet() {
+        delete $sets[setName];
+        setName = Object.keys($sets)[0];
+        $set = [setName, $sets[setName]];
+        $sets = $sets;
+    }
+
+    function restore() {
+        for (const builtin of Object.keys(SETS) as Array<keyof typeof SETS>) {
+            $sets[builtin] = structuredClone(SETS[builtin]);
+        }
+
+        $sets = $sets;
+        $set = [$set[0], $sets[$set[0]]];
+    }
 </script>
 
-<SetManager bind:creatorOpen bind:removerOpen />
+<SetManager bind:creatorOpen bind:updating />
 <Panel>
     <Header>Set Selector</Header>
     <Content>
         <span>The version of the game being used.</span>
         <br />
         <Select bind:value={setName}>
-            <!-- Builtin sets -->
-            {#each Object.keys(SETS) as name}
-                <Option value={name}>{name}</Option>
-            {/each}
-            <!-- Custom sets -->
-            {#each Object.keys($customSets) as name}
+            {#each Object.keys($sets) as name}
                 <Option value={name}>{name}</Option>
             {/each}
         </Select>
+        <IconButton
+            class="material-icons"
+            on:click={() => {
+                updating = setName;
+                creatorOpen = true;
+            }}>edit</IconButton
+        >
+        <IconButton class="material-icons" on:click={deleteSet}>delete</IconButton>
         <br />
 
-        <Button on:click={() => (creatorOpen = true)}>
+        <Button
+            on:click={() => {
+                updating = null;
+                creatorOpen = true;
+            }}
+        >
             <Label>Create New Set</Label>
             <Icon class="material-icons">add</Icon>
         </Button>
-
-        <Button on:click={() => (removerOpen = true)}>
-            <Label>Select Set to Remove</Label>
-            <Icon class="material-icons">delete</Icon>
-        </Button>
+        <Wrapper>
+            <Button on:click={restore}>
+                <Label>Reload Builtin Sets</Label>
+                <Icon class="material-icons">restart_alt</Icon>
+            </Button>
+            <Tooltip>Restore the builtin sets to their default values.</Tooltip>
+        </Wrapper>
     </Content>
 </Panel>
