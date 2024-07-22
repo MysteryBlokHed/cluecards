@@ -13,22 +13,23 @@
     $: $set = [setName, getSet(setName)];
 
     let creatorOpen = false;
-    let removerOpen = false;
     let updating: string | null = null;
+
+    function deleteSet() {
+        delete $customSets[setName];
+        setName = Object.keys($customSets)[0];
+        $set = [setName, getSet(setName)];
+        $customSets = $customSets;
+    }
 </script>
 
-<SetManager bind:creatorOpen bind:removerOpen bind:updating />
+<SetManager bind:creatorOpen bind:updating />
 <Panel>
     <Header>Set Selector</Header>
     <Content>
         <span>The version of the game being used.</span>
         <br />
         <Select bind:value={setName}>
-            <!-- Builtin sets -->
-            <!-- {#each Object.keys(SETS) as name}
-                <Option value={name}>{name}</Option>
-            {/each} -->
-            <!-- Custom sets -->
             {#each Object.keys($customSets) as name}
                 <Option value={name}>{name}</Option>
             {/each}
@@ -40,7 +41,7 @@
                 creatorOpen = true;
             }}>edit</IconButton
         >
-        <IconButton class="material-icons" on:click={() => (removerOpen = true)}>delete</IconButton>
+        <IconButton class="material-icons" on:click={deleteSet}>delete</IconButton>
         <br />
 
         <Button

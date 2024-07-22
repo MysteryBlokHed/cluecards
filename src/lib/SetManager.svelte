@@ -11,7 +11,6 @@
     import type { GameSet } from '../types';
 
     export let creatorOpen = false;
-    export let removerOpen = false;
     export let updating: string | null = null;
     let setName: string = '';
     let set: GameSet;
@@ -170,26 +169,5 @@
             <Label>Save</Label>
             <Icon class="material-icons">save</Icon>
         </Button>
-    </Actions>
-</Dialog>
-
-<!-- Set Remover Dialog -->
-<Dialog bind:open={removerOpen} aria-labelledby="remover-title" aria-describedby="remover-content">
-    <Title id="remover-title">Set Remover</Title>
-    <Content>
-        <List>
-            {#each Object.keys($customSets) as name}
-                <Item
-                    on:click={() => {
-                        delete $customSets[name];
-                        $customSets = $customSets;
-                        removerOpen = false;
-                    }}>{name}</Item
-                >
-            {/each}
-        </List>
-    </Content>
-    <Actions>
-        <Button><Label>Cancel</Label></Button>
     </Actions>
 </Dialog>
