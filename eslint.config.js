@@ -28,6 +28,6 @@ export default [
         },
     },
     {
-        ignores: ['.svelte-kit/', 'dist/', 'smui/'],
+        ignores: ['.svelte-kit/', 'dist/', 'smui/', 'vite.config.*.timestamp*'],
     },
 ];

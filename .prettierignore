@@ -2,3 +2,4 @@ node_modules/
 dist/
 smui/
 pnpm-lock.yaml
+vite.config.*.timestamp*
