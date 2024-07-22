@@ -64,6 +64,21 @@ const SETS = {
             'Prop Room',
         ],
     },
+    'The Black Adder Resort': {
+        suspects: suspects(),
+        weapons: ['Fishing Line', 'Flare Gun', 'Hammer', 'Hatchet', 'Knife', 'Poison'],
+        rooms: [
+            'Hidden Cove',
+            'Botanical Spa',
+            'Palm Lounge',
+            'Concierge Station',
+            'Lifeguard Post',
+            'Royal Villa',
+            'Infinity Pool',
+            'Utility Room',
+            'Observation Deck',
+        ],
+    },
 } as const satisfies Record<string, GameSet>;
 
 export default SETS;

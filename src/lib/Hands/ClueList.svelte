@@ -32,7 +32,7 @@
                     {/if}
                 </Cell>
                 {#each $playerHands as hand}
-                    <Cell>
+                    <Cell style="text-align: center;">
                         {#if hand.has.has(packed)}
                             <span class="green">&check;</span>
                         {:else if hand.missing.has(packed)}
