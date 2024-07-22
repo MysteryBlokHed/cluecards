@@ -11,8 +11,6 @@
     let player: number = 0;
     let cards: Array<[type?: CardType, card?: number]> = [];
 
-    $: console.log(cards);
-
     function saveCards() {
         for (const card of cards) {
             $startingKnowns.push({

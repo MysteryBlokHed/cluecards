@@ -21,7 +21,6 @@
         if (newCount > 0)
             console.log('Note: Updated suggestions list is shorter. Data will be lost');
 
-        console.log('App about to run inferSingle for reactivity reasons');
         const [, inferSuggestions, newHands, newInnocents] = inferSingle(
             $suggestions,
             $set[1],

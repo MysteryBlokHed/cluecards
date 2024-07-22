@@ -65,14 +65,10 @@
         const responders: number[] = new Array($players.length);
         for (let i = 0; i < $players.length; i++) responders[i] = i;
 
-        console.log('Prerotate:', structuredClone(responders));
-
         // Rotate array so that the suggestor is listed last
         for (let i = 0; i < (player ?? 0) + 1; i++) {
             responders.push(responders.shift()!);
         }
-
-        console.log('Rotated:', structuredClone(responders));
 
         // Remove suggestor
         responders.pop();

@@ -170,7 +170,6 @@ export function inferSingle(
     let newSuggestions = structuredClone(suggestions) as Suggestion[];
 
     if (!hands || !innocents) {
-        console.log('Creating hands');
         [hands, innocents] = createHands(suggestions, knowns, players, set);
     }
 
@@ -232,22 +231,15 @@ export function inferSingle(
 
     for (const [i, suggestion] of suggestions.entries()) {
         if (!suggestion.responses.length) {
-            console.log('Skipping suggestion', i, 'of', suggestions.length - 1);
             continue;
         }
-
-        console.group('Suggestion', i, 'of', suggestions.length - 1);
 
         const packedSuggestions = suggestion.cards.map((card, type) => packCard(type, card));
 
         for (const [j, response] of suggestion.responses.entries()) {
-            console.group('Response', j, 'of', suggestion.responses.length - 1);
-
             // Ensure that any cards we know the type of are already in the known list
             if (response.cardType >= 0) {
-                console.log('Found exact card');
                 if (!knownsInclude(response.cardType, response.card, true)) {
-                    console.log('Card was not in known list--adding to newKnowns');
                     newKnowns.push({
                         ...response,
                         type: 'innocent',
@@ -270,7 +262,6 @@ export function inferSingle(
 
             // If two cards are missing from this player's hand, then we know for ceratin what this card is
             if (missingCards.length === 2) {
-                console.log('Length checks out--amending suggestion');
                 // Figure out which card type must have been shown
                 const shownType = ([0, 1, 2] as const).filter(
                     type => !missingCards.some(card => card[0] === type),
@@ -294,8 +285,6 @@ export function inferSingle(
                     continue;
                 }
 
-                console.log("We don't know about this yet--updating knowns");
-
                 // Update knowns
                 newKnowns.push({
                     type: 'innocent',
@@ -304,9 +293,6 @@ export function inferSingle(
                     player: response.player,
                     source: RevealMethod.InferSuggestion,
                 });
-
-                console.log('Suggestions modified and newKnowns updated');
-                console.groupEnd();
             }
         }
 
@@ -367,8 +353,6 @@ export function inferSingle(
 
     // If new inferences were made, then re-run this function with the new updates before continuing
     if (newKnowns.length) {
-        console.log('This run produced changes--recursing...');
-
         const [recursiveKnowns, recursiveSuggestions] = inferSingle(
             newSuggestions,
             set,
@@ -386,10 +370,7 @@ export function inferSingle(
             set,
         );
 
-        console.log('Recrusive call finished, new hands created');
-
         if (!handsEqual(hands, newHands)) {
-            console.log('Hands are not equal--recursing again...');
             const [newestKnowns, newestSuggestions, newestHands, newestInnocents] = inferSingle(
                 recursiveSuggestions,
                 set,
@@ -398,7 +379,6 @@ export function inferSingle(
                 newHands,
                 newInnocents,
             );
-            console.log('Recursing done. Applying new knowns and suggestions');
 
             recursiveKnowns.push(...newestKnowns);
             newSuggestions = newestSuggestions;
@@ -411,7 +391,5 @@ export function inferSingle(
     }
 
     // Otherwise, return the empty lists
-    console.log('Nothing happened this run. Returning parameters as passed');
-    console.groupEnd();
     return [newKnowns, newSuggestions, structuredClone(hands) as PlayerHand[], innocents];
 }

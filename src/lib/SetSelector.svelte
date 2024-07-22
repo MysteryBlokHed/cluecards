@@ -13,7 +13,6 @@
 
     let creatorOpen = false;
     let removerOpen = false;
-    $: console.log(creatorOpen);
 </script>
 
 <SetManager bind:creatorOpen bind:removerOpen />
