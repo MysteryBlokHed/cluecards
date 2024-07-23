@@ -49,7 +49,7 @@
                 $players = [...$players, ''];
                 $playerHands = [
                     ...$playerHands,
-                    { has: new Set(), missing: new Set(), maybe: new Set() },
+                    { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} },
                 ];
             }}
         >
