@@ -73,11 +73,11 @@ export function createHands(
     }
 
     // Handle suggestions
-    for (const suggestion of suggestions) {
+    for (const [i, suggestion] of suggestions.entries()) {
         // Find (packed) cards used for suggestion
         const suggestionCards = packSuggestions(suggestion.cards);
 
-        for (const [i, response] of suggestion.responses.entries()) {
+        for (const response of suggestion.responses) {
             switch (response.cardType) {
                 // A player specifically _did not_ show a card
                 case CardType.Nothing:
