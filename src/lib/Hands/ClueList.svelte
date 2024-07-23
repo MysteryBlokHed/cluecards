@@ -40,13 +40,18 @@
                 </Cell>
                 {#each $playerHands as hand, i}
                     <Cell style="text-align: center;">
-                        {#if hand.has.has(packed)}
+                        {@const has = hand.has.has(packed)}
+                        {@const missing = hand.missing.has(packed)}
+                        {@const maybe = hand.maybe.has(packed)}
+                        {#if has}
                             <span class="green">&check;</span>
-                        {:else if hand.missing.has(packed)}
+                        {:else if missing}
                             <span class="red">&cross;</span>
-                        {:else if hand.maybe.has(packed)}
-                            ?
-                            <!-- Subscript for maybe groups -->
+                        {:else if maybe}
+                            <span>?</span>
+                        {/if}
+                        <!-- Subscript for potentially-shown groups -->
+                        {#if has || maybe}
                             {#each sortedMaybeGroups[i] as maybe, j}
                                 {#if maybe[1].has(packed)}
                                     <sub style="font-size: 0.625rem;">{j + 1}</sub>
