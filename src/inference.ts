@@ -138,37 +138,6 @@ export function createHands(
         toRemove.forEach(card => hand.maybe.delete(card));
     }
 
-    // Update maybeGroups
-    for (const hand of hands) {
-        const emptied: string[] = [];
-        for (const [key, group] of Object.entries(hand.maybeGroups)) {
-            // Remove any cards from maybeGroups that are no longer part of the maybe set
-            for (const card of group) {
-                if (!hand.maybe.has(card)) group.delete(card);
-            }
-
-            // If the group is empty, mark it for deletion
-            if (group.size === 0) emptied.push(key);
-        }
-
-        emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
-    }
-
-    // Act on maybeGroups
-    for (const hand of hands) {
-        const emptied: string[] = [];
-        for (const [key, group] of Object.entries(hand.maybeGroups)) {
-            // If there is one "maybe" left from a group, the player must have it
-            if (group.size === 1) {
-                hand.has.add(group.values().next().value);
-                emptied.push(key);
-            }
-        }
-
-        // Delete maybeGroups that were used
-        emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
-    }
-
     // Recurse if the hands changed
     if (!handsEqual(hands, lastHands)) {
         [hands] = createHands(suggestions, knowns, players, set, firstIsSelf, hands);
