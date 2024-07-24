@@ -39,8 +39,8 @@
             {:else}
                 <!-- Show range -->
                 {Math.floor(cardsFrac)}&ndash;{Math.ceil(cardsFrac)}
-                <!-- Unrounded number -->
-                (Avg. {cardsFrac})
+                <!-- Less-rounded number -->
+                (Avg. {cardsFrac.toFixed(2)})
             {/if}
         </span>
 

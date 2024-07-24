@@ -1,7 +1,7 @@
 import { CardType, type GameSet } from './types';
 
 export function cardsPerHandFrac(set: GameSet, players: number) {
-    return (set.suspects.length + set.weapons.length + set.rooms.length) / players;
+    return (set.suspects.length + set.weapons.length + set.rooms.length - 3) / players;
 }
 
 export function cardsPerHand(set: GameSet, players: number) {
