@@ -79,6 +79,36 @@ const SETS = {
             'Observation Deck',
         ],
     },
+    'Wild West': {
+        suspects: suspects(),
+        weapons: ['Horseshoe', 'Knife', 'Gold Nugget', 'Six Shooter', 'Whip', 'Pickaxe'],
+        rooms: [
+            'Graveyard',
+            'Jail',
+            "Sheriff's Office",
+            'Bank',
+            'Main Street',
+            'Saloon',
+            "Blacksmith's",
+            'General Store',
+            'Courthouse',
+        ],
+    },
+    'Snowy Peaks': {
+        suspects: suspects(),
+        weapons: ['Poker', 'Icicle', 'Ski', 'Ski Pole', 'Rope', 'Ice Axe'],
+        rooms: [
+            'Hot Tub Room',
+            'Sauna',
+            'Lounge',
+            'Ice Room',
+            'Lift Station',
+            'Observatory',
+            'Boot Room',
+            'Bar',
+            'Bedroom',
+        ],
+    },
 } as const satisfies Record<string, GameSet>;
 
 export default SETS;

@@ -17,9 +17,6 @@
     $: if (updating != null) {
         setName = updating;
         set = structuredClone(get(sets)[setName]);
-    } else {
-        resetSet();
-        setName = '';
     }
 
     let setIsValid = false;
@@ -38,15 +35,12 @@
         ) {
             break $;
         }
-        // Ensure values are unique
+        // Ensure values are unique across all categories
         const suspectSet = new Set(set.suspects.map(val => val.trim()));
         const weaponSet = new Set(set.weapons.map(val => val.trim()));
         const roomSet = new Set(set.rooms.map(val => val.trim()));
-        if (
-            suspectSet.size !== set.suspects.length ||
-            weaponSet.size !== set.weapons.length ||
-            roomSet.size !== set.rooms.length
-        ) {
+        const totalSet = suspectSet.union(weaponSet).union(roomSet);
+        if (totalSet.size !== set.suspects.length + set.weapons.length + set.rooms.length) {
             break $;
         }
 
