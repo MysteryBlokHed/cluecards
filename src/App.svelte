@@ -9,7 +9,15 @@
     import SetSelector from './lib/SetSelector.svelte';
     import Suggestions from './lib/Suggestions.svelte';
 
-    import { startingKnowns, set, suggestions, players, playerHands, innocents } from './stores';
+    import {
+        startingKnowns,
+        set,
+        suggestions,
+        players,
+        playerHands,
+        playerCardCounts,
+        innocents,
+    } from './stores';
     import { infer } from './inference';
     import type { Suggestion } from './types';
 
@@ -25,6 +33,7 @@
             $suggestions,
             $set[1],
             $players.length,
+            $playerCardCounts,
             $startingKnowns,
         );
         amendedSuggestions = inferSuggestions;

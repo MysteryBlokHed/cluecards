@@ -4,32 +4,56 @@
     import IconButton from '@smui/icon-button';
     import Textfield from '@smui/textfield';
 
-    import { cardsPerHandFrac } from '../cards';
-    import { players, playerHands, set } from '../stores';
+    import { cardsPerHand, cardsPerHandFrac } from '../cards';
+    import { players, playerHands, playerCardCounts, set } from '../stores';
 
     let cards: number;
     let cardsFrac: number;
+    let cardsInSet: number;
 
     $: cardsFrac = cardsPerHandFrac($set[1], $players.length);
     $: cards = Math.ceil(cardsFrac);
+    $: cardsInSet = cardsPerHand($set[1], 1);
+
+    let countsValid: boolean;
+    $: countsValid = $playerCardCounts.reduce((sum, curr) => sum + curr) === cardsInSet;
+
+    function defaultCardCounts(): number[] {
+        const playerCount = $players.length;
+        const cardCounts = new Array(playerCount).fill(0);
+        for (let i = 0; i < cardsInSet; i++) {
+            cardCounts[i % playerCount]++;
+        }
+        return cardCounts;
+    }
 </script>
 
 <Panel>
     <Header>Players</Header>
     <Content>
         <span style="font-weight: bold;">
-            Max Cards Per Hand:
-            <!-- Rounded -->
-            {cards}
-            <!-- Unrounded -->
-            {#if cards !== cardsFrac}
-                ({cardsFrac})
+            Cards Per Hand:
+            {#if cards === cardsFrac}
+                <!-- Show exact -->
+                {cards}
+            {:else}
+                <!-- Show range -->
+                {Math.floor(cardsFrac)}&ndash;{Math.ceil(cardsFrac)}
+                <!-- Unrounded number -->
+                (Avg. {cardsFrac})
             {/if}
         </span>
 
         {#each $players as player, i}
             <div>
                 <Textfield bind:value={player} label={i === 0 ? 'Your Name' : 'Player Name'} />
+                <Textfield
+                    type="number"
+                    bind:value={$playerCardCounts[i]}
+                    label="Hand Size"
+                    style="width: 4rem;"
+                    invalid={!countsValid}
+                />
                 <IconButton
                     class="material-icons"
                     disabled={$players.length === 1}
@@ -39,6 +63,7 @@
                         $playerHands.splice(i, 1);
                         $players = $players;
                         $playerHands = $playerHands;
+                        $playerCardCounts = defaultCardCounts();
                     }}>delete</IconButton
                 >
             </div>
@@ -51,6 +76,7 @@
                     ...$playerHands,
                     { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} },
                 ];
+                $playerCardCounts = defaultCardCounts();
             }}
         >
             <Label>Add</Label>

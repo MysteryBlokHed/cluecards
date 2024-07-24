@@ -2,7 +2,8 @@
     import { Panel, Header, Content } from '@smui-extra/accordion';
     import Button, { Label, Icon } from '@smui/button';
 
-    import { players, suggestions, startingKnowns } from '../stores';
+    import { cardsPerHand } from '../cards';
+    import { players, suggestions, startingKnowns, playerCardCounts, set } from '../stores';
 
     let open: boolean;
 
@@ -10,6 +11,7 @@
         // Note: $playerHands is updated automatically thru App.svelte and does not need to be manually reset
         sessionStorage.clear();
         $players = [''];
+        $playerCardCounts = [cardsPerHand($set[1], 1)];
         $suggestions = [];
         $startingKnowns = [];
         open = false;

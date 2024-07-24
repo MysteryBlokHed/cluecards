@@ -1,4 +1,4 @@
-import { packSet, packCard, unpackCard, cardsPerHandFrac, packSuggestions } from './cards';
+import { packSet, packCard, unpackCard, packSuggestions } from './cards';
 import { CardType, RevealMethod } from './types';
 import type { GameSet, Known, PlayerHand, Suggestion } from './types';
 
@@ -41,6 +41,7 @@ export function createHands(
     suggestions: readonly Suggestion[],
     knowns: readonly Known[],
     players: number,
+    playerCardCounts: readonly number[],
     set: GameSet,
     firstIsSelf = true,
     hands?: PlayerHand[],
@@ -48,7 +49,6 @@ export function createHands(
     hands ||= emptyHands(players);
     const lastHands = structuredClone(hands);
 
-    const maxCards = cardsPerHandFrac(set, players);
     const packedSet = packSet(set);
     const totalCards = packedSet.length;
 
@@ -100,13 +100,13 @@ export function createHands(
     }
 
     // Actions based on card count
-    for (const hand of hands) {
-        if (hand.has.size >= Math.ceil(maxCards)) {
+    for (const [i, hand] of hands.entries()) {
+        if (hand.has.size >= playerCardCounts[i]) {
             // If a player has all the cards allowed in their hand, check everything else off
             for (const card of packedSet) {
                 if (!hand.has.has(card)) hand.missing.add(card);
             }
-        } else if (hand.missing.size >= totalCards - Math.floor(maxCards)) {
+        } else if (hand.missing.size >= totalCards - playerCardCounts[i]) {
             // If a player has every card crossed off except for the # of cards in their hand, they must have those cards
             for (const card of packedSet) {
                 if (!hand.missing.has(card)) hand.has.add(card);
@@ -140,7 +140,15 @@ export function createHands(
 
     // Recurse if the hands changed
     if (!handsEqual(hands, lastHands)) {
-        [hands] = createHands(suggestions, knowns, players, set, firstIsSelf, hands);
+        [hands] = createHands(
+            suggestions,
+            knowns,
+            players,
+            playerCardCounts,
+            set,
+            firstIsSelf,
+            hands,
+        );
     }
 
     /** All innocent cards, derived from {@link knowns}. */
@@ -174,6 +182,7 @@ export function infer(
     suggestions: readonly Suggestion[],
     set: GameSet,
     players: number,
+    playerCardCounts: readonly number[],
     knowns: readonly Known[] = [],
     hands?: readonly PlayerHand[],
     innocents?: Set<number>,
@@ -183,7 +192,7 @@ export function infer(
     let newSuggestions = structuredClone(suggestions) as Suggestion[];
 
     if (!hands || !innocents) {
-        [hands, innocents] = createHands(suggestions, knowns, players, set);
+        [hands, innocents] = createHands(suggestions, knowns, players, playerCardCounts, set);
     }
 
     const knownsInclude = (type: CardType, card: number, ignoreNegativePlayer = false) =>
@@ -365,6 +374,7 @@ export function infer(
             newSuggestions,
             set,
             players,
+            playerCardCounts,
             [...knowns, ...newKnowns],
             hands,
             innocents,
@@ -375,6 +385,7 @@ export function infer(
             recursiveSuggestions,
             [...knowns, ...newKnowns, ...recursiveKnowns],
             players,
+            playerCardCounts,
             set,
         );
 
@@ -383,6 +394,7 @@ export function infer(
                 recursiveSuggestions,
                 set,
                 players,
+                playerCardCounts,
                 [...knowns, ...newKnowns, ...recursiveKnowns],
                 newHands,
                 newInnocents,

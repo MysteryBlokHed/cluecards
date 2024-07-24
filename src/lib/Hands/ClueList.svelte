@@ -12,7 +12,6 @@
         .map(hand => hand.maybeGroups)
         // Sort by key
         .map(group => Object.entries(group).sort(([a], [b]) => parseInt(a) - parseInt(b)));
-    $: console.log(sortedMaybeGroups);
 </script>
 
 <DataTable table$aria-label="{cardTypeToString(type)} clue list">
