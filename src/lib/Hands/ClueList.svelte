@@ -3,7 +3,7 @@
     import { CardType } from '../../types';
     import { cardTypeToKey, cardTypeToString, packCard } from '../../cards';
 
-    import { players, playerHands, innocents, set } from '../../stores';
+    import { players, playerHands, playerCardCounts, innocents, set } from '../../stores';
 
     export let type: CardType;
     let sortedMaybeGroups: Array<Array<[string, Set<number>]>>;
@@ -18,8 +18,16 @@
     <Head>
         <Row>
             <Cell>{cardTypeToString(type)}</Cell>
-            {#each $players as player}
-                <Cell>{player}</Cell>
+            {#each $players as player, i}
+                <Cell style="text-align: center;">
+                    <!-- Name -->
+                    {player}
+                    {#if type === CardType.Suspect}
+                        <br />
+                        <!-- # of known cards -->
+                        ({$playerHands[i].has.size}/{$playerCardCounts[i]})
+                    {/if}
+                </Cell>
             {/each}
         </Row>
     </Head>
