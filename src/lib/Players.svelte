@@ -21,6 +21,24 @@
     let countsValid: boolean;
     $: countsValid = $playerCardCounts.reduce((sum, curr) => sum + curr) === cardsInSet;
 
+    function addPlayer() {
+        $players = [...$players, ''];
+        $playerHands = [
+            ...$playerHands,
+            { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} },
+        ];
+        $playerCardCounts = defaultCardCounts();
+    }
+
+    function removePlayer(index: number) {
+        if ($players.length === 1) return;
+        $players.splice(index, 1);
+        $playerHands.splice(index, 1);
+        $players = $players;
+        $playerHands = $playerHands;
+        $playerCardCounts = defaultCardCounts();
+    }
+
     function defaultCardCounts(): number[] {
         const playerCount = $players.length;
         const cardCounts = new Array(playerCount).fill(0);
@@ -60,29 +78,12 @@
                 <IconButton
                     class="material-icons"
                     disabled={uneditable || $players.length === 1}
-                    on:click={() => {
-                        if ($players.length === 1) return;
-                        $players.splice(i, 1);
-                        $playerHands.splice(i, 1);
-                        $players = $players;
-                        $playerHands = $playerHands;
-                        $playerCardCounts = defaultCardCounts();
-                    }}>delete</IconButton
+                    on:click={() => removePlayer(i)}>delete</IconButton
                 >
             </div>
         {/each}
 
-        <Button
-            disabled={uneditable}
-            on:click={() => {
-                $players = [...$players, ''];
-                $playerHands = [
-                    ...$playerHands,
-                    { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} },
-                ];
-                $playerCardCounts = defaultCardCounts();
-            }}
-        >
+        <Button disabled={uneditable} on:click={addPlayer}>
             <Label>Add</Label>
             <Icon class="material-icons">add</Icon>
         </Button>
