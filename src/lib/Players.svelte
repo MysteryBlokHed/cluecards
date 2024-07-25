@@ -5,7 +5,10 @@
     import Textfield from '@smui/textfield';
 
     import { cardsPerHand, cardsPerHandFrac } from '../cards';
-    import { players, playerHands, playerCardCounts, set } from '../stores';
+    import { players, playerHands, playerCardCounts, set, suggestions } from '../stores';
+
+    let uneditable: boolean;
+    $: uneditable = !!$suggestions.length;
 
     let cards: number;
     let cardsFrac: number;
@@ -56,7 +59,7 @@
                 />
                 <IconButton
                     class="material-icons"
-                    disabled={$players.length === 1}
+                    disabled={uneditable || $players.length === 1}
                     on:click={() => {
                         if ($players.length === 1) return;
                         $players.splice(i, 1);
@@ -70,6 +73,7 @@
         {/each}
 
         <Button
+            disabled={uneditable}
             on:click={() => {
                 $players = [...$players, ''];
                 $playerHands = [
