@@ -173,12 +173,7 @@
         shows card
         <Select bind:value={response.packed} label="Card" style="width: 150px;">
             <!-- Unknown card -->
-            <Wrapper>
-                <Option value={-1}>Unknown</Option>
-                <Tooltip xPos="end" yPos="above">
-                    The player showed a card that is not known to you.
-                </Tooltip>
-            </Wrapper>
+            <Option value={-1}>Unknown</Option>
             <!-- Suggested suspect card -->
             {#if suspect != null && !$playerHands[response.player].missing.has(suspectPacked)}
                 <Option value={suspectPacked}>
@@ -198,13 +193,7 @@
                 </Option>
             {/if}
             <!-- Nothing was shown -->
-            <Wrapper>
-                <Option value={-2}>None</Option>
-                <Tooltip xPos="end" yPos="below">
-                    The player had the opportunity to show a card, and showed nothing (none of the
-                    cards are in their hand).
-                </Tooltip>
-            </Wrapper>
+            <Option value={-2}>None</Option>
         </Select>
         <IconButton
             class="material-icons"
