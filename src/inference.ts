@@ -56,36 +56,21 @@ function guiltyFromHands(hands: readonly PlayerHand[]) {
 }
 
 /**
- * Create player hand info based on suggestions and other inference.
- * Related to {@link infer} and should likely only be called from there.
- * @param suggestions The suggestions to use
- * @param knowns Any knowns to take into consideration (that are _not_ derived from suggestions)
- * @param hands The hands to update
- * @param firstIsSelf Whether the player at index 0 is the user
- * @param hands Last list of hands. This value is used for recursion and is modified.
- * It should not typically be passed by the caller
+ * Internal recursive function for {@link createHands}.
  */
-export function createHands(
+function _createHands(
     suggestions: readonly Suggestion[],
     knowns: readonly Known[],
     players: number,
     playerCardCounts: readonly number[],
     set: GameSet,
-    firstIsSelf = true,
-    hands?: PlayerHand[],
-): [hands: PlayerHand[], innocents: Set<number>] {
-    hands ||= emptyHands(players);
+    firstIsSelf: boolean,
+    hands: PlayerHand[],
+    packedSet: readonly number[],
+    guiltyIsKnown: [suspect: boolean, weapon: boolean, room: boolean],
+): PlayerHand[] {
     const lastHands = structuredClone(hands);
-
-    const packedSet = packSet(set);
     const totalCards = packedSet.length;
-
-    const guiltyKnowns = knowns.filter(known => known.type === 'guilty');
-    const guiltySuspect = guiltyKnowns.find(known => known.cardType === CardType.Suspect);
-    const guiltyWeapon = guiltyKnowns.find(known => known.cardType === CardType.Weapon);
-    const guiltyRoom = guiltyKnowns.find(known => known.cardType === CardType.Room);
-
-    const guiltyIsKnown = [!!guiltySuspect, !!guiltyWeapon, !!guiltyRoom];
 
     // Handle custom knowns
     for (const known of knowns) {
@@ -189,7 +174,7 @@ export function createHands(
             if (missingPlayers.length === hands.length - 1) {
                 // Ignore if the guilty card is not known for this category
                 const [type] = unpackCard(parseInt(card));
-                if (!guiltyIsKnown[type]) continue;
+                if (!guiltyIsKnown[type as 0 | 1 | 2]) continue;
 
                 // Find the player that does not have the card
                 const player = Array.from(new Array(hands.length).keys()).find(
@@ -216,7 +201,7 @@ export function createHands(
 
     // Recurse if the hands changed
     if (!handsEqual(hands, lastHands)) {
-        [hands] = createHands(
+        hands = _createHands(
             suggestions,
             knowns,
             players,
@@ -224,8 +209,54 @@ export function createHands(
             set,
             firstIsSelf,
             hands,
+            packedSet,
+            guiltyIsKnown,
         );
     }
+
+    return hands;
+}
+
+/**
+ * Create player hand info based on suggestions and other inference.
+ * Related to {@link infer} and should likely only be called from there.
+ * @param suggestions The suggestions to use
+ * @param knowns Any knowns to take into consideration (that are _not_ derived from suggestions)
+ * @param hands The hands to update
+ * @param firstIsSelf Whether the player at index 0 is the user
+ */
+export function createHands(
+    suggestions: readonly Suggestion[],
+    knowns: readonly Known[],
+    players: number,
+    playerCardCounts: readonly number[],
+    set: GameSet,
+    firstIsSelf = true,
+): [hands: PlayerHand[], innocents: Set<number>] {
+    const packedSet = packSet(set);
+
+    const guiltyKnowns = knowns.filter(known => known.type === 'guilty');
+    const guiltySuspect = guiltyKnowns.find(known => known.cardType === CardType.Suspect);
+    const guiltyWeapon = guiltyKnowns.find(known => known.cardType === CardType.Weapon);
+    const guiltyRoom = guiltyKnowns.find(known => known.cardType === CardType.Room);
+
+    const guiltyIsKnown: [boolean, boolean, boolean] = [
+        !!guiltySuspect,
+        !!guiltyWeapon,
+        !!guiltyRoom,
+    ];
+
+    const hands = _createHands(
+        suggestions,
+        knowns,
+        players,
+        playerCardCounts,
+        set,
+        firstIsSelf,
+        emptyHands(players),
+        packedSet,
+        guiltyIsKnown,
+    );
 
     /** All innocent cards, derived from {@link knowns}. */
     const allKnownInnocents = new Set(
