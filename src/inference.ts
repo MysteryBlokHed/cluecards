@@ -6,15 +6,17 @@ export function handsEqual(hands1: readonly PlayerHand[], hands2: readonly Playe
     // Lists should be of the same length in the first place
     if (hands1.length !== hands2.length) return false;
     for (const [i, hand] of hands1.entries()) {
+        const hand2 = hands2[i];
+
         // Sets should be of same size
-        if (hand.has.size !== hands2[i].has.size) return false;
-        if (hand.missing.size !== hands2[i].missing.size) return false;
-        if (hand.maybe.size !== hands2[i].maybe.size) return false;
+        if (hand.has.size !== hand2.has.size) return false;
+        if (hand.missing.size !== hand2.missing.size) return false;
+        if (hand.maybe.size !== hand2.maybe.size) return false;
 
         // Sets should contain all the same elements (therefore there should be no difference)
-        if (hand.has.symmetricDifference(hands2[i].has).size !== 0) return false;
-        if (hand.missing.symmetricDifference(hands2[i].missing).size !== 0) return false;
-        if (hand.maybe.symmetricDifference(hands2[i].maybe).size !== 0) return false;
+        if (hand.has.symmetricDifference(hand2.has).size !== 0) return false;
+        if (hand.missing.symmetricDifference(hand2.missing).size !== 0) return false;
+        if (hand.maybe.symmetricDifference(hand2.maybe).size !== 0) return false;
     }
 
     return true;
@@ -136,6 +138,19 @@ export function createHands(
 
         // Remove from maybe set
         toRemove.forEach(card => hand.maybe.delete(card));
+    }
+
+    // Update maybeGroups
+    for (const hand of hands) {
+        const emptied: string[] = [];
+        for (const [key, maybeGroup] of Object.entries(hand.maybeGroups)) {
+            // Remove any cards from maybeGroups that are no longer part of the maybe set
+            maybeGroup.difference(hand.maybe).forEach(card => maybeGroup.delete(card));
+            // If the group is empty, mark it for deletion
+            if (maybeGroup.size === 0) emptied.push(key);
+        }
+
+        emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
     }
 
     // Recurse if the hands changed
