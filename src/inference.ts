@@ -31,7 +31,33 @@ export function emptyHands(players: number) {
 }
 
 /**
- * Create player hand info based on suggestions.
+ * Determine guilty cards from hands.
+ * @returns Guilty cards in a format similar to {@link Suggestion} cards.
+ */
+function guiltyFromHands(hands: readonly PlayerHand[]) {
+    // Get cards all players are missing
+    const allMissing = hands
+        .map(hand => hand.missing)
+        .reduce((allMissing, missing) => allMissing.intersection(missing));
+
+    const guilty: [suspect: number | null, weapon: number | null, room: number | null] = [
+        null,
+        null,
+        null,
+    ];
+
+    // Find cards that all players are missing
+    for (const packed of allMissing) {
+        const [type, card] = unpackCard(packed);
+        guilty[type as 0 | 1 | 2] = card;
+    }
+
+    return guilty;
+}
+
+/**
+ * Create player hand info based on suggestions and other inference.
+ * Related to {@link infer} and should likely only be called from there.
  * @param suggestions The suggestions to use
  * @param knowns Any knowns to take into consideration (that are _not_ derived from suggestions)
  * @param hands The hands to update
@@ -53,6 +79,13 @@ export function createHands(
 
     const packedSet = packSet(set);
     const totalCards = packedSet.length;
+
+    const guiltyKnowns = knowns.filter(known => known.type === 'guilty');
+    const guiltySuspect = guiltyKnowns.find(known => known.cardType === CardType.Suspect);
+    const guiltyWeapon = guiltyKnowns.find(known => known.cardType === CardType.Weapon);
+    const guiltyRoom = guiltyKnowns.find(known => known.cardType === CardType.Room);
+
+    const guiltyIsKnown = [!!guiltySuspect, !!guiltyWeapon, !!guiltyRoom];
 
     // Handle custom knowns
     for (const known of knowns) {
@@ -140,6 +173,34 @@ export function createHands(
         toRemove.forEach(card => hand.maybe.delete(card));
     }
 
+    // If all but one player has a card marked missing, and the guilty card for that category is known,
+    // that one player must have the card
+    if (guiltyIsKnown[0] || guiltyIsKnown[1] || guiltyIsKnown[2]) {
+        /** A mapping of packed cards to the players who do _not_ have it */
+        const missingMap: Record<number, number[]> = {};
+        for (const [player, hand] of hands.entries()) {
+            for (const card of hand.missing) {
+                missingMap[card] ||= [];
+                missingMap[card].push(player);
+            }
+        }
+
+        for (const [card, missingPlayers] of Object.entries(missingMap)) {
+            if (missingPlayers.length === hands.length - 1) {
+                // Ignore if the guilty card is not known for this category
+                const [type] = unpackCard(parseInt(card));
+                if (!guiltyIsKnown[type]) continue;
+
+                // Find the player that does not have the card
+                const player = Array.from(new Array(hands.length).keys()).find(
+                    player => !missingPlayers.includes(player),
+                )!;
+                // Mark them as having the card
+                hands[player].has.add(parseInt(card));
+            }
+        }
+    }
+
     // Update maybeGroups
     for (const hand of hands) {
         const emptied: string[] = [];
@@ -210,19 +271,26 @@ export function infer(
         [hands, innocents] = createHands(suggestions, knowns, players, playerCardCounts, set);
     }
 
-    const knownsInclude = (type: CardType, card: number, ignoreNegativePlayer = false) =>
+    const knownsInclude = (
+        type: CardType,
+        card: number,
+        knownsList = knowns,
+        ignoreNegativePlayer = false,
+    ) =>
         ignoreNegativePlayer
-            ? knowns.some(
+            ? knownsList.some(
                   known =>
                       known.cardType === type &&
                       known.card === card &&
                       (known.type === 'innocent' ? known.player > -1 : true),
               )
-            : knowns.some(known => known.cardType === type && known.card === card);
+            : knownsList.some(known => known.cardType === type && known.card === card);
 
     // Figure out guilty knowns, if possible
     {
         const knownInnocent = knowns.filter(known => known.type === 'innocent');
+        const knownGuilty = knowns.filter(known => known.type === 'guilty');
+
         const innocentSuspects = knownInnocent
             .filter(known => known.cardType === CardType.Suspect)
             .map(known => known.card);
@@ -243,25 +311,36 @@ export function infer(
             .map((_, card) => card)
             .filter(card => !innocentRooms.includes(card));
 
-        if (unknownSuspects.length === 1 && !knownsInclude(CardType.Suspect, unknownSuspects[0])) {
+        const guiltyHands = guiltyFromHands(hands);
+
+        const guiltySuspect =
+            unknownSuspects.length === 1 ? unknownSuspects[0] : guiltyHands[CardType.Suspect];
+        const guiltyWeapon =
+            unknownWeapons.length === 1 ? unknownWeapons[0] : guiltyHands[CardType.Weapon];
+        const guiltyRoom = unknownRooms.length === 1 ? unknownRooms[0] : guiltyHands[CardType.Room];
+
+        console.log(guiltySuspect, guiltyWeapon, guiltyRoom);
+
+        if (guiltySuspect != null && !knownsInclude(CardType.Suspect, guiltySuspect, knownGuilty)) {
+            console.log(knowns);
             newKnowns.push({
                 type: 'guilty',
                 cardType: CardType.Suspect,
-                card: unknownSuspects[0],
+                card: guiltySuspect,
             });
         }
-        if (unknownWeapons.length === 1 && !knownsInclude(CardType.Weapon, unknownWeapons[0])) {
+        if (guiltyWeapon != null && !knownsInclude(CardType.Weapon, guiltyWeapon, knownGuilty)) {
             newKnowns.push({
                 type: 'guilty',
                 cardType: CardType.Weapon,
-                card: unknownWeapons[0],
+                card: guiltyWeapon,
             });
         }
-        if (unknownRooms.length === 1 && !knownsInclude(CardType.Room, unknownRooms[0])) {
+        if (guiltyRoom != null && !knownsInclude(CardType.Room, guiltyRoom, knownGuilty)) {
             newKnowns.push({
                 type: 'guilty',
                 cardType: CardType.Room,
-                card: unknownRooms[0],
+                card: guiltyRoom,
             });
         }
     }
@@ -276,7 +355,7 @@ export function infer(
         for (const [j, response] of suggestion.responses.entries()) {
             // Ensure that any cards we know the type of are already in the known list
             if (response.cardType >= 0) {
-                if (!knownsInclude(response.cardType, response.card, true)) {
+                if (!knownsInclude(response.cardType, response.card, knowns, true)) {
                     newKnowns.push({
                         ...response,
                         type: 'innocent',
