@@ -144,8 +144,8 @@ export function createHands(
     for (const hand of hands) {
         const emptied: string[] = [];
         for (const [key, maybeGroup] of Object.entries(hand.maybeGroups)) {
-            // Remove any cards from maybeGroups that are no longer part of the maybe set
-            maybeGroup.difference(hand.maybe).forEach(card => maybeGroup.delete(card));
+            // Remove any cards from maybeGroups that are marked missing
+            maybeGroup.intersection(hand.missing).forEach(card => maybeGroup.delete(card));
             // If the group is empty, mark it for deletion
             if (maybeGroup.size === 0) emptied.push(key);
         }
