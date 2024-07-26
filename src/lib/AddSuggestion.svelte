@@ -5,7 +5,7 @@
     import Tooltip, { Wrapper } from '@smui/tooltip';
     import IconButton from '@smui/icon-button';
 
-    import { players, set, suggestions } from '../stores';
+    import { players, playerHands, set, suggestions } from '../stores';
     import {
         CardType,
         RevealMethod,
@@ -31,6 +31,16 @@
     let weapon: number | null = null;
     let room: number | null = null;
     let responses: WorkingSuggestionRespose[] = [];
+
+    let suspectPacked = -1;
+    let weaponPacked = -1;
+    let roomPacked = -1;
+
+    $: suspectPacked = suspect != null ? packCard(CardType.Suspect, suspect) : -1;
+    $: weaponPacked = weapon != null ? packCard(CardType.Weapon, weapon) : -1;
+    $: roomPacked = room != null ? packCard(CardType.Room, room) : -1;
+
+    $: console.log(suspectPacked, weaponPacked, roomPacked);
 
     function addResponse() {
         // Auto-select either the player after the most recent response, or just the player after the suggestor
@@ -170,20 +180,20 @@
                 </Tooltip>
             </Wrapper>
             <!-- Suggested suspect card -->
-            {#if suspect != null}
-                <Option value={packCard(CardType.Suspect, suspect)}>
+            {#if suspect != null && !$playerHands[response.player].missing.has(suspectPacked)}
+                <Option value={suspectPacked}>
                     {setContents.suspects[suspect]}
                 </Option>
             {/if}
             <!-- Suggested weapon card -->
-            {#if weapon != null}
-                <Option value={packCard(CardType.Weapon, weapon)}>
+            {#if weapon != null && !$playerHands[response.player].missing.has(weaponPacked)}
+                <Option value={weaponPacked}>
                     {setContents.weapons[weapon]}
                 </Option>
             {/if}
             <!-- Suggested room card -->
-            {#if room != null}
-                <Option value={packCard(CardType.Room, room)}>
+            {#if room != null && !$playerHands[response.player].missing.has(roomPacked)}
+                <Option value={roomPacked}>
                     {setContents.rooms[room]}
                 </Option>
             {/if}
