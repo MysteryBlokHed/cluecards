@@ -52,11 +52,9 @@
     }
 </script>
 
-<Paper>
+<Paper style="display: table;">
     <h2>Clues</h2>
     <ClueList type={CardType.Suspect} />
-    <br />
     <ClueList type={CardType.Weapon} />
-    <br />
     <ClueList type={CardType.Room} />
 </Paper>
