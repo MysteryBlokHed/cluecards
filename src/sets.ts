@@ -109,6 +109,21 @@ const SETS = {
             'Bedroom',
         ],
     },
+    'Egyptian Adventure': {
+        suspects: suspects(),
+        weapons: ['Pickaxe', 'Dagger', 'Ankh', 'Sceptre', 'Pistol', 'Khopesh'],
+        rooms: [
+            'Sphinx',
+            'Oasis',
+            'Airstrip',
+            'Boat',
+            'Temple',
+            'Waterfall',
+            'Market',
+            'Tent',
+            'Tomb',
+        ],
+    },
 } as const satisfies Record<string, GameSet>;
 
 export default SETS;
