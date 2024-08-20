@@ -40,8 +40,6 @@
     $: weaponPacked = weapon != null ? packCard(CardType.Weapon, weapon) : -1;
     $: roomPacked = room != null ? packCard(CardType.Room, room) : -1;
 
-    $: console.log(suspectPacked, weaponPacked, roomPacked);
-
     function addResponse() {
         // Auto-select either the player after the most recent response, or just the player after the suggestor
         let responder: number;

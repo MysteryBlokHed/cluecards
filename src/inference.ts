@@ -1,6 +1,6 @@
 import { packSet, packCard, unpackCard, packSuggestions } from './cards';
 import { CardType, RevealMethod } from './types';
-import type { GameSet, Known, PlayerHand, Suggestion } from './types';
+import type { GameSet, Known, KnownInnocent, PlayerHand, Suggestion } from './types';
 
 export function handsEqual(hands1: readonly PlayerHand[], hands2: readonly PlayerHand[]) {
     // Lists should be of the same length in the first place
@@ -20,6 +20,16 @@ export function handsEqual(hands1: readonly PlayerHand[], hands2: readonly Playe
     }
 
     return true;
+}
+
+export function handsHasToString(hands: readonly PlayerHand[]) {
+    return hands
+        .map(hand =>
+            Array.from(hand.has)
+                .sort((a, b) => a - b)
+                .join(','),
+        )
+        .join('|');
 }
 
 export function emptyHands(players: number) {
@@ -146,9 +156,11 @@ function _createHands(
     }
 
     // Make sure that no player has cards appearing in more than one list
-    for (const hand of hands) {
-        if (hand.has.intersection(hand.missing).size !== 0)
+    for (const [i, hand] of hands.entries()) {
+        if (hand.has.intersection(hand.missing).size !== 0) {
+            console.error('Player', i, hand, hand.has.intersection(hand.missing));
             throw new Error('A player is marked as both having and not having a card');
+        }
 
         const hasAndMaybe = hand.has.intersection(hand.maybe);
         const missingAndMaybe = hand.missing.intersection(hand.maybe);
@@ -286,7 +298,7 @@ export function createHands(
  * This should not typically be passed by an outside caller (it is used for recursion)
  */
 export function infer(
-    suggestions: readonly Suggestion[],
+    suggestions: Suggestion[],
     set: GameSet,
     players: number,
     playerCardCounts: readonly number[],
@@ -295,8 +307,6 @@ export function infer(
     innocents?: Set<number>,
 ): [knowns: Known[], amendments: Suggestion[], hands: PlayerHand[], innocents: Set<number>] {
     const newKnowns: Known[] = [];
-    // const newAmendments: ResponseAmendment[] = [];
-    let newSuggestions = structuredClone(suggestions) as Suggestion[];
 
     if (!hands || !innocents) {
         [hands, innocents] = createHands(suggestions, knowns, players, playerCardCounts, set);
@@ -350,10 +360,7 @@ export function infer(
             unknownWeapons.length === 1 ? unknownWeapons[0] : guiltyHands[CardType.Weapon];
         const guiltyRoom = unknownRooms.length === 1 ? unknownRooms[0] : guiltyHands[CardType.Room];
 
-        console.log(guiltySuspect, guiltyWeapon, guiltyRoom);
-
         if (guiltySuspect != null && !knownsInclude(CardType.Suspect, guiltySuspect, knownGuilty)) {
-            console.log(knowns);
             newKnowns.push({
                 type: 'guilty',
                 cardType: CardType.Suspect,
@@ -415,7 +422,7 @@ export function infer(
                 const shownCard = suggestion.cards[shownType];
 
                 // Amend suggestion response
-                newSuggestions[i].responses[j] = {
+                suggestions[i].responses[j] = {
                     ...response,
                     cardType: shownType,
                     card: shownCard,
@@ -495,8 +502,8 @@ export function infer(
 
     // If new inferences were made, then re-run this function with the new updates before continuing
     if (newKnowns.length) {
-        const [recursiveKnowns, recursiveSuggestions] = infer(
-            newSuggestions,
+        const [recursiveKnowns] = infer(
+            suggestions,
             set,
             players,
             playerCardCounts,
@@ -507,7 +514,7 @@ export function infer(
 
         // Try to create hands based on new data
         let [newHands, newInnocents] = createHands(
-            recursiveSuggestions,
+            suggestions,
             [...knowns, ...newKnowns, ...recursiveKnowns],
             players,
             playerCardCounts,
@@ -515,8 +522,8 @@ export function infer(
         );
 
         if (!handsEqual(hands, newHands)) {
-            const [newestKnowns, newestSuggestions, newestHands, newestInnocents] = infer(
-                recursiveSuggestions,
+            const [newestKnowns, , newestHands, newestInnocents] = infer(
+                suggestions,
                 set,
                 players,
                 playerCardCounts,
@@ -526,14 +533,119 @@ export function infer(
             );
 
             recursiveKnowns.push(...newestKnowns);
-            newSuggestions = newestSuggestions;
             newHands = newestHands;
             newInnocents = newestInnocents;
         }
 
-        return [[...newKnowns, ...recursiveKnowns], newSuggestions, newHands, newInnocents];
+        return [[...newKnowns, ...recursiveKnowns], suggestions, newHands, newInnocents];
     }
 
     // Otherwise, return the empty lists
-    return [newKnowns, newSuggestions, structuredClone(hands) as PlayerHand[], innocents];
+    return [newKnowns, suggestions, structuredClone(hands) as PlayerHand[], innocents];
+}
+
+type Triplet = `${number}|${number}|${number}`;
+
+function _probabilities(
+    suggestions: readonly Suggestion[],
+    set: GameSet,
+    hands: readonly PlayerHand[],
+    playerCardCounts: readonly number[],
+    knowns: readonly Known[],
+    packedSet: readonly number[],
+    packOffset: number,
+    seen: Set<string>,
+    limit: number,
+    occurrences: Record<Triplet, number>,
+    startTime: number,
+) {
+    const [suspect, weapon, room] = guiltyFromHands(hands);
+
+    // Return if we know suspects, weapons, and rooms
+    if (suspect != null && weapon != null && room != null) {
+        // Do not count if this particular arrangement of cards has already been seen
+        const asString = handsHasToString(hands);
+        if (seen.has(asString)) return {};
+        seen.add(asString);
+
+        const key = `${suspect}|${weapon}|${room}` as const;
+        occurrences[key] ??= 0;
+        occurrences[key]++;
+        return occurrences;
+    }
+
+    for (let packedIndex = packOffset; packedIndex < packedSet.length; packedIndex++) {
+        const packed = packedSet[packedIndex];
+
+        for (let player = 0; player < hands.length; player++) {
+            // Ignore if this card already has a known state
+            if (hands[player].has.has(packed) || hands[player].missing.has(packed)) continue;
+
+            const [type, card] = unpackCard(packed);
+
+            // Add new known for this card
+            const known: KnownInnocent = {
+                type: 'innocent',
+                cardType: type,
+                card,
+                player,
+                source: RevealMethod.InferSuggestion,
+            };
+
+            // Run inference
+            const [newKnowns, newSuggestions, newHands] = infer(
+                structuredClone(suggestions) as Suggestion[],
+                set,
+                hands.length,
+                playerCardCounts,
+                [...knowns, known],
+            );
+
+            // Since `occurrences` is directly modified, the return value can be ignored
+            _probabilities(
+                newSuggestions,
+                set,
+                newHands,
+                playerCardCounts,
+                [...knowns, known, ...newKnowns],
+                packedSet,
+                packedIndex,
+                seen,
+                limit,
+                occurrences,
+                startTime,
+            );
+
+            if (performance.now() - startTime >= limit) {
+                throw new Error('Run too long, stopping...');
+            }
+        }
+    }
+
+    return occurrences;
+}
+
+export function probabilities(
+    suggestions: readonly Suggestion[],
+    set: GameSet,
+    hands: readonly PlayerHand[],
+    playerCardCounts: readonly number[],
+    knowns: readonly Known[],
+    limit = 10_000,
+) {
+    const packedSet = packSet(set);
+
+    return _probabilities(
+        suggestions,
+        set,
+        hands,
+        playerCardCounts,
+        knowns,
+        packedSet,
+        0,
+        new Set(),
+        limit,
+        {},
+        performance.now(),
+    );
 }

@@ -490,6 +490,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@material/form-field@npm:^14.0.0":
+  version: 14.0.0
+  resolution: "@material/form-field@npm:14.0.0"
+  dependencies:
+    "@material/base": "npm:^14.0.0"
+    "@material/feature-targeting": "npm:^14.0.0"
+    "@material/ripple": "npm:^14.0.0"
+    "@material/rtl": "npm:^14.0.0"
+    "@material/theme": "npm:^14.0.0"
+    "@material/typography": "npm:^14.0.0"
+    tslib: "npm:^2.1.0"
+  checksum: 10c0/65f140197cb8c9e59097e7926cfd07dd6478ca73cbb202ff5382bb0fd440a27b52ceb7ea8c29a77811eb2e6b8e6b3dd714d514e335a70a308eb0edced2bb08f5
+  languageName: node
+  linkType: hard
+
 "@material/icon-button@npm:^14.0.0":
   version: 14.0.0
   resolution: "@material/icon-button@npm:14.0.0"
@@ -684,6 +699,27 @@ __metadata:
     "@material/theme": "npm:^14.0.0"
     tslib: "npm:^2.1.0"
   checksum: 10c0/7f573a343a369998c124b9eda6d741a711794045e1c708c4c63f0a10e3b67be027b96ded6e817d0d74bde749ece9b06ca7d28323dfd17d9fc8ed1f957e72e8a9
+  languageName: node
+  linkType: hard
+
+"@material/switch@npm:^14.0.0":
+  version: 14.0.0
+  resolution: "@material/switch@npm:14.0.0"
+  dependencies:
+    "@material/animation": "npm:^14.0.0"
+    "@material/base": "npm:^14.0.0"
+    "@material/density": "npm:^14.0.0"
+    "@material/dom": "npm:^14.0.0"
+    "@material/elevation": "npm:^14.0.0"
+    "@material/feature-targeting": "npm:^14.0.0"
+    "@material/focus-ring": "npm:^14.0.0"
+    "@material/ripple": "npm:^14.0.0"
+    "@material/rtl": "npm:^14.0.0"
+    "@material/shape": "npm:^14.0.0"
+    "@material/theme": "npm:^14.0.0"
+    "@material/tokens": "npm:^14.0.0"
+    tslib: "npm:^2.1.0"
+  checksum: 10c0/9047b1421ff0a205c5ecf1a41e20f93a600bca6cec3739234092ee4e81c53dd12f0cb886d0a1bd081cb3677d0c75890f15bf201edd9e0de9b9f75ebbfc078198
   languageName: node
   linkType: hard
 
@@ -1049,6 +1085,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@smui/form-field@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@smui/form-field@npm:7.0.0"
+  dependencies:
+    "@material/feature-targeting": "npm:^14.0.0"
+    "@material/form-field": "npm:^14.0.0"
+    "@material/rtl": "npm:^14.0.0"
+    "@smui/common": "npm:^7.0.0"
+    svelte2tsx: "npm:^0.7.8"
+  checksum: 10c0/bdb1a7050871c0f41a32285745ec84b89ad268d06ef7997b66619765ccf9c88fc9f4427752f98650ea881ef7f94bb891c8c0d535b96241048e74edd458f05cb7
+  languageName: node
+  linkType: hard
+
 "@smui/icon-button@npm:^7.0.0":
   version: 7.0.0
   resolution: "@smui/icon-button@npm:7.0.0"
@@ -1204,6 +1253,20 @@ __metadata:
     "@smui/ripple": "npm:^7.0.0"
     svelte2tsx: "npm:^0.7.8"
   checksum: 10c0/0da886ae0acc5f391fc396caefe4da9449183799f77d3c8424002d2068702bb35bfd5e2de20d831c0df4190eb3340f670854716fb5f78440e6333b1163a31fa8
+  languageName: node
+  linkType: hard
+
+"@smui/switch@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@smui/switch@npm:7.0.0"
+  dependencies:
+    "@material/feature-targeting": "npm:^14.0.0"
+    "@material/switch": "npm:^14.0.0"
+    "@material/theme": "npm:^14.0.0"
+    "@smui/common": "npm:^7.0.0"
+    "@smui/ripple": "npm:^7.0.0"
+    svelte2tsx: "npm:^0.7.8"
+  checksum: 10c0/255a603e4174cdd0e1568fac1bef44fea32f175eda19d3682028935587565a6a102cd776f50fe6e503aa19762cb37f11bebf37dae629e3f409cc9ecba0a47252
   languageName: node
   linkType: hard
 
@@ -1696,11 +1759,13 @@ __metadata:
     "@smui/card": "npm:^7.0.0"
     "@smui/data-table": "npm:^7.0.0"
     "@smui/dialog": "npm:^7.0.0"
+    "@smui/form-field": "npm:^7.0.0"
     "@smui/icon-button": "npm:^7.0.0"
     "@smui/layout-grid": "npm:^7.0.0"
     "@smui/list": "npm:^7.0.0"
     "@smui/paper": "npm:^7.0.0"
     "@smui/select": "patch:@smui/select@npm%3A7.0.0#~/.yarn/patches/@smui-select-npm-7.0.0-40cd9ea81d.patch"
+    "@smui/switch": "npm:^7.0.0"
     "@smui/textfield": "npm:^7.0.0"
     "@smui/tooltip": "npm:^7.0.0"
     "@sveltejs/vite-plugin-svelte": "npm:^3.1.1"
