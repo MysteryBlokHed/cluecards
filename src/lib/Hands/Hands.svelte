@@ -110,7 +110,7 @@
 
 <Paper style="display: table;">
     <h2>Clues</h2>
-    <div style="display: flex; align-items: center;">
+    <div style="display: flex; align-items: center; justify-content: center;">
         <Button variant="raised" color="secondary" on:click={calculateOdds}>
             <Label>Calculate Odds</Label>
             <Icon class="material-icons">casino</Icon>
