@@ -19,9 +19,10 @@
         innocents,
     } from './stores';
     import { infer } from './inference';
-    import type { Suggestion } from './types';
+    import type { Known, Suggestion } from './types';
 
     let amendedSuggestions: Suggestion[] = structuredClone($suggestions);
+    let knowns: Known[] = [];
 
     $: {
         // Run inferences
@@ -29,8 +30,8 @@
         if (newCount > 0)
             console.log('Note: Updated suggestions list is shorter. Data will be lost');
 
-        const [, inferSuggestions, newHands, newInnocents] = infer(
-            $suggestions,
+        const [inferKnowns, inferSuggestions, newHands, newInnocents] = infer(
+            structuredClone($suggestions),
             $set[1],
             $players.length,
             $playerCardCounts,
@@ -39,6 +40,7 @@
         amendedSuggestions = inferSuggestions;
         $playerHands = newHands;
         $innocents = newInnocents;
+        knowns = inferKnowns;
     }
 
     function removeSuggestion(index: number) {
@@ -75,7 +77,7 @@
             />
         </div>
         <div class="flex-col">
-            <Hands />
+            <Hands {knowns} {amendedSuggestions} />
         </div>
     </div>
 </main>
