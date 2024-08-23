@@ -389,6 +389,7 @@ export function infer(
         }
 
         const packedSuggestions = suggestion.cards.map((card, type) => packCard(type, card));
+        const packedSuggestionsSet = new Set(packedSuggestions);
 
         for (const [j, response] of suggestion.responses.entries()) {
             // Ensure that any cards we know the type of are already in the known list
@@ -464,27 +465,21 @@ export function infer(
         const respondingPlayers = new Set(unknownResponses.filter(response => response.player))
             .size;
 
-        /**
-         * A set of cards that all responding players are missing,
-         * including cards not involved in the suggestion.
-         */
-        const allCollectiveMissing = unknownResponses
+        /** A set of cards involved in the suggestion that all responding players are missing. */
+        const collectiveMissing = unknownResponses
             // Get players involved
             .map(response => response.player)
             // Get their sets of missing cards
             .map(player => hands[player].missing)
             // Figure out which cards *all* players are missing
-            .reduce((collective, current) => collective.intersection(current));
-
-        /** A set of cards involved in the suggestion that all responding players are missing. */
-        const collectiveMissing = new Set(
-            Array.from(allCollectiveMissing).filter(card => packedSuggestions.includes(card)),
-        );
+            .reduce((collective, current) => collective.intersection(current))
+            // Figure out which of those are involved in the suggestion
+            .intersection(packedSuggestionsSet);
 
         // Make inferences if there are enough missing cards
         if (3 - respondingPlayers === collectiveMissing.size) {
             // Iterate over the suggested cards (except for the one all players did not have)
-            for (const packed of packedSuggestions.filter(card => !collectiveMissing.has(card))) {
+            for (const packed of packedSuggestionsSet.difference(collectiveMissing)) {
                 const [cardType, card] = unpackCard(packed);
 
                 if (!knownsInclude(cardType, card)) {
