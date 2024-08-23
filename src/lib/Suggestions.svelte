@@ -29,10 +29,7 @@
                 // Filter out cards that the responder is explicitly missing
                 .filter(card => !$playerHands[player].missing.has(packCard(...card)))
                 // Convert cards to human-readable strings (in the form "CardType Name")
-                .map(
-                    ([type, card]) =>
-                        `${cardTypeToString(type)} ${setContents[cardTypeToKey(type)][card]}`,
-                )
+                .map(([type, card]) => setContents[cardTypeToKey(type)][card])
         );
     }
 </script>
@@ -95,7 +92,13 @@
                             {#if showExtraPossible && response.cardType === CardType.Unknown}
                                 <!-- Show which cards it may have been -->
                                 {@const possibleCards = getPossibleCards(cards, response.player)}
-                                <b>{possibleCards.join(' or ')}</b>
+                                <!-- "or"-separated list, with card names bolded -->
+                                {#each possibleCards as possibleCard, possibleIndex}
+                                    <b>{possibleCard}</b>
+                                    {#if possibleIndex != possibleCards.length - 1}
+                                        {'or '}
+                                    {/if}
+                                {/each}
                                 {#if possibleCards.length === 2}
                                     <SourceTooltip
                                         text="These cards were inferred. It is not known exactly which one was shown."
