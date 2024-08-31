@@ -129,6 +129,24 @@ function _createHands(
         }
     }
 
+    // If we know all but one card in a player's hand, and there exists a "maybe group"
+    // which has no intersection with the "has" set,
+    // then the final card must be one of the cards in the "maybe group"
+    for (const [i, hand] of hands.entries()) {
+        if (hand.has.union(hand.missing).size === playerCardCounts[i] - 1) {
+            const eligibleGroups = Object.entries(hand.maybeGroups).filter(
+                ([, cards]) => cards.intersection(hand.has).size === 0,
+            );
+
+            if (eligibleGroups.length) {
+                const [, group] = eligibleGroups[0];
+                for (const card of packedSet) {
+                    if (!group.has(card) && !hand.has.has(card)) hand.missing.add(card);
+                }
+            }
+        }
+    }
+
     // Actions based on card count
     for (const [i, hand] of hands.entries()) {
         if (hand.has.size >= playerCardCounts[i]) {
