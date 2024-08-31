@@ -129,10 +129,13 @@ function _createHands(
         }
     }
 
-    // If we know all but one card in a player's hand, and there exists a "maybe group"
-    // which has no intersection with the "has" set,
-    // then the final card must be one of the cards in the "maybe group"
+    // Hand-by-hand inferences
     for (const [i, hand] of hands.entries()) {
+        // =========================
+        // If we know all but one card in a player's hand, and there exists a "maybe group"
+        // which has no intersection with the "has" set,
+        // then the final card must be one of the cards in the "maybe group"
+        // =========================
         if (hand.has.size === playerCardCounts[i] - 1) {
             const eligibleGroups = Object.entries(hand.maybeGroups).filter(
                 ([, cards]) => cards.intersection(hand.has).size === 0,
@@ -145,10 +148,10 @@ function _createHands(
                 }
             }
         }
-    }
 
-    // Actions based on card count
-    for (const [i, hand] of hands.entries()) {
+        // =========================
+        // Actions based on card count
+        // =========================
         if (hand.has.size >= playerCardCounts[i]) {
             // If a player has all the cards allowed in their hand, check everything else off
             for (const card of packedSet) {
@@ -160,10 +163,10 @@ function _createHands(
                 if (!hand.missing.has(card)) hand.has.add(card);
             }
         }
-    }
 
-    // If a player is confirmed to have a card, mark it as missing for everyone else
-    for (const hand of hands) {
+        // =========================
+        // If a player is confirmed to have a card, mark it as missing for everyone else
+        // =========================
         for (const card of hand.has) {
             hands
                 // All other hands
@@ -171,10 +174,10 @@ function _createHands(
                 // Mark card missing
                 .forEach(otherHand => otherHand.missing.add(card));
         }
-    }
 
-    // Make sure that no player has cards appearing in more than one list
-    for (const [i, hand] of hands.entries()) {
+        // =========================
+        // Make sure that no player has cards appearing in more than one list
+        // =========================
         if (hand.has.intersection(hand.missing).size !== 0) {
             console.error('Player', i, hand, hand.has.intersection(hand.missing));
             throw new Error('A player is marked as both having and not having a card');
@@ -183,9 +186,20 @@ function _createHands(
         const hasAndMaybe = hand.has.intersection(hand.maybe);
         const missingAndMaybe = hand.missing.intersection(hand.maybe);
         const toRemove = hasAndMaybe.union(missingAndMaybe);
-
-        // Remove from maybe set
         toRemove.forEach(card => hand.maybe.delete(card));
+
+        // =========================
+        // Update maybeGroups
+        // =========================
+        const emptied: string[] = [];
+        for (const [key, maybeGroup] of Object.entries(hand.maybeGroups)) {
+            // Remove any cards from maybeGroups that are marked missing
+            maybeGroup.intersection(hand.missing).forEach(card => maybeGroup.delete(card));
+            // If the group is empty, mark it for deletion
+            if (maybeGroup.size === 0) emptied.push(key);
+        }
+
+        emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
     }
 
     // If all but one player has a card marked missing, and the guilty card for that category is known,
@@ -214,19 +228,6 @@ function _createHands(
                 hands[player].has.add(parseInt(card));
             }
         }
-    }
-
-    // Update maybeGroups
-    for (const hand of hands) {
-        const emptied: string[] = [];
-        for (const [key, maybeGroup] of Object.entries(hand.maybeGroups)) {
-            // Remove any cards from maybeGroups that are marked missing
-            maybeGroup.intersection(hand.missing).forEach(card => maybeGroup.delete(card));
-            // If the group is empty, mark it for deletion
-            if (maybeGroup.size === 0) emptied.push(key);
-        }
-
-        emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
     }
 
     // Recurse if the hands changed
