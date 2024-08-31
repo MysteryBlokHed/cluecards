@@ -133,7 +133,7 @@ function _createHands(
     // which has no intersection with the "has" set,
     // then the final card must be one of the cards in the "maybe group"
     for (const [i, hand] of hands.entries()) {
-        if (hand.has.union(hand.missing).size === playerCardCounts[i] - 1) {
+        if (hand.has.size === playerCardCounts[i] - 1) {
             const eligibleGroups = Object.entries(hand.maybeGroups).filter(
                 ([, cards]) => cards.intersection(hand.has).size === 0,
             );
