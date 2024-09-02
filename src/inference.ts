@@ -262,7 +262,7 @@ export function createHands(
     players: number,
     playerCardCounts: readonly number[],
     set: GameSet,
-    firstIsSelf = true,
+    firstIsSelf: boolean,
 ): [hands: PlayerHand[], innocents: Set<number>] {
     const packedSet = packSet(set);
 
@@ -321,6 +321,7 @@ export function infer(
     set: GameSet,
     players: number,
     playerCardCounts: readonly number[],
+    firstIsSelf: boolean,
     knowns: readonly Known[] = [],
     hands?: readonly PlayerHand[],
     innocents?: Set<number>,
@@ -328,7 +329,14 @@ export function infer(
     const newKnowns: Known[] = [];
 
     if (!hands || !innocents) {
-        [hands, innocents] = createHands(suggestions, knowns, players, playerCardCounts, set);
+        [hands, innocents] = createHands(
+            suggestions,
+            knowns,
+            players,
+            playerCardCounts,
+            set,
+            firstIsSelf,
+        );
     }
 
     const knownsInclude = (
@@ -521,6 +529,7 @@ export function infer(
             set,
             players,
             playerCardCounts,
+            firstIsSelf,
             [...knowns, ...newKnowns],
             hands,
             innocents,
@@ -533,6 +542,7 @@ export function infer(
             players,
             playerCardCounts,
             set,
+            firstIsSelf,
         );
 
         if (!handsEqual(hands, newHands)) {
@@ -541,6 +551,7 @@ export function infer(
                 set,
                 players,
                 playerCardCounts,
+                firstIsSelf,
                 [...knowns, ...newKnowns, ...recursiveKnowns],
                 newHands,
                 newInnocents,
@@ -565,6 +576,7 @@ function _probabilities(
     set: GameSet,
     hands: readonly PlayerHand[],
     playerCardCounts: readonly number[],
+    firstIsSelf: boolean,
     knowns: readonly Known[],
     packedSet: readonly number[],
     packOffset: number,
@@ -612,6 +624,7 @@ function _probabilities(
                 set,
                 hands.length,
                 playerCardCounts,
+                firstIsSelf,
                 [...knowns, known],
             );
 
@@ -621,6 +634,7 @@ function _probabilities(
                 set,
                 newHands,
                 playerCardCounts,
+                firstIsSelf,
                 [...knowns, known, ...newKnowns],
                 packedSet,
                 packedIndex,
@@ -644,6 +658,7 @@ export function probabilities(
     set: GameSet,
     hands: readonly PlayerHand[],
     playerCardCounts: readonly number[],
+    firstIsSelf: boolean,
     knowns: readonly Known[],
     limit = 10_000,
 ) {
@@ -654,6 +669,7 @@ export function probabilities(
         set,
         hands,
         playerCardCounts,
+        firstIsSelf,
         knowns,
         packedSet,
         0,

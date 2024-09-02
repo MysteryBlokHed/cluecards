@@ -8,6 +8,7 @@
     import RestartGame from './lib/RestartGame.svelte';
     import SetSelector from './lib/SetSelector.svelte';
     import Suggestions from './lib/Suggestions.svelte';
+    import Preferences from './lib/Preferences.svelte';
 
     import {
         startingKnowns,
@@ -16,6 +17,7 @@
         players,
         playerHands,
         playerCardCounts,
+        preferences,
         innocents,
     } from './stores';
     import { infer } from './inference';
@@ -35,6 +37,7 @@
             $set[1],
             $players.length,
             $playerCardCounts,
+            $preferences.firstIsSelf,
             $startingKnowns,
         );
         amendedSuggestions = inferSuggestions;
@@ -55,6 +58,7 @@
         <SetSelector />
         <Players />
         <AddCards />
+        <Preferences />
         <RestartGame />
     </Accordion>
     <div class="flex">

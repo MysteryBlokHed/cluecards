@@ -5,7 +5,7 @@
     import Tooltip, { Wrapper } from '@smui/tooltip';
     import IconButton from '@smui/icon-button';
 
-    import { players, playerHands, set, suggestions } from '../stores';
+    import { players, playerHands, set, suggestions, preferences } from '../stores';
     import {
         CardType,
         RevealMethod,
@@ -41,28 +41,32 @@
     $: roomPacked = room != null ? packCard(CardType.Room, room) : -1;
 
     function addResponse() {
-        // Auto-select either the player after the most recent response, or just the player after the suggestor
         let responder: number;
-        if (responses.length) {
-            responder = responses.at(-1)!.player + 1;
-        } else {
-            responder = (player ?? 0) + 1;
-        }
+        if ($preferences.selectNextPlayers) {
+            // Auto-select either the player after the most recent response, or just the player after the suggestor
+            if (responses.length) {
+                responder = responses.at(-1)!.player + 1;
+            } else {
+                responder = (player ?? 0) + 1;
+            }
 
-        // Do not overflow
-        if (responder > $players.length - 1) {
-            responder = 0;
+            // Do not overflow
+            if (responder > $players.length - 1) {
+                responder = 0;
+            }
         }
 
         // If there is a response before this one whose card type is unknown, switch it to none
         // Done for convenience since only one player should be showing a card at a time
-        const previous = responses.at(-1);
-        if (previous && previous.packed === -1) previous.packed = -2;
+        if ($preferences.autoSelectNone) {
+            const previous = responses.at(-1);
+            if (previous && previous.packed === -1) previous.packed = -2;
+        }
 
         responses = [
             ...responses,
             {
-                player: responder,
+                player: responder!,
                 packed: -1,
             },
         ];
@@ -173,19 +177,19 @@
             <!-- Unknown card -->
             <Option value={-1}>Unknown</Option>
             <!-- Suggested suspect card -->
-            {#if suspect != null && !$playerHands[response.player].missing.has(suspectPacked)}
+            {#if suspect != null && ($preferences.autoHideImpossible ? !$playerHands[response.player].missing.has(suspectPacked) : true)}
                 <Option value={suspectPacked}>
                     {setContents.suspects[suspect]}
                 </Option>
             {/if}
             <!-- Suggested weapon card -->
-            {#if weapon != null && !$playerHands[response.player].missing.has(weaponPacked)}
+            {#if weapon != null && ($preferences.autoHideImpossible ? !$playerHands[response.player].missing.has(weaponPacked) : true)}
                 <Option value={weaponPacked}>
                     {setContents.weapons[weapon]}
                 </Option>
             {/if}
             <!-- Suggested room card -->
-            {#if room != null && !$playerHands[response.player].missing.has(roomPacked)}
+            {#if room != null && ($preferences.autoHideImpossible ? !$playerHands[response.player].missing.has(roomPacked) : true)}
                 <Option value={roomPacked}>
                     {setContents.rooms[room]}
                 </Option>

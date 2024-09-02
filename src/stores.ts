@@ -1,6 +1,6 @@
 import { get, writable } from 'svelte/store';
 import SETS from './sets';
-import { type Known, type GameSet, type Suggestion, type PlayerHand } from './types';
+import type { Known, GameSet, Suggestion, PlayerHand, Preferences } from './types';
 import { cardsPerHand } from './cards';
 
 /**
@@ -49,3 +49,14 @@ export const innocents = writable<Set<number>>(new Set());
 export const suggestions = persistent<Suggestion[]>('suggestions', []);
 
 export const startingKnowns = persistent<Known[]>('startingKnowns', []);
+
+export const preferences = persistent<Preferences>(
+    'preferences',
+    {
+        autoSelectNone: true,
+        autoHideImpossible: true,
+        selectNextPlayers: true,
+        firstIsSelf: true,
+    },
+    localStorage,
+);

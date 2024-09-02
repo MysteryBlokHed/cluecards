@@ -79,3 +79,10 @@ export interface PlayerHand {
     /** Associates {@link maybe maybes} to the suggestion(s) they come from. */
     maybeGroups: Record<number, Set<number>>;
 }
+
+export interface Preferences {
+    firstIsSelf: boolean;
+    autoSelectNone: boolean;
+    autoHideImpossible: boolean;
+    selectNextPlayers: boolean;
+}
