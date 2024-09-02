@@ -38,3 +38,9 @@
         </FormField>
     </Content>
 </Panel>
+
+<style scoped>
+    span {
+        font-size: 1rem;
+    }
+</style>
