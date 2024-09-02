@@ -9,7 +9,7 @@
 
     import { cardTypeToKey, unpackCard } from '../../cards';
     import { probabilities } from '../../inference';
-    import { playerCardCounts, playerHands, set, startingKnowns } from '../../stores';
+    import { playerCardCounts, playerHands, preferences, set, startingKnowns } from '../../stores';
     import { CardType, type Known, type Suggestion } from '../../types';
 
     import ClueList from './ClueList.svelte';
@@ -77,10 +77,14 @@
         console.time('Calculating and displaying probabilities');
 
         try {
-            probs = probabilities(amendedSuggestions, $set[1], $playerHands, $playerCardCounts, [
-                ...$startingKnowns,
-                ...knowns,
-            ]);
+            probs = probabilities(
+                amendedSuggestions,
+                $set[1],
+                $playerHands,
+                $playerCardCounts,
+                $preferences.firstIsSelf,
+                [...$startingKnowns, ...knowns],
+            );
             overrideBody = '';
         } catch (e) {
             console.timeEnd('Calculating and displaying probabilities');
