@@ -195,8 +195,8 @@ function _createHands(
         for (const [key, maybeGroup] of Object.entries(hand.maybeGroups)) {
             // Remove any cards from maybeGroups that are marked missing
             maybeGroup.intersection(hand.missing).forEach(card => maybeGroup.delete(card));
-            // If the group is empty, mark it for deletion
-            if (maybeGroup.size === 0) emptied.push(key);
+            // If the group is empty or only has one card, mark it for deletion
+            if (maybeGroup.size <= 1) emptied.push(key);
         }
 
         emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
