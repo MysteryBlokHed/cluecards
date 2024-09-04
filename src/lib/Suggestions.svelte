@@ -104,7 +104,7 @@
                                         text="These cards were inferred. It is not known exactly which one was shown."
                                     />
                                 {/if}
-                            {:else}
+                            {:else if response.cardType < 0}
                                 <b {style}>{cardTypeToString(response.cardType)}</b>
                             {/if}
                             <!-- Show card name if available -->
