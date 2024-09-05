@@ -69,65 +69,14 @@ function guiltyFromHands(hands: readonly PlayerHand[]) {
  * Internal recursive function for {@link createHands}.
  */
 function _createHands(
-    suggestions: readonly Suggestion[],
-    knowns: readonly Known[],
-    players: number,
     playerCardCounts: readonly number[],
     set: GameSet,
-    firstIsSelf: boolean,
     hands: PlayerHand[],
     packedSet: readonly number[],
     guiltyIsKnown: [suspect: boolean, weapon: boolean, room: boolean],
 ): PlayerHand[] {
     const lastHands = structuredClone(hands);
     const totalCards = packedSet.length;
-
-    // Handle custom knowns
-    for (const known of knowns) {
-        if (known.type === 'innocent') {
-            if (known.player < 0) continue;
-            hands[known.player].has.add(packCard(known.cardType, known.card));
-        } else {
-            for (const hand of hands) {
-                hand.missing.add(packCard(known.cardType, known.card));
-            }
-        }
-    }
-
-    // For the user themself, if any card is not explicitly known as innocent, they must not have it
-    if (firstIsSelf) {
-        // Mark as missing if they are not contained in the hand
-        for (const card of packedSet) {
-            if (!hands[0].has.has(card)) hands[0].missing.add(card);
-        }
-    }
-
-    // Handle suggestions
-    for (const [i, suggestion] of suggestions.entries()) {
-        // Find (packed) cards used for suggestion
-        const suggestionCards = packSuggestions(suggestion.cards);
-
-        for (const response of suggestion.responses) {
-            switch (response.cardType) {
-                // A player specifically _did not_ show a card
-                case CardType.Nothing:
-                    suggestionCards.forEach(card => hands![response.player].missing.add(card));
-                    break;
-                // A player showed a card, but we do not know which
-                case CardType.Unknown:
-                    hands[response.player].maybeGroups[i] ||= new Set();
-                    suggestionCards.forEach(card => {
-                        hands![response.player].maybe.add(card);
-                        hands![response.player].maybeGroups[i].add(card);
-                    });
-                    break;
-                // A player showed a card we know the type of
-                default:
-                    hands[response.player].has.add(packCard(response.cardType, response.card));
-                    break;
-            }
-        }
-    }
 
     // Hand-by-hand inferences
     for (const [i, hand] of hands.entries()) {
@@ -232,17 +181,7 @@ function _createHands(
 
     // Recurse if the hands changed
     if (!handsEqual(hands, lastHands)) {
-        hands = _createHands(
-            suggestions,
-            knowns,
-            players,
-            playerCardCounts,
-            set,
-            firstIsSelf,
-            hands,
-            packedSet,
-            guiltyIsKnown,
-        );
+        hands = _createHands(playerCardCounts, set, hands, packedSet, guiltyIsKnown);
     }
 
     return hands;
@@ -277,17 +216,67 @@ export function createHands(
         !!guiltyRoom,
     ];
 
-    const hands = _createHands(
-        suggestions,
-        knowns,
-        players,
-        playerCardCounts,
-        set,
-        firstIsSelf,
-        emptyHands(players),
-        packedSet,
-        guiltyIsKnown,
-    );
+    const startingHands = emptyHands(players);
+
+    // =======================
+    // Non-recursive inference
+    // =======================
+    // Handle custom knowns
+    for (const known of knowns) {
+        if (known.type === 'innocent') {
+            if (known.player < 0) continue;
+            startingHands[known.player].has.add(packCard(known.cardType, known.card));
+        } else {
+            for (const hand of startingHands) {
+                hand.missing.add(packCard(known.cardType, known.card));
+            }
+        }
+    }
+
+    // For the user themself, if any card is not explicitly known as innocent, they must not have it
+    if (firstIsSelf) {
+        // Mark as missing if they are not contained in the hand
+        for (const card of packedSet) {
+            if (!startingHands[0].has.has(card)) startingHands[0].missing.add(card);
+        }
+    }
+
+    // Handle suggestions
+    for (const [i, suggestion] of suggestions.entries()) {
+        // Find (packed) cards used for suggestion
+        const suggestionCards = packSuggestions(suggestion.cards);
+
+        for (const response of suggestion.responses) {
+            switch (response.cardType) {
+                // A player specifically _did not_ show a card
+                case CardType.Nothing:
+                    suggestionCards.forEach(card =>
+                        startingHands![response.player].missing.add(card),
+                    );
+                    break;
+                // A player showed a card, but we do not know which
+                case CardType.Unknown:
+                    startingHands[response.player].maybeGroups[i] ||= new Set();
+                    suggestionCards.forEach(card => {
+                        startingHands![response.player].maybe.add(card);
+                        startingHands![response.player].maybeGroups[i].add(card);
+                    });
+                    break;
+                // A player showed a card we know the type of
+                default:
+                    startingHands[response.player].has.add(
+                        packCard(response.cardType, response.card),
+                    );
+                    break;
+            }
+        }
+    }
+
+    // ==============================
+    // End of non-recursive inference
+    // ==============================
+
+    const hands = _createHands(playerCardCounts, set, startingHands, packedSet, guiltyIsKnown);
 
     /** All innocent cards, derived from {@link knowns}. */
     const allKnownInnocents = new Set(
