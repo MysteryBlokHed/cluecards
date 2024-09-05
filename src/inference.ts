@@ -608,30 +608,34 @@ function _probabilities(
             };
 
             // Run inference
-            const [newKnowns, newSuggestions, newHands] = infer(
-                structuredClone(suggestions) as Suggestion[],
-                set,
-                hands.length,
-                playerCardCounts,
-                firstIsSelf,
-                [...knowns, known],
-            );
+            try {
+                const [newKnowns, newSuggestions, newHands] = infer(
+                    structuredClone(suggestions) as Suggestion[],
+                    set,
+                    hands.length,
+                    playerCardCounts,
+                    firstIsSelf,
+                    [...knowns, known],
+                );
 
-            // Since `occurrences` is directly modified, the return value can be ignored
-            _probabilities(
-                newSuggestions,
-                set,
-                newHands,
-                playerCardCounts,
-                firstIsSelf,
-                [...knowns, known, ...newKnowns],
-                packedSet,
-                packedIndex,
-                seen,
-                limit,
-                occurrences,
-                startTime,
-            );
+                // Since `occurrences` is directly modified, the return value can be ignored
+                _probabilities(
+                    newSuggestions,
+                    set,
+                    newHands,
+                    playerCardCounts,
+                    firstIsSelf,
+                    [...knowns, known, ...newKnowns],
+                    packedSet,
+                    packedIndex,
+                    seen,
+                    limit,
+                    occurrences,
+                    startTime,
+                );
+            } catch (e) {
+                console.warn('Error during probabilities infer:', e);
+            }
 
             if (performance.now() - startTime >= limit) {
                 throw new Error('Run too long, stopping...');
