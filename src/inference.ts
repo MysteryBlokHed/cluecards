@@ -560,6 +560,9 @@ export function infer(
 
 type Triplet = `${number}|${number}|${number}`;
 
+/** Used when probabilities run for too long */
+class TimeoutError extends Error {}
+
 function _probabilities(
     suggestions: readonly Suggestion[],
     set: GameSet,
@@ -634,11 +637,12 @@ function _probabilities(
                     startTime,
                 );
             } catch (e) {
+                if (e instanceof TimeoutError) throw e;
                 console.warn('Error during probabilities infer:', e);
             }
 
             if (performance.now() - startTime >= limit) {
-                throw new Error('Run too long, stopping...');
+                throw new TimeoutError('Run too long, stopping...');
             }
         }
     }
