@@ -66,9 +66,9 @@ function guiltyFromHands(hands: readonly PlayerHand[]) {
 }
 
 /**
- * Internal recursive function for {@link createHands}.
+ * Internal recursive function for {@link infer}.
  */
-function _createHands(
+function _infer(
     playerCardCounts: readonly number[],
     set: GameSet,
     hands: PlayerHand[],
@@ -190,7 +190,7 @@ function _createHands(
 
     // Recurse if the hands changed
     if (!handsEqual(hands, lastHands)) {
-        hands = _createHands(playerCardCounts, set, hands, packedSet, guiltyIsKnown);
+        hands = _infer(playerCardCounts, set, hands, packedSet, guiltyIsKnown);
     }
 
     return hands;
@@ -204,7 +204,7 @@ function _createHands(
  * @param hands The hands to update
  * @param firstIsSelf Whether the player at index 0 is the user
  */
-export function createHands(
+export function infer(
     suggestions: readonly Suggestion[],
     knowns: readonly Known[],
     players: number,
@@ -285,7 +285,7 @@ export function createHands(
     // End of non-recursive inference
     // ==============================
 
-    const hands = _createHands(playerCardCounts, set, startingHands, packedSet, guiltyIsKnown);
+    const hands = _infer(playerCardCounts, set, startingHands, packedSet, guiltyIsKnown);
 
     /** All innocent cards, derived from {@link knowns}. */
     const allKnownInnocents = new Set(
@@ -306,13 +306,13 @@ export function createHands(
 }
 
 /**
- * Update the list of suggestions based on inference from {@link createHands}.
+ * Update the list of suggestions based on inference from {@link infer}.
  * This no longer has any effect on inference and is instead used to provide info to users.
  * @param suggestions The list of suggestions
  * @param set The current game set
  * @param players The amount of players
  * @param knowns Already-known data
- * @param hands Hands generated from {@link createHands}.
+ * @param hands Hands generated from {@link infer}.
  * This should not typically be passed by an outside caller (it is used for recursion)
  */
 export function updateSuggestions(
@@ -415,7 +415,7 @@ function _probabilities(
 
             // Run inference
             try {
-                const [newHands] = createHands(
+                const [newHands] = infer(
                     structuredClone(suggestions) as Suggestion[],
                     [...knowns, known],
                     hands.length,

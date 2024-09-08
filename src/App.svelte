@@ -20,14 +20,14 @@
         preferences,
         innocents,
     } from './stores';
-    import { createHands, updateSuggestions } from './inference';
+    import { infer, updateSuggestions } from './inference';
     import type { Suggestion } from './types';
 
     let amendedSuggestions: Suggestion[] = structuredClone($suggestions);
 
     $: {
         // Run inferences
-        const [newHands, newInnocents] = createHands(
+        const [newHands, newInnocents] = infer(
             $suggestions,
             $startingKnowns,
             $players.length,

@@ -10,7 +10,7 @@
     import { cardTypeToKey, unpackCard } from '../../cards';
     import { probabilities } from '../../inference';
     import { playerCardCounts, playerHands, preferences, set, startingKnowns } from '../../stores';
-    import { CardType, type Known, type Suggestion } from '../../types';
+    import { CardType, type Suggestion } from '../../types';
 
     import ClueList from './ClueList.svelte';
 
