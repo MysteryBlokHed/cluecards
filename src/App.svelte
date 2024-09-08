@@ -20,7 +20,7 @@
         preferences,
         innocents,
     } from './stores';
-    import { infer } from './inference';
+    import { createHands, infer } from './inference';
     import type { Known, Suggestion } from './types';
 
     let amendedSuggestions: Suggestion[] = structuredClone($suggestions);
@@ -32,18 +32,37 @@
         if (newCount > 0)
             console.log('Note: Updated suggestions list is shorter. Data will be lost');
 
-        const [inferKnowns, inferSuggestions, newHands, newInnocents] = infer(
-            structuredClone($suggestions),
-            $set[1],
-            $players.length,
-            $playerCardCounts,
-            $preferences.firstIsSelf,
-            $startingKnowns,
-        );
-        amendedSuggestions = inferSuggestions;
-        $playerHands = newHands;
-        $innocents = newInnocents;
-        knowns = inferKnowns;
+        function oldMethod() {
+            const [inferKnowns, inferSuggestions, newHands, newInnocents] = infer(
+                structuredClone($suggestions),
+                $set[1],
+                $players.length,
+                $playerCardCounts,
+                $preferences.firstIsSelf,
+                $startingKnowns,
+            );
+            amendedSuggestions = inferSuggestions;
+            $playerHands = newHands;
+            $innocents = newInnocents;
+            knowns = inferKnowns;
+        }
+
+        function newMethod() {
+            const [newHands, newInnocents] = createHands(
+                structuredClone($suggestions),
+                $startingKnowns,
+                $players.length,
+                $playerCardCounts,
+                $set[1],
+                $preferences.firstIsSelf,
+            );
+            // amendedSuggestions = inferSuggestions;
+            $playerHands = newHands;
+            $innocents = newInnocents;
+            // knowns = inferKnowns;
+        }
+
+        newMethod();
     }
 
     function removeSuggestion(index: number) {
