@@ -20,51 +20,27 @@
         preferences,
         innocents,
     } from './stores';
-    import { createHands, infer } from './inference';
-    import type { Known, Suggestion } from './types';
+    import { createHands, updateSuggestions } from './inference';
+    import type { Suggestion } from './types';
 
     let amendedSuggestions: Suggestion[] = structuredClone($suggestions);
-    let knowns: Known[] = [];
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    function oldMethod() {
-        const [inferKnowns, inferSuggestions, newHands, newInnocents] = infer(
-            structuredClone($suggestions),
-            $set[1],
-            $players.length,
-            $playerCardCounts,
-            $preferences.firstIsSelf,
-            $startingKnowns,
-        );
-        amendedSuggestions = inferSuggestions;
-        $playerHands = newHands;
-        $innocents = newInnocents;
-        knowns = inferKnowns;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    function newMethod() {
-        const [newHands, newInnocents] = createHands(
-            structuredClone($suggestions),
-            $startingKnowns,
-            $players.length,
-            $playerCardCounts,
-            $set[1],
-            $preferences.firstIsSelf,
-        );
-        // amendedSuggestions = inferSuggestions;
-        $playerHands = newHands;
-        $innocents = newInnocents;
-        // knowns = inferKnowns;
-    }
 
     $: {
         // Run inferences
-        const newCount = amendedSuggestions.length - $suggestions.length;
-        if (newCount > 0)
-            console.log('Note: Updated suggestions list is shorter. Data will be lost');
+        const [newHands, newInnocents] = createHands(
+            $suggestions,
+            $startingKnowns,
+            $players.length,
+            $playerCardCounts,
+            $set[1],
+            $preferences.firstIsSelf,
+        );
 
-        newMethod();
+        $playerHands = newHands;
+        $innocents = newInnocents;
+
+        // Update suggestion details
+        amendedSuggestions = updateSuggestions($suggestions, newHands);
     }
 
     function removeSuggestion(index: number) {
@@ -102,7 +78,7 @@
             />
         </div>
         <div class="flex-col">
-            <Hands {knowns} {amendedSuggestions} />
+            <Hands {amendedSuggestions} />
         </div>
     </div>
 </main>

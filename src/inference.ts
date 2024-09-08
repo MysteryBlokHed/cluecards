@@ -198,7 +198,7 @@ function _createHands(
 
 /**
  * Create player hand info based on suggestions and other inference.
- * Related to {@link infer} and should likely only be called from there.
+ * Related to {@link updateSuggestions} and should likely only be called from there.
  * @param suggestions The suggestions to use
  * @param knowns Any knowns to take into consideration (that are _not_ derived from suggestions)
  * @param hands The hands to update
@@ -306,7 +306,8 @@ export function createHands(
 }
 
 /**
- * Try to make inferences based on the history of suggestions.
+ * Update the list of suggestions based on inference from {@link createHands}.
+ * This no longer has any effect on inference and is instead used to provide info to users.
  * @param suggestions The list of suggestions
  * @param set The current game set
  * @param players The amount of players
@@ -314,123 +315,22 @@ export function createHands(
  * @param hands Hands generated from {@link createHands}.
  * This should not typically be passed by an outside caller (it is used for recursion)
  */
-export function infer(
-    suggestions: Suggestion[],
-    set: GameSet,
-    players: number,
-    playerCardCounts: readonly number[],
-    firstIsSelf: boolean,
-    knowns: readonly Known[] = [],
-    hands?: readonly PlayerHand[],
-    innocents?: Set<number>,
-): [knowns: Known[], amendments: Suggestion[], hands: PlayerHand[], innocents: Set<number>] {
-    const newKnowns: Known[] = [];
+export function updateSuggestions(
+    suggestions: readonly Suggestion[],
+    hands: readonly PlayerHand[],
+): Suggestion[] {
+    const amended = structuredClone(suggestions) as Suggestion[];
 
-    if (!hands || !innocents) {
-        [hands, innocents] = createHands(
-            suggestions,
-            knowns,
-            players,
-            playerCardCounts,
-            set,
-            firstIsSelf,
-        );
-    }
-
-    const knownsInclude = (
-        type: CardType,
-        card: number,
-        knownsList = knowns,
-        ignoreNegativePlayer = false,
-    ) =>
-        ignoreNegativePlayer
-            ? knownsList.some(
-                  known =>
-                      known.cardType === type &&
-                      known.card === card &&
-                      (known.type === 'innocent' ? known.player > -1 : true),
-              )
-            : knownsList.some(known => known.cardType === type && known.card === card);
-
-    // Figure out guilty knowns, if possible
-    {
-        const knownInnocent = knowns.filter(known => known.type === 'innocent');
-        const knownGuilty = knowns.filter(known => known.type === 'guilty');
-
-        const innocentSuspects = knownInnocent
-            .filter(known => known.cardType === CardType.Suspect)
-            .map(known => known.card);
-        const innocentWeapons = knownInnocent
-            .filter(known => known.cardType === CardType.Weapon)
-            .map(known => known.card);
-        const innocentRooms = knownInnocent
-            .filter(known => known.cardType === CardType.Room)
-            .map(known => known.card);
-
-        const unknownSuspects = set.suspects
-            .map((_, card) => card)
-            .filter(card => !innocentSuspects.includes(card));
-        const unknownWeapons = set.weapons
-            .map((_, card) => card)
-            .filter(card => !innocentWeapons.includes(card));
-        const unknownRooms = set.rooms
-            .map((_, card) => card)
-            .filter(card => !innocentRooms.includes(card));
-
-        const guiltyHands = guiltyFromHands(hands);
-
-        const guiltySuspect =
-            unknownSuspects.length === 1 ? unknownSuspects[0] : guiltyHands[CardType.Suspect];
-        const guiltyWeapon =
-            unknownWeapons.length === 1 ? unknownWeapons[0] : guiltyHands[CardType.Weapon];
-        const guiltyRoom = unknownRooms.length === 1 ? unknownRooms[0] : guiltyHands[CardType.Room];
-
-        if (guiltySuspect != null && !knownsInclude(CardType.Suspect, guiltySuspect, knownGuilty)) {
-            newKnowns.push({
-                type: 'guilty',
-                cardType: CardType.Suspect,
-                card: guiltySuspect,
-            });
-        }
-        if (guiltyWeapon != null && !knownsInclude(CardType.Weapon, guiltyWeapon, knownGuilty)) {
-            newKnowns.push({
-                type: 'guilty',
-                cardType: CardType.Weapon,
-                card: guiltyWeapon,
-            });
-        }
-        if (guiltyRoom != null && !knownsInclude(CardType.Room, guiltyRoom, knownGuilty)) {
-            newKnowns.push({
-                type: 'guilty',
-                cardType: CardType.Room,
-                card: guiltyRoom,
-            });
-        }
-    }
-
-    for (const [i, suggestion] of suggestions.entries()) {
+    for (const [i, suggestion] of amended.entries()) {
         if (!suggestion.responses.length) {
             continue;
         }
 
         const packedSuggestions = suggestion.cards.map((card, type) => packCard(type, card));
-        const packedSuggestionsSet = new Set(packedSuggestions);
 
         for (const [j, response] of suggestion.responses.entries()) {
-            // Ensure that any cards we know the type of are already in the known list
-            if (response.cardType >= 0) {
-                if (!knownsInclude(response.cardType, response.card, knowns, true)) {
-                    newKnowns.push({
-                        ...response,
-                        type: 'innocent',
-                        source: RevealMethod.Direct,
-                    });
-                }
-                continue;
-            }
-
-            // Nothing was shown--nothing to infer
-            if (response.cardType === CardType.Nothing) {
+            // If the card type is not unknown, there is nothing to be done
+            if (response.cardType !== CardType.Unknown) {
                 continue;
             }
 
@@ -438,7 +338,7 @@ export function infer(
                 .filter(card => hands[response.player].missing.has(card))
                 .map(unpackCard);
 
-            // If two cards are missing from this player's hand, then we know for ceratin what this card is
+            // If two cards are missing from this player's hand, then we know for certain what this card is
             if (missingCards.length === 2) {
                 // Figure out which card type must have been shown
                 const shownType = ([0, 1, 2] as const).filter(
@@ -448,123 +348,17 @@ export function infer(
                 const shownCard = suggestion.cards[shownType];
 
                 // Amend suggestion response
-                suggestions[i].responses[j] = {
+                amended[i].responses[j] = {
                     ...response,
                     cardType: shownType,
                     card: shownCard,
                     source: RevealMethod.InferSuggestion,
                 };
-
-                // Make sure that this is not already known
-                if (
-                    knowns.some(known => known.cardType === shownType && known.card === shownCard)
-                ) {
-                    continue;
-                }
-
-                // Update knowns
-                newKnowns.push({
-                    type: 'innocent',
-                    cardType: shownType,
-                    card: shownCard,
-                    player: response.player,
-                    source: RevealMethod.InferSuggestion,
-                });
-            }
-        }
-
-        /*
-         * ==========================================
-         * For clue variations where multiple players
-         * show cards at once
-         * ==========================================
-         */
-        const unknownResponses = suggestion.responses.filter(
-            response => response.cardType === CardType.Unknown,
-        );
-
-        // If there are one or no responses then it will have been handled above
-        if (unknownResponses.length <= 1) continue;
-
-        /** The number of responding players */
-        const respondingPlayers = new Set(unknownResponses.filter(response => response.player))
-            .size;
-
-        /** A set of cards involved in the suggestion that all responding players are missing. */
-        const collectiveMissing = unknownResponses
-            // Get players involved
-            .map(response => response.player)
-            // Get their sets of missing cards
-            .map(player => hands[player].missing)
-            // Figure out which cards *all* players are missing
-            .reduce((collective, current) => collective.intersection(current))
-            // Figure out which of those are involved in the suggestion
-            .intersection(packedSuggestionsSet);
-
-        // Make inferences if there are enough missing cards
-        if (3 - respondingPlayers === collectiveMissing.size) {
-            // Iterate over the suggested cards (except for the one all players did not have)
-            for (const packed of packedSuggestionsSet.difference(collectiveMissing)) {
-                const [cardType, card] = unpackCard(packed);
-
-                if (!knownsInclude(cardType, card)) {
-                    newKnowns.push({
-                        type: 'innocent',
-                        cardType,
-                        card,
-                        player: -1,
-                        source: RevealMethod.InferSuggestion,
-                    });
-                }
             }
         }
     }
 
-    // If new inferences were made, then re-run this function with the new updates before continuing
-    if (newKnowns.length) {
-        const [recursiveKnowns] = infer(
-            suggestions,
-            set,
-            players,
-            playerCardCounts,
-            firstIsSelf,
-            [...knowns, ...newKnowns],
-            hands,
-            innocents,
-        );
-
-        // Try to create hands based on new data
-        let [newHands, newInnocents] = createHands(
-            suggestions,
-            [...knowns, ...newKnowns, ...recursiveKnowns],
-            players,
-            playerCardCounts,
-            set,
-            firstIsSelf,
-        );
-
-        if (!handsEqual(hands, newHands)) {
-            const [newestKnowns, , newestHands, newestInnocents] = infer(
-                suggestions,
-                set,
-                players,
-                playerCardCounts,
-                firstIsSelf,
-                [...knowns, ...newKnowns, ...recursiveKnowns],
-                newHands,
-                newInnocents,
-            );
-
-            recursiveKnowns.push(...newestKnowns);
-            newHands = newestHands;
-            newInnocents = newestInnocents;
-        }
-
-        return [[...newKnowns, ...recursiveKnowns], suggestions, newHands, newInnocents];
-    }
-
-    // Otherwise, return the empty lists
-    return [newKnowns, suggestions, structuredClone(hands) as PlayerHand[], innocents];
+    return amended;
 }
 
 type Triplet = `${number}|${number}|${number}`;
@@ -621,23 +415,23 @@ function _probabilities(
 
             // Run inference
             try {
-                const [newKnowns, newSuggestions, newHands] = infer(
+                const [newHands] = createHands(
                     structuredClone(suggestions) as Suggestion[],
-                    set,
+                    [...knowns, known],
                     hands.length,
                     playerCardCounts,
+                    set,
                     firstIsSelf,
-                    [...knowns, known],
                 );
 
                 // Since `occurrences` is directly modified, the return value can be ignored
                 _probabilities(
-                    newSuggestions,
+                    suggestions,
                     set,
                     newHands,
                     playerCardCounts,
                     firstIsSelf,
-                    [...knowns, known, ...newKnowns],
+                    [...knowns, known],
                     packedSet,
                     packedIndex,
                     seen,

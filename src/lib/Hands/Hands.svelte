@@ -14,7 +14,6 @@
 
     import ClueList from './ClueList.svelte';
 
-    export let knowns: readonly Known[];
     export let amendedSuggestions: readonly Suggestion[];
 
     interface DisplayedHand {
@@ -83,7 +82,7 @@
                 $playerHands,
                 $playerCardCounts,
                 $preferences.firstIsSelf,
-                [...$startingKnowns, ...knowns],
+                $startingKnowns,
             );
             overrideBody = '';
         } catch (e) {
