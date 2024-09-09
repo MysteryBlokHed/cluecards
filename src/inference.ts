@@ -73,10 +73,11 @@ function _infer(
     set: GameSet,
     hands: PlayerHand[],
     packedSet: readonly number[],
-    guiltyIsKnown: [suspect: boolean, weapon: boolean, room: boolean],
 ): PlayerHand[] {
     const lastHands = structuredClone(hands);
     const totalCards = packedSet.length;
+
+    const guiltyIsKnown = guiltyFromHands(hands);
 
     // Hand-by-hand inferences
     for (const [i, hand] of hands.entries()) {
@@ -190,7 +191,7 @@ function _infer(
 
     // Recurse if the hands changed
     if (!handsEqual(hands, lastHands)) {
-        hands = _infer(playerCardCounts, set, hands, packedSet, guiltyIsKnown);
+        hands = _infer(playerCardCounts, set, hands, packedSet);
     }
 
     return hands;
@@ -213,18 +214,6 @@ export function infer(
     firstIsSelf: boolean,
 ): [hands: PlayerHand[], innocents: Set<number>] {
     const packedSet = packSet(set);
-
-    const guiltyKnowns = knowns.filter(known => known.type === 'guilty');
-    const guiltySuspect = guiltyKnowns.find(known => known.cardType === CardType.Suspect);
-    const guiltyWeapon = guiltyKnowns.find(known => known.cardType === CardType.Weapon);
-    const guiltyRoom = guiltyKnowns.find(known => known.cardType === CardType.Room);
-
-    const guiltyIsKnown: [boolean, boolean, boolean] = [
-        !!guiltySuspect,
-        !!guiltyWeapon,
-        !!guiltyRoom,
-    ];
-
     const startingHands = emptyHands(players);
 
     // =======================
@@ -285,7 +274,7 @@ export function infer(
     // End of non-recursive inference
     // ==============================
 
-    const hands = _infer(playerCardCounts, set, startingHands, packedSet, guiltyIsKnown);
+    const hands = _infer(playerCardCounts, set, startingHands, packedSet);
 
     /** All innocent cards, derived from {@link knowns}. */
     const allKnownInnocents = new Set(
