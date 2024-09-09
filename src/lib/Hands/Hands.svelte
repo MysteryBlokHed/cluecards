@@ -10,11 +10,10 @@
     import { cardTypeToKey, unpackCard } from '../../cards';
     import { probabilities } from '../../inference';
     import { playerCardCounts, playerHands, preferences, set, startingKnowns } from '../../stores';
-    import { CardType, type Known, type Suggestion } from '../../types';
+    import { CardType, type Suggestion } from '../../types';
 
     import ClueList from './ClueList.svelte';
 
-    export let knowns: readonly Known[];
     export let amendedSuggestions: readonly Suggestion[];
 
     interface DisplayedHand {
@@ -83,7 +82,7 @@
                 $playerHands,
                 $playerCardCounts,
                 $preferences.firstIsSelf,
-                [...$startingKnowns, ...knowns],
+                $startingKnowns,
             );
             overrideBody = '';
         } catch (e) {
