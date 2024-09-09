@@ -154,8 +154,8 @@ function _infer(
                 maybeGroup.delete(finalCard);
             }
 
-            // If the group is empty, mark it for deletion
-            if (maybeGroup.size === 0) emptied.push(key);
+            // If the group is empty or no longer contains any actual maybes, mark it for deletion
+            if (maybeGroup.size === 0 || maybeGroup.isDisjointFrom(hand.maybe)) emptied.push(key);
         }
 
         emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
