@@ -153,6 +153,21 @@ const SETS = {
             'Tomb',
         ],
     },
+    Masquerade: {
+        suspects: suspects(),
+        weapons: ['Candelabra', 'Sword', 'Lute', 'Pistol', 'Poison', 'Parasol'],
+        rooms: [
+            'Ballroom',
+            'Drawing Room',
+            'Gallery',
+            'Theater',
+            'Arcade',
+            'Banquet Hall',
+            'Bedroom',
+            'Veranda',
+            'Pier',
+        ],
+    },
 } as const satisfies Record<string, GameSet>;
 
 export default SETS;
