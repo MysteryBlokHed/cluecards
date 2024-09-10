@@ -5,6 +5,8 @@
     import Tooltip, { Wrapper } from '@smui/tooltip';
 
     import { preferences } from '../stores';
+
+    const persist = () => ($preferences = $preferences);
 </script>
 
 <Panel>
@@ -13,11 +15,12 @@
         <h2>Gameplay</h2>
         <hr />
         <FormField>
-            <Switch bind:checked={$preferences.firstIsSelf} />
+            <Switch on:change={persist} bind:checked={$preferences.firstIsSelf} />
             <span slot="label">You are the first player (disable to spectate)</span>
         </FormField>
         <FormField>
             <Switch
+                on:change={persist}
                 bind:checked={$preferences.hideFirstColumn}
                 disabled={!$preferences.firstIsSelf}
             />
@@ -27,12 +30,12 @@
         <h2>QOL</h2>
         <hr />
         <FormField>
-            <Switch bind:checked={$preferences.autoSelectNone} />
+            <Switch on:change={persist} bind:checked={$preferences.autoSelectNone} />
             <span slot="label">Auto-change last player's card to "None" after add</span>
         </FormField>
         <Wrapper>
             <FormField>
-                <Switch bind:checked={$preferences.autoHideImpossible} />
+                <Switch on:change={persist} bind:checked={$preferences.autoHideImpossible} />
                 <span slot="label">Hide impossible cards from response selector</span>
             </FormField>
             <Tooltip>
@@ -40,7 +43,7 @@
             </Tooltip>
         </Wrapper>
         <FormField>
-            <Switch bind:checked={$preferences.selectNextPlayers} />
+            <Switch on:change={persist} bind:checked={$preferences.selectNextPlayers} />
             <span slot="label">Auto-select player while adding responses</span>
         </FormField>
     </Content>
