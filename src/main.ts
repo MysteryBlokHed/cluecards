@@ -1,3 +1,4 @@
+import 'core-js/actual/set/difference';
 import 'core-js/actual/set/intersection';
 import 'core-js/actual/set/is-disjoint-from';
 import 'core-js/actual/set/symmetric-difference';

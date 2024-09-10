@@ -1,4 +1,4 @@
-import { packSet, packCard, unpackCard, packSuggestions } from './cards';
+import { packSet, packCard, unpackCard, packSuggestions, cardTypeToKey } from './cards';
 import { CardType, RevealMethod } from './types';
 import type { GameSet, Known, KnownInnocent, PlayerHand, Suggestion } from './types';
 
@@ -45,18 +45,17 @@ export function emptyHands(players: number) {
  * @returns Guilty cards in a format similar to {@link Suggestion} cards.
  */
 function guiltyFromHands(hands: readonly PlayerHand[]) {
-    // Get cards all players are missing
-    const allMissing = hands
-        .map(hand => hand.missing)
-        .reduce((allMissing, missing) => allMissing.intersection(missing));
-
     const guilty: [suspect: number | null, weapon: number | null, room: number | null] = [
         null,
         null,
         null,
     ];
 
-    // Find cards that all players are missing
+    // Get cards all players are missing
+    const allMissing = hands
+        .map(hand => hand.missing)
+        .reduce((allMissing, missing) => allMissing.intersection(missing));
+
     for (const packed of allMissing) {
         const [type, card] = unpackCard(packed);
         guilty[type as 0 | 1 | 2] = card;
@@ -76,8 +75,6 @@ function _infer(
 ): PlayerHand[] {
     const lastHands = structuredClone(hands);
     const totalCards = packedSet.length;
-
-    const guiltyIsKnown = guiltyFromHands(hands);
 
     // Hand-by-hand inferences
     for (const [i, hand] of hands.entries()) {
@@ -161,8 +158,37 @@ function _infer(
         emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
     }
 
-    // If all but one player has a card marked missing, and the guilty card for that category is known,
+    // =========================
+    // If all but one card in a category is marked off,
+    // the remaining card must be guilty
+    // =========================
+    const allHasPacked = hands.map(hand => hand.has).reduce((allHas, has) => allHas.union(has));
+    const allHas: [Set<number>, Set<number>, Set<number>] = [new Set(), new Set(), new Set()];
+
+    for (const packed of allHasPacked) {
+        const [type, card] = unpackCard(packed);
+        allHas[type as 0 | 1 | 2].add(card);
+    }
+
+    for (const [type, cards] of allHas.entries()) {
+        const setType = set[cardTypeToKey(type)];
+        if (cards.size === setType.length - 1) {
+            // Find the card that is not held by any player
+            const possible = new Set(new Array(setType.length).keys());
+            const card = possible.difference(cards).values().next().value!;
+            // Mark this card as missing for all players
+            const packed = packCard(type, card);
+            for (const hand of hands) hand.missing.add(packed);
+        }
+    }
+
+    const guiltyIsKnown = guiltyFromHands(hands);
+
+    // =========================
+    // If all but one player has a card marked missing,
+    // and the guilty card for that category is known,
     // that one player must have the card
+    // =========================
     if (guiltyIsKnown[0] || guiltyIsKnown[1] || guiltyIsKnown[2]) {
         /** A mapping of packed cards to the players who do _not_ have it */
         const missingMap: Record<number, number[]> = {};
