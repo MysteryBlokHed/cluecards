@@ -57,6 +57,7 @@ export const preferences = persistent<Preferences>(
         autoHideImpossible: true,
         selectNextPlayers: true,
         firstIsSelf: true,
+        hideFirstColumn: false,
     },
     localStorage,
 );

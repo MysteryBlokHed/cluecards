@@ -13,8 +13,15 @@
         <h2>Gameplay</h2>
         <hr />
         <FormField>
-            <Switch bind:checked={$preferences.firstIsSelf}></Switch>
+            <Switch bind:checked={$preferences.firstIsSelf} />
             <span slot="label">You are the first player (disable to spectate)</span>
+        </FormField>
+        <FormField>
+            <Switch
+                bind:checked={$preferences.hideFirstColumn}
+                disabled={!$preferences.firstIsSelf}
+            />
+            <span slot="label">Hide the first player's column from the clues</span>
         </FormField>
 
         <h2>QOL</h2>

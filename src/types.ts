@@ -82,6 +82,7 @@ export interface PlayerHand {
 
 export interface Preferences {
     firstIsSelf: boolean;
+    hideFirstColumn: boolean;
     autoSelectNone: boolean;
     autoHideImpossible: boolean;
     selectNextPlayers: boolean;

@@ -3,7 +3,14 @@
     import { CardType } from '../../types';
     import { cardTypeToKey, cardTypeToString, packCard } from '../../cards';
 
-    import { players, playerHands, playerCardCounts, innocents, set } from '../../stores';
+    import {
+        players,
+        playerHands,
+        playerCardCounts,
+        innocents,
+        set,
+        preferences,
+    } from '../../stores';
 
     export let type: CardType;
     let sortedMaybeGroups: Array<Array<[string, Set<number>]>>;
@@ -12,6 +19,9 @@
         .map(hand => hand.maybeGroups)
         // Sort by key
         .map(group => Object.entries(group).sort(([a], [b]) => parseInt(a) - parseInt(b)));
+
+    let hideFirst: boolean;
+    $: hideFirst = $preferences.hideFirstColumn && $preferences.firstIsSelf;
 </script>
 
 <div style="display: table-row;">
@@ -19,7 +29,9 @@
         <Head>
             <Row>
                 <Cell>{cardTypeToString(type)}</Cell>
-                {#each $players as player, i}
+                {#each hideFirst ? $players.slice(1) : $players as player, _i}
+                    <!-- `i` would be off by one if we're ignoring the first player -->
+                    {@const i = hideFirst ? _i + 1 : _i}
                     <Cell style="text-align: center;">
                         <!-- Name -->
                         {player}
@@ -46,7 +58,9 @@
                             <span>{card}</span>
                         {/if}
                     </Cell>
-                    {#each $playerHands as hand, i}
+                    {#each hideFirst ? $playerHands.slice(1) : $playerHands as hand, _i}
+                        <!-- `i` would be off by one if we're ignoring the first player -->
+                        {@const i = hideFirst ? _i + 1 : _i}
                         <Cell style="text-align: center;">
                             {@const has = hand.has.has(packed)}
                             {@const missing = hand.missing.has(packed)}
