@@ -19,8 +19,9 @@
         playerCardCounts,
         preferences,
         innocents,
+        playerPov,
     } from './stores';
-    import { infer, updateSuggestions } from './inference';
+    import { infer, stripSuggestions, updateSuggestions } from './inference';
     import type { Suggestion } from './types';
 
     let amendedSuggestions: Suggestion[] = structuredClone($suggestions);
@@ -41,6 +42,28 @@
 
         // Update suggestion details
         amendedSuggestions = updateSuggestions($suggestions, newHands);
+
+        // If we are trying to see another player's POV
+        if ($preferences.firstIsSelf && $playerPov !== 0) {
+            const updatedSuggestions = stripSuggestions(amendedSuggestions, $playerPov);
+
+            const updatedStartingKnowns = $startingKnowns.filter(
+                known => known.type === 'innocent' && known.player === $playerPov,
+            );
+
+            // Re-run inferences
+            const [newHands, newInnocents] = infer(
+                updatedSuggestions,
+                updatedStartingKnowns,
+                $players.length,
+                $playerCardCounts,
+                $set[1],
+                false,
+            );
+
+            $playerHands = newHands;
+            $innocents = newInnocents;
+        }
     }
 
     function removeSuggestion(index: number) {

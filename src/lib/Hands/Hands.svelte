@@ -4,12 +4,21 @@
     import Dialog, { Title, Content, Actions } from '@smui/dialog';
     import FormField from '@smui/form-field';
     import Paper from '@smui/paper';
+    import Select, { Option } from '@smui/select';
     import Switch from '@smui/switch';
     import Tooltip, { Content as TooltipContent, Wrapper } from '@smui/tooltip';
 
     import { cardTypeToKey, unpackCard } from '../../cards';
     import { probabilities } from '../../inference';
-    import { playerCardCounts, playerHands, preferences, set, startingKnowns } from '../../stores';
+    import {
+        players,
+        playerCardCounts,
+        playerHands,
+        preferences,
+        set,
+        startingKnowns,
+        playerPov,
+    } from '../../stores';
     import { CardType, type Suggestion } from '../../types';
 
     import ClueList from './ClueList.svelte';
@@ -113,6 +122,23 @@
 
 <Paper style="display: table;">
     <h2>Clues</h2>
+
+    {#if $preferences.firstIsSelf}
+        <div>
+            <Wrapper>
+                <Select bind:value={$playerPov} label="Preview clue sheet of...">
+                    {#each $players as player, i}
+                        <Option value={i}>{player}</Option>
+                    {/each}
+                </Select>
+                <Tooltip>
+                    Applies the same inference logic from the perspective of another player to see
+                    what they might know.
+                </Tooltip>
+            </Wrapper>
+        </div>
+    {/if}
+
     <div style="display: flex; align-items: center; justify-content: center;">
         <Button variant="raised" color="secondary" on:click={calculateOdds}>
             <Label>Calculate Odds</Label>

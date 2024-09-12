@@ -376,6 +376,37 @@ export function updateSuggestions(
     return amended;
 }
 
+/**
+ * Strip information from suggestions that another player should not have.
+ * Used to get a preview of what another player's hand might look like.
+ *
+ * **NOTE**: It is assumed that `firstIsSelf` is true for this function;
+ * otherwise, it has no use.
+ * @param suggestions The suggestions to use
+ * @param player The player whose perspective should be used
+ */
+export function stripSuggestions(suggestions: Suggestion[], player: number) {
+    if (player === 0) return suggestions;
+
+    const stripped = structuredClone(suggestions) as Suggestion[];
+
+    for (const suggestion of stripped) {
+        // If the provided player is not the one making the suggestion,
+        // then they should not know any cards that they didn't show,
+        // or that were not shown to them by another player
+        if (suggestion.player !== player) {
+            for (const response of suggestion.responses) {
+                if (response.player !== player && response.cardType >= 0) {
+                    response.card = -1;
+                    response.cardType = CardType.Unknown;
+                }
+            }
+        }
+    }
+
+    return stripped;
+}
+
 type Triplet = `${number}|${number}|${number}`;
 
 /** Used when probabilities run for too long */
