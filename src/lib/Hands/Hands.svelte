@@ -123,19 +123,21 @@
 <Paper style="display: table;">
     <h2>Clues</h2>
 
-    <div>
-        <Wrapper>
-            <Select bind:value={$playerPov} label="Preview clue sheet of...">
-                {#each $players as player, i}
-                    <Option value={i}>{player}</Option>
-                {/each}
-            </Select>
-            <Tooltip>
-                Applies the same inference logic from the perspective of another player to see what
-                they might know.
-            </Tooltip>
-        </Wrapper>
-    </div>
+    {#if $preferences.firstIsSelf}
+        <div>
+            <Wrapper>
+                <Select bind:value={$playerPov} label="Preview clue sheet of...">
+                    {#each $players as player, i}
+                        <Option value={i}>{player}</Option>
+                    {/each}
+                </Select>
+                <Tooltip>
+                    Applies the same inference logic from the perspective of another player to see
+                    what they might know.
+                </Tooltip>
+            </Wrapper>
+        </div>
+    {/if}
 
     <div style="display: flex; align-items: center; justify-content: center;">
         <Button variant="raised" color="secondary" on:click={calculateOdds}>
