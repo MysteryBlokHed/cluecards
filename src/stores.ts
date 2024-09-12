@@ -61,3 +61,9 @@ export const preferences = persistent<Preferences>(
     },
     localStorage,
 );
+
+/**
+ * If {@link Preferences.firstIsSelf} is true,
+ * then this dictates whose POV we are using to generate the clue sheet
+ */
+export const playerPov = writable(0);
