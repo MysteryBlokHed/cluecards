@@ -27,32 +27,14 @@
     let amendedSuggestions: Suggestion[] = structuredClone($suggestions);
 
     $: {
-        /** Whether we are looking at another player's view. */
-        const fromOtherPov = $preferences.firstIsSelf && $playerPov !== 0;
-
-        /** Suggestions, stripped of extra info if required by the POV. */
-        const updatedSuggestions = fromOtherPov
-            ? stripSuggestions($suggestions, $playerPov)
-            : $suggestions;
-
-        /**
-         * A filtered version of startingKnowns if we are looking at another player's POV.
-         * Otherwise, just the regular list.
-         */
-        const updatedStartingKnowns = fromOtherPov
-            ? $startingKnowns.filter(
-                  known => known.type === 'innocent' && known.player === $playerPov,
-              )
-            : $startingKnowns;
-
         // Run inferences
         const [newHands, newInnocents] = infer(
-            updatedSuggestions,
-            updatedStartingKnowns,
+            $suggestions,
+            $startingKnowns,
             $players.length,
             $playerCardCounts,
             $set[1],
-            fromOtherPov ? false : $preferences.firstIsSelf,
+            $preferences.firstIsSelf,
         );
 
         $playerHands = newHands;
@@ -60,6 +42,28 @@
 
         // Update suggestion details
         amendedSuggestions = updateSuggestions($suggestions, newHands);
+
+        // If we are trying to see another player's POV
+        if ($preferences.firstIsSelf && $playerPov !== 0) {
+            const updatedSuggestions = stripSuggestions(amendedSuggestions, $playerPov);
+
+            const updatedStartingKnowns = $startingKnowns.filter(
+                known => known.type === 'innocent' && known.player === $playerPov,
+            );
+
+            // Re-run inferences
+            const [newHands, newInnocents] = infer(
+                updatedSuggestions,
+                updatedStartingKnowns,
+                $players.length,
+                $playerCardCounts,
+                $set[1],
+                false,
+            );
+
+            $playerHands = newHands;
+            $innocents = newInnocents;
+        }
     }
 
     function removeSuggestion(index: number) {
