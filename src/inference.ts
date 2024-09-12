@@ -392,10 +392,11 @@ export function stripSuggestions(suggestions: Suggestion[], player: number) {
 
     for (const suggestion of stripped) {
         // If the provided player is not the one making the suggestion,
-        // then they should not know any cards that the user has shown a different player
+        // then they should not know any cards that they didn't show,
+        // or that were not shown to them by another player
         if (suggestion.player !== player) {
             for (const response of suggestion.responses) {
-                if (response.player === 0 && response.cardType >= 0) {
+                if (response.player !== player && response.cardType >= 0) {
                     response.card = -1;
                     response.cardType = CardType.Unknown;
                 }
