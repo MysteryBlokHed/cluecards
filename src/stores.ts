@@ -1,7 +1,6 @@
 import { get, writable } from 'svelte/store';
 import SETS from './sets';
 import type { Known, GameSet, Suggestion, PlayerHand, Preferences } from './types';
-import { cardsPerHand } from './cards';
 
 /**
  * Creates a {@link writable} store which automatically loads from/saves to a storage.
@@ -33,16 +32,17 @@ sets.subscribe(newValue => {
 // This is stored slightly differently and cannot use persistentStore()
 const storedSet: string = sessionStorage.setName ?? 'Clue';
 export const set = writable<[string, GameSet]>([storedSet, $sets[storedSet]]);
-const $set = get(set);
 set.subscribe(newSet => (sessionStorage.setName = newSet[0]));
 
-export const players = persistent('players', ['']);
+export const players = persistent('players', ['', '', '']);
 
 export const playerHands = writable<PlayerHand[]>([
     { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} },
+    { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} },
+    { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} },
 ]);
 
-export const playerCardCounts = persistent('playerCards', [cardsPerHand($set[1], 1)]);
+export const playerCardCounts = persistent('playerCards', [6, 6, 6]);
 
 export const innocents = writable<Set<number>>(new Set());
 
