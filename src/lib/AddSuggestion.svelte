@@ -1,5 +1,6 @@
 <script lang="ts">
     import Button, { Label, Icon } from '@smui/button';
+    import Dialog, { Actions, Title, Content } from '@smui/dialog';
     import Select, { Option } from '@smui/select';
     import Paper from '@smui/paper';
     import Tooltip, { Wrapper } from '@smui/tooltip';
@@ -13,7 +14,9 @@
         type Suggestion,
         type SuggestionResponse,
     } from '../types';
-    import { packCard, unpackCard } from '../cards';
+    import { cardTypeToKey, packCard, packSet, unpackCard } from '../cards';
+    import { findSuggestionForces } from '../inference';
+    import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
 
     interface WorkingSuggestionRespose extends Partial<SuggestionResponse> {
         player: number;
@@ -39,6 +42,11 @@
     $: suspectPacked = suspect != null ? packCard(CardType.Suspect, suspect) : -1;
     $: weaponPacked = weapon != null ? packCard(CardType.Weapon, weapon) : -1;
     $: roomPacked = room != null ? packCard(CardType.Room, room) : -1;
+
+    let forceDialogOpen = false;
+    let potentialForceTargets: number[] = [];
+    let forceTarget: number | null = null;
+    let forceSuggestions: Array<[string, string[]]> = [];
 
     function addResponse() {
         let responder: number;
@@ -121,10 +129,79 @@
         player = suspect = weapon = room = null;
         responses = [];
     }
+
+    function forceReveal() {
+        const packedSet = packSet($set[1]);
+        potentialForceTargets = [];
+        forceTarget = null;
+
+        for (const packed of packedSet) {
+            if ($playerHands.every(hand => !hand.has.has(packed))) {
+                potentialForceTargets.push(packed);
+            }
+        }
+
+        forceDialogOpen = true;
+    }
+
+    $: if (forceTarget != null) {
+        // Get potential forces
+        const forceSuggestionsRaw = findSuggestionForces(forceTarget, $playerHands, $set[1]);
+        forceSuggestions = [];
+
+        for (const force of forceSuggestionsRaw) {
+            // Cards to suggest, ordered by type
+            const cards = [forceTarget, ...force.map(card => card.packed)].sort(
+                (a, b) => unpackCard(a)[0] - unpackCard(b)[0],
+            );
+
+            // Sources for cards used in force
+            const sourcesRaw = force.map(card => card.source);
+            const sourcesDisp: Record<string, number> = {};
+
+            for (const source of sourcesRaw) {
+                let key: string;
+                switch (source) {
+                    case -2:
+                        key = 'All Missing';
+                        break;
+                    case -1:
+                        key = 'Murder Card';
+                        break;
+                    case 0:
+                        key = 'Own Card';
+                        break;
+                    default:
+                        key = $players[source];
+                        break;
+                }
+
+                sourcesDisp[key] ??= 0;
+                sourcesDisp[key]++;
+            }
+
+            forceSuggestions.push([
+                // Cards to suggest
+                cards
+                    .map(packed => {
+                        const [type, card] = unpackCard(packed);
+                        return $set[1][cardTypeToKey(type)][card];
+                    })
+                    .join(', '),
+                // Sources for cards used
+                Object.entries(sourcesDisp).map(([source, count]) => `${source}: ${count}`),
+            ]);
+        }
+    }
 </script>
 
 <Paper>
     <h2>Add Suggestion</h2>
+    <Button on:click={forceReveal}>
+        <Label>Force Reveal</Label>
+        <Icon class="material-icons">build</Icon>
+    </Button>
+    <br />
     <Select bind:value={player} label="Player" style="width: 150px;">
         {#each $players as playerName, i}
             <Option value={i}>{playerName}</Option>
@@ -214,3 +291,46 @@
         <Icon class="material-icons">save</Icon>
     </Button>
 </Paper>
+
+<Dialog
+    bind:open={forceDialogOpen}
+    aria-labelledby="force-title"
+    aria-describedby="force-content"
+    surface$style="width: 500px; max-width: calc(100vw - 32px); min-height: 50vh;"
+>
+    <Title id="force-title">Force Reveal</Title>
+    <Content id="force-content">
+        <Select bind:value={forceTarget} label="Card to force" menu$class="force-menu">
+            {#each potentialForceTargets as potential}
+                {@const [type, card] = unpackCard(potential)}
+                <Option value={potential}>{$set[1][cardTypeToKey(type)][card]}</Option>
+            {/each}
+        </Select>
+        <br />
+        <DataTable>
+            <Head>
+                <Row>
+                    <Cell>Cards</Cell>
+                    <Cell>Sources</Cell>
+                </Row>
+            </Head>
+            <Body>
+                {#each forceSuggestions as [cards, sources]}
+                    <Row>
+                        <Cell>{cards}</Cell>
+                        <Cell>
+                            {#each sources as source}
+                                <span>{source}</span>
+                                <br />
+                            {/each}
+                        </Cell>
+                    </Row>
+                {/each}
+            </Body>
+        </DataTable>
+    </Content>
+    <Actions>
+        <!-- This doesn't need an event handler--dialog is automatically closed -->
+        <Button>Ok</Button>
+    </Actions>
+</Dialog>
