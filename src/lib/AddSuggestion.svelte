@@ -1,10 +1,11 @@
 <script lang="ts">
     import Button, { Label, Icon } from '@smui/button';
+    import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
     import Dialog, { Actions, Title, Content } from '@smui/dialog';
-    import Select, { Option } from '@smui/select';
-    import Paper from '@smui/paper';
-    import Tooltip, { Wrapper } from '@smui/tooltip';
     import IconButton from '@smui/icon-button';
+    import Paper from '@smui/paper';
+    import Select, { Option } from '@smui/select';
+    import Tooltip, { Wrapper } from '@smui/tooltip';
 
     import { players, playerHands, set, suggestions, preferences } from '../stores';
     import {
@@ -16,7 +17,6 @@
     } from '../types';
     import { cardTypeToKey, packCard, packSet, unpackCard } from '../cards';
     import { findSuggestionForces } from '../inference';
-    import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
 
     interface WorkingSuggestionRespose extends Partial<SuggestionResponse> {
         player: number;
@@ -144,10 +144,11 @@
         forceDialogOpen = true;
     }
 
-    $: if (forceTarget != null) {
+    $: if (forceDialogOpen && forceTarget != null) {
+        forceSuggestions = [];
+
         // Get potential forces
         const forceSuggestionsRaw = findSuggestionForces(forceTarget, $playerHands, $set[1]);
-        forceSuggestions = [];
 
         for (const force of forceSuggestionsRaw) {
             // Cards to suggest, ordered by type
@@ -197,10 +198,15 @@
 
 <Paper>
     <h2>Add Suggestion</h2>
-    <Button on:click={forceReveal}>
-        <Label>Force Reveal</Label>
-        <Icon class="material-icons">build</Icon>
-    </Button>
+    <div>
+        <Wrapper>
+            <Button on:click={forceReveal} variant="raised" color="secondary">
+                <Label>Force Reveal</Label>
+                <Icon class="material-icons">build</Icon>
+            </Button>
+            <Tooltip>Open a menu to see if there is any way to force the reveal of a card.</Tooltip>
+        </Wrapper>
+    </div>
     <br />
     <Select bind:value={player} label="Player" style="width: 150px;">
         {#each $players as playerName, i}
@@ -296,7 +302,7 @@
     bind:open={forceDialogOpen}
     aria-labelledby="force-title"
     aria-describedby="force-content"
-    surface$style="width: 500px; max-width: calc(100vw - 32px); min-height: 50vh;"
+    surface$style="width: 500px; max-width: calc(100vw - 32px); min-height: 45vh;"
 >
     <Title id="force-title">Force Reveal</Title>
     <Content id="force-content">
@@ -307,30 +313,44 @@
             {/each}
         </Select>
         <br />
-        <DataTable>
-            <Head>
-                <Row>
-                    <Cell>Cards</Cell>
-                    <Cell>Sources</Cell>
-                </Row>
-            </Head>
-            <Body>
-                {#each forceSuggestions as [cards, sources]}
+        {#if forceSuggestions.length}
+            <DataTable>
+                <Head>
                     <Row>
-                        <Cell>{cards}</Cell>
-                        <Cell>
-                            {#each sources as source}
-                                <span>{source}</span>
-                                <br />
-                            {/each}
-                        </Cell>
+                        <Cell>Cards</Cell>
+                        <Cell>Sources</Cell>
                     </Row>
-                {/each}
-            </Body>
-        </DataTable>
+                </Head>
+                <Body>
+                    {#each forceSuggestions as [cards, sources]}
+                        <Row>
+                            <Cell>{cards}</Cell>
+                            <Cell>
+                                {#each sources as source}
+                                    <span>{source}</span>
+                                    <br />
+                                {/each}
+                            </Cell>
+                        </Row>
+                    {/each}
+                </Body>
+            </DataTable>
+        {:else if forceTarget != null}
+            {@const [type, card] = unpackCard(forceTarget)}
+            <h2>Cannot force {$set[1][cardTypeToKey(type)][card]}</h2>
+        {:else}
+            <h2>Select a card</h2>
+        {/if}
+        <br />
+        <b>
+            Note: Forcing a reveal like this can also reveal information to other players if they
+            know one or both of the cards besides the target card. If there are multiple ways to
+            make the reveal happen, you can preview other players' clue sheets to see what cards
+            they know about.
+        </b>
     </Content>
     <Actions>
         <!-- This doesn't need an event handler--dialog is automatically closed -->
-        <Button>Ok</Button>
+        <Button>Close</Button>
     </Actions>
 </Dialog>

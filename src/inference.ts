@@ -407,6 +407,13 @@ export function stripSuggestions(suggestions: Suggestion[], player: number) {
     return stripped;
 }
 
+/**
+ * Find suggestions that would force the reveal of a given card
+ * @param target The card to reveal. Should be {@link packCard packed}
+ * @param hands Player hands. It is assumed that the user is player 0
+ * @param set The active game set
+ * @returns Pairs of cards that can be suggested alongside the {@link target} to force its reveal
+ */
 export function findSuggestionForces(target: number, hands: readonly PlayerHand[], set: GameSet) {
     const packedSet = packSet(set);
     const guilty = guiltyFromHands(hands);
@@ -422,7 +429,7 @@ export function findSuggestionForces(target: number, hands: readonly PlayerHand[
     const [targetType] = unpackCard(target);
 
     // Find cards that could be asked about to gain info on the target
-    const potentialAsks: Array<{ packed: number; source: number }> = [];
+    const eligibleCards: Array<{ packed: number; source: number }> = [];
 
     setLoop: for (const packed of packedSet) {
         const [type, card] = unpackCard(packed);
@@ -430,13 +437,13 @@ export function findSuggestionForces(target: number, hands: readonly PlayerHand[
 
         // Murder cards can be used to force
         if (guilty[type as 0 | 1 | 2] === card) {
-            potentialAsks.push({ packed, source: -1 });
+            eligibleCards.push({ packed, source: -1 });
             continue;
         }
 
         // Cards in the user's hand can be used to force
         if (hands[0].has.has(packed)) {
-            potentialAsks.push({ packed, source: 0 });
+            eligibleCards.push({ packed, source: 0 });
             continue;
         }
 
@@ -451,24 +458,25 @@ export function findSuggestionForces(target: number, hands: readonly PlayerHand[
         // If we know that a player has this card, mark them as the source.
         // Otherwise, use -2 to indicate that everyone was missing it
         const source = hands.findIndex(hand => hand.has.has(packed)) ?? -2;
-        potentialAsks.push({ packed, source });
+        eligibleCards.push({ packed, source });
     }
 
     // Figure out permutations of cards
-    const allAsks: Array<[{ packed: number; source: number }, { packed: number; source: number }]> =
-        [];
+    const allSuggestions: Array<
+        [{ packed: number; source: number }, { packed: number; source: number }]
+    > = [];
 
     const askTypes = [0, 1, 2].filter(type => type != targetType) as [number, number];
-    const firstGroup = potentialAsks.filter(ask => unpackCard(ask.packed)[0] === askTypes[0]);
-    const secondGroup = potentialAsks.filter(ask => unpackCard(ask.packed)[0] === askTypes[1]);
+    const firstGroup = eligibleCards.filter(ask => unpackCard(ask.packed)[0] === askTypes[0]);
+    const secondGroup = eligibleCards.filter(ask => unpackCard(ask.packed)[0] === askTypes[1]);
 
     for (const card1 of firstGroup) {
         for (const card2 of secondGroup) {
-            allAsks.push([card1, card2]);
+            allSuggestions.push([card1, card2]);
         }
     }
 
-    return allAsks;
+    return allSuggestions;
 }
 
 type Triplet = `${number}|${number}|${number}`;
