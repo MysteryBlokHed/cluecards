@@ -198,17 +198,18 @@
 </script>
 
 <Paper>
-    <h2>Add Suggestion</h2>
+    <h2 style="margin-bottom: 0;">Add Suggestion</h2>
     <div>
         <Wrapper>
             <Button on:click={forceReveal} variant="raised" color="secondary">
                 <Label>Force Reveal</Label>
                 <Icon class="material-icons">build</Icon>
             </Button>
-            <Tooltip>Open a menu to see if there is any way to force the reveal of a card.</Tooltip>
+            <Tooltip>
+                See if there are any cards that can be forced to reveal with a suggestion.
+            </Tooltip>
         </Wrapper>
     </div>
-    <br />
     <Select bind:value={player} label="Player" style="width: 150px;">
         {#each $players as playerName, i}
             <Option value={i}>{playerName}</Option>
