@@ -216,11 +216,8 @@ function _infer(
     }
 
     // Recurse if the hands changed
-    if (!handsEqual(hands, lastHands)) {
-        hands = _infer(playerCardCounts, set, hands, packedSet);
-    }
-
-    return hands;
+    if (handsEqual(hands, lastHands)) return hands;
+    else return _infer(playerCardCounts, set, hands, packedSet);
 }
 
 /**
