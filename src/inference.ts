@@ -451,7 +451,8 @@ export function findSuggestionForces(target: number, hands: readonly PlayerHand[
         // If we made it outside the for loop then the card can be used
         // If we know that a player has this card, mark them as the source.
         // Otherwise, use -2 to indicate that everyone was missing it
-        const source = hands.findIndex(hand => hand.has.has(packed)) ?? -2;
+        const handWithCard = hands.findIndex(hand => hand.has.has(packed));
+        const source = handWithCard !== -1 ? handWithCard : -2;
         eligibleCards.push({ packed, source });
     }
 
