@@ -320,12 +320,9 @@ export function infer(
 /**
  * Update the list of suggestions based on inference from {@link infer}.
  * This no longer has any effect on inference and is instead used to provide info to users.
- * @param suggestions The list of suggestions
- * @param set The current game set
- * @param players The amount of players
- * @param knowns Already-known data
- * @param hands Hands generated from {@link infer}.
- * This should not typically be passed by an outside caller (it is used for recursion)
+ * @param suggestions The list of suggestions to update
+ * @param hands Hands generated from {@link infer}
+ * @returns Amended suggestions
  */
 export function updateSuggestions(
     suggestions: readonly Suggestion[],
