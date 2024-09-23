@@ -46,7 +46,7 @@
     let forceDialogOpen = false;
     let potentialForceTargets: number[] = [];
     let forceTarget: number | null = null;
-    let forceSuggestions: Array<[string, string[]]> = [];
+    let potentialForceSuggestions: Record<number, Array<[string, string[]]>> = {};
 
     function addResponse() {
         let responder: number;
@@ -133,66 +133,67 @@
     function forceReveal() {
         const packedSet = packSet($set[1]);
         potentialForceTargets = [];
+        potentialForceSuggestions = {};
         forceTarget = null;
 
         for (const packed of packedSet) {
             if ($playerHands.every(hand => !hand.has.has(packed))) {
-                potentialForceTargets.push(packed);
+                // Get potential forces
+                const forceSuggestionsRaw = findSuggestionForces(packed, $playerHands, $set[1]);
+                const forceSuggestions: Array<[string, string[]]> = [];
+
+                for (const force of forceSuggestionsRaw) {
+                    // Cards to suggest, ordered by type
+                    const cards = [packed, ...force.map(card => card.packed)].sort(
+                        (a, b) => unpackCard(a)[0] - unpackCard(b)[0],
+                    );
+
+                    // Sources for cards used in force
+                    const sourcesRaw = force.map(card => card.source);
+                    const sourcesDisp: Record<string, number> = {};
+
+                    for (const source of sourcesRaw) {
+                        let key: string;
+                        switch (source) {
+                            case -2:
+                                key = 'All Missing';
+                                break;
+                            case -1:
+                                key = 'Murder Card';
+                                break;
+                            case 0:
+                                key = 'Own Card';
+                                break;
+                            default:
+                                key = $players[source];
+                                break;
+                        }
+
+                        sourcesDisp[key] ??= 0;
+                        sourcesDisp[key]++;
+                    }
+
+                    forceSuggestions.push([
+                        // Cards to suggest
+                        cards
+                            .map(packed => {
+                                const [type, card] = unpackCard(packed);
+                                return $set[1][cardTypeToKey(type)][card];
+                            })
+                            .join(', '),
+                        // Sources for cards used
+                        Object.entries(sourcesDisp).map(([source, count]) => `${source}: ${count}`),
+                    ]);
+                }
+
+                if (forceSuggestions.length) {
+                    potentialForceTargets.push(packed);
+                    potentialForceSuggestions[packed] = forceSuggestions;
+                }
             }
         }
 
         forceDialogOpen = true;
-    }
-
-    $: if (forceDialogOpen && forceTarget != null) {
-        forceSuggestions = [];
-
-        // Get potential forces
-        const forceSuggestionsRaw = findSuggestionForces(forceTarget, $playerHands, $set[1]);
-
-        for (const force of forceSuggestionsRaw) {
-            // Cards to suggest, ordered by type
-            const cards = [forceTarget, ...force.map(card => card.packed)].sort(
-                (a, b) => unpackCard(a)[0] - unpackCard(b)[0],
-            );
-
-            // Sources for cards used in force
-            const sourcesRaw = force.map(card => card.source);
-            const sourcesDisp: Record<string, number> = {};
-
-            for (const source of sourcesRaw) {
-                let key: string;
-                switch (source) {
-                    case -2:
-                        key = 'All Missing';
-                        break;
-                    case -1:
-                        key = 'Murder Card';
-                        break;
-                    case 0:
-                        key = 'Own Card';
-                        break;
-                    default:
-                        key = $players[source];
-                        break;
-                }
-
-                sourcesDisp[key] ??= 0;
-                sourcesDisp[key]++;
-            }
-
-            forceSuggestions.push([
-                // Cards to suggest
-                cards
-                    .map(packed => {
-                        const [type, card] = unpackCard(packed);
-                        return $set[1][cardTypeToKey(type)][card];
-                    })
-                    .join(', '),
-                // Sources for cards used
-                Object.entries(sourcesDisp).map(([source, count]) => `${source}: ${count}`),
-            ]);
-        }
     }
 </script>
 
@@ -313,7 +314,7 @@
             {/each}
         </Select>
         <br />
-        {#if forceSuggestions.length}
+        {#if forceTarget != null && potentialForceSuggestions[forceTarget].length}
             <DataTable>
                 <Head>
                     <Row>
@@ -322,7 +323,7 @@
                     </Row>
                 </Head>
                 <Body>
-                    {#each forceSuggestions as [cards, sources]}
+                    {#each potentialForceSuggestions[forceTarget] as [cards, sources]}
                         <Row>
                             <Cell>{cards}</Cell>
                             <Cell>
@@ -340,8 +341,12 @@
             <h2>Cannot force {$set[1][cardTypeToKey(type)][card]}</h2>
         {:else}
             <h2>Select a card</h2>
+            <h3>
+                If a card is not listed, it cannot be forced.
+                <br />
+                If the list is empty, no cards can be forced.
+            </h3>
         {/if}
-        <br />
         <b>
             Note: Forcing a reveal like this can also reveal information to other players if they
             know one or both of the cards besides the target card. If there are multiple ways to
