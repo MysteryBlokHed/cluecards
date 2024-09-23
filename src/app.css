@@ -44,3 +44,7 @@ body {
     place-items: center;
     flex-direction: column;
 }
+
+.force-menu {
+    max-height: 20vh !important;
+}
