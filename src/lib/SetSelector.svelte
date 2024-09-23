@@ -39,7 +39,7 @@
     <Content>
         <span>The version of the game being used.</span>
         <br />
-        <Select bind:value={setName}>
+        <Select bind:value={setName} menu$class="set-menu">
             {#each Object.keys($sets) as name}
                 <Option value={name}>{name}</Option>
             {/each}
