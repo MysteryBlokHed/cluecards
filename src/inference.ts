@@ -65,6 +65,79 @@ function guiltyFromHands(hands: readonly PlayerHand[]) {
 }
 
 /**
+ * Find the largest list of disjoint sets.
+ * Implemented based on {@link https://en.wikipedia.org/wiki/Maximum_disjoint_set#Greedy_algorithms}.
+ * Note that {@link sets} _will be modified_.
+ * @param sets The list of sets to search through
+ */
+function approximateMDS<T extends Set<unknown>>(sets: T[]): T[] {
+    const disjointSets: T[] = [];
+
+    while (sets.length) {
+        /** Current set with the most intersections */
+        let maxIntersectionSet: T | null = null;
+        /** Number of intersections associated with {@link maxIntersectionSet} */
+        let maxIntersections = 0;
+        /** Index of {@link maxIntersectionSet} in {@link sets} */
+        let maxIndex = -1;
+        /** Sets that each set intersects with */
+        const allIntersectingSets: Record<number, T[]> = {};
+
+        for (const [i, set] of sets.entries()) {
+            const intersectingSets: T[] = sets.filter(candidate => !candidate.isDisjointFrom(set));
+            allIntersectingSets[i] = intersectingSets;
+
+            // Update highest-intersection set if required
+            const intersections = intersectingSets.length;
+            if (intersections > maxIntersections) {
+                maxIntersections = intersections;
+                maxIntersectionSet = set;
+                maxIndex = i;
+            }
+        }
+
+        // No eligible set
+        if (!maxIntersectionSet) break;
+
+        /** Current set with the fewest intersections */
+        let minIntersectionSet: T | null = null;
+        /** Number of intersections associated with {@link minIntersectionSet} */
+        let minIntersections: number = Infinity;
+        /** Index of {@link minIntersectionSet} in {@link sets} */
+        let minIndex = -1;
+
+        for (const candidate of allIntersectingSets[maxIndex]) {
+            const i = sets.indexOf(candidate);
+            // Update lowest-intersection set if required
+            const intersections = allIntersectingSets[i].length;
+            if (intersections < minIntersections) {
+                minIntersections = intersections;
+                minIntersectionSet = candidate;
+                minIndex = i;
+            }
+        }
+
+        // No eligible set
+        if (!minIntersectionSet) break;
+
+        // Save this set and remove it from the original list
+        disjointSets.push(minIntersectionSet);
+        sets.splice(minIndex, 1);
+
+        // Remove all sets that minIntersectionSet intersected with
+        for (const set of allIntersectingSets[minIndex]) {
+            const indexToRemove = sets.indexOf(set);
+            if (indexToRemove !== -1) {
+                sets.splice(indexToRemove, 1);
+            }
+        }
+    }
+
+    // Return the final list
+    return disjointSets;
+}
+
+/**
  * Internal recursive function for {@link infer}.
  */
 function _infer(
@@ -84,14 +157,39 @@ function _infer(
         // then the final card must be one of the cards in the "maybe group"
         // =========================
         if (hand.has.size === playerCardCounts[i] - 1) {
-            const eligibleGroups = Object.entries(hand.maybeGroups).filter(
-                ([, cards]) => cards.intersection(hand.has).size === 0,
+            const eligibleGroups = Object.values(hand.maybeGroups).filter(cards =>
+                cards.isDisjointFrom(hand.has),
             );
 
             if (eligibleGroups.length) {
-                const [, group] = eligibleGroups[0];
+                const group = eligibleGroups[0];
                 for (const card of packedSet) {
                     if (!group.has(card) && !hand.has.has(card)) hand.missing.add(card);
+                }
+            }
+
+            // =========================
+            // If the amount of disjoint maybeGroups in the player's hand
+            // equals the number of unknown cards in their hand,
+            // all cards outside of those maybeGroups can be eliminated from the possibilities
+            // =========================
+        } else if (Object.keys(hand.maybeGroups).length >= playerCardCounts[i] - hand.has.size) {
+            const eligibleGroups = Object.values(hand.maybeGroups).filter(cards =>
+                cards.isDisjointFrom(hand.has),
+            );
+            if (eligibleGroups.length) {
+                const disjointGroups = approximateMDS(eligibleGroups);
+
+                if (disjointGroups.length >= playerCardCounts[i] - hand.has.size) {
+                    const cardsInHand = disjointGroups.reduce((union, current) =>
+                        union.union(current),
+                    );
+
+                    const missingCards = new Set(packedSet)
+                        .difference(hand.has)
+                        .difference(cardsInHand);
+
+                    for (const card of missingCards) hand.missing.add(card);
                 }
             }
         }
@@ -144,7 +242,6 @@ function _infer(
             maybeGroup.intersection(hand.missing).forEach(card => maybeGroup.delete(card));
 
             // If the group has one card, mark it as "has"
-            // !!! This should entirely replace the original infer function !!!
             if (maybeGroup.size === 1) {
                 const finalCard = maybeGroup.values().next().value!;
                 hand.has.add(finalCard);
