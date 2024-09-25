@@ -106,7 +106,8 @@ function approximateMDS<T extends Set<unknown>>(sets: T[]): T[] {
         /** Index of {@link minIntersectionSet} in {@link sets} */
         let minIndex = -1;
 
-        for (const [i, candidate] of allIntersectingSets[maxIndex].entries()) {
+        for (const candidate of allIntersectingSets[maxIndex]) {
+            const i = sets.indexOf(candidate);
             // Update lowest-intersection set if required
             const intersections = allIntersectingSets[i].length;
             if (intersections < minIntersections) {
@@ -156,8 +157,8 @@ function _infer(
         // then the final card must be one of the cards in the "maybe group"
         // =========================
         if (hand.has.size === playerCardCounts[i] - 1) {
-            const eligibleGroups = Object.values(hand.maybeGroups).filter(
-                cards => cards.intersection(hand.has).size === 0,
+            const eligibleGroups = Object.values(hand.maybeGroups).filter(cards =>
+                cards.isDisjointFrom(hand.has),
             );
 
             if (eligibleGroups.length) {
@@ -173,18 +174,20 @@ function _infer(
             // all cards outside of those maybeGroups can be eliminated from the possibilities
             // =========================
         } else if (Object.keys(hand.maybeGroups).length >= playerCardCounts[i] - hand.has.size) {
-            const eligibleGroups = Object.values(hand.maybeGroups).filter(
-                cards => cards.intersection(hand.has).size === 0,
+            const eligibleGroups = Object.values(hand.maybeGroups).filter(cards =>
+                cards.isDisjointFrom(hand.has),
             );
-
             if (eligibleGroups.length) {
                 const disjointGroups = approximateMDS(eligibleGroups);
+
                 if (disjointGroups.length >= playerCardCounts[i] - hand.has.size) {
+                    const cardsInHand = disjointGroups.reduce((union, current) =>
+                        union.union(current),
+                    );
+
                     const missingCards = new Set(packedSet)
                         .difference(hand.has)
-                        .difference(
-                            disjointGroups.reduce((union, current) => union.union(current)),
-                        );
+                        .difference(cardsInHand);
 
                     for (const card of missingCards) hand.missing.add(card);
                 }
