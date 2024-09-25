@@ -156,12 +156,12 @@ function _infer(
         // then the final card must be one of the cards in the "maybe group"
         // =========================
         if (hand.has.size === playerCardCounts[i] - 1) {
-            const eligibleGroups = Object.entries(hand.maybeGroups).filter(
-                ([, cards]) => cards.intersection(hand.has).size === 0,
+            const eligibleGroups = Object.values(hand.maybeGroups).filter(
+                cards => cards.intersection(hand.has).size === 0,
             );
 
             if (eligibleGroups.length) {
-                const [, group] = eligibleGroups[0];
+                const group = eligibleGroups[0];
                 for (const card of packedSet) {
                     if (!group.has(card) && !hand.has.has(card)) hand.missing.add(card);
                 }
