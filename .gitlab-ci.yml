@@ -1,7 +1,7 @@
 image: node:latest
 
 stages:
-    - install_lint_build
+    - install_lint_build_test
     - deploy
 
 cache:
@@ -24,8 +24,8 @@ cache:
     - .gitlab-ci.yml
     - .prettier*
 
-install_lint_build:
-    stage: install_lint_build
+install_lint_build_test:
+    stage: install_lint_build_test
     script:
         - corepack enable
         - corepack install --global yarn@stable
@@ -34,6 +34,7 @@ install_lint_build:
         - yarn run check
         - yarn run smui
         - yarn run build
+        - yarn run test -- --run
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
