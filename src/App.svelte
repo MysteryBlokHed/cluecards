@@ -1,8 +1,11 @@
 <script lang="ts">
-    import Accordion from '@smui-extra/accordion';
+    import Paper from '@smui/paper';
+    import Tab, { Label } from '@smui/tab';
+    import TabBar from '@smui/tab-bar';
 
     import AddCards from './lib/AddCards.svelte';
     import AddSuggestion from './lib/AddSuggestion.svelte';
+    import GameTools from './lib/GameTools/';
     import Hands from './lib/Hands';
     import Players from './lib/Players.svelte';
     import RestartGame from './lib/RestartGame.svelte';
@@ -25,6 +28,8 @@
     import type { Suggestion } from './types';
 
     let amendedSuggestions: Suggestion[] = structuredClone($suggestions);
+
+    let activeTab: string = 'Set Selector';
 
     $: {
         // Run inferences
@@ -70,38 +75,79 @@
         $suggestions.splice(index, 1);
         $suggestions = $suggestions;
     }
+
+    function setTab(tab: string) {
+        activeTab = tab;
+    }
 </script>
 
-<main class="flex-col">
+<main>
     <h1>Cluecards</h1>
-    <Accordion style="width: 505px;">
-        <SetSelector />
-        <Players />
-        <AddCards />
-        <Preferences />
-        <RestartGame />
-    </Accordion>
-    <div class="flex">
-        <div style="margin-right: 2rem;">
-            <AddSuggestion />
-            <br />
-            <Suggestions
-                suggestions={amendedSuggestions}
-                title="Game Log"
-                remove={removeSuggestion}
-                showExtraPossible
-                open
-            />
-            <br />
+    <div class="grid">
+        <div>
+            <TabBar
+                tabs={['Set Selector', 'Players', 'Add Cards', 'Preferences', 'Restart']}
+                let:tab
+                bind:active={activeTab}
+            >
+                <Tab {tab}><Label>{tab}</Label></Tab>
+            </TabBar>
 
-            <Suggestions
-                suggestions={$suggestions}
-                title="Game Log (Unmodified)"
-                remove={removeSuggestion}
-            />
+            <Paper>
+                {#if activeTab === 'Set Selector'}
+                    <SetSelector />
+                {:else if activeTab === 'Players'}
+                    <Players />
+                {:else if activeTab === 'Add Cards'}
+                    <AddCards />
+                {:else if activeTab === 'Preferences'}
+                    <Preferences />
+                {:else if activeTab === 'Restart'}
+                    <RestartGame {setTab} />
+                {/if}</Paper
+            >
         </div>
-        <div class="flex-col">
-            <Hands {amendedSuggestions} />
+        <div>
+            <GameTools {amendedSuggestions} />
+        </div>
+        <div>
+            <div>
+                <AddSuggestion />
+                <br />
+                <Suggestions
+                    suggestions={amendedSuggestions}
+                    title="Game Log"
+                    remove={removeSuggestion}
+                    showExtraPossible
+                    open
+                />
+                <br />
+
+                <Suggestions
+                    suggestions={$suggestions}
+                    title="Game Log (Unmodified)"
+                    remove={removeSuggestion}
+                />
+            </div>
+        </div>
+        <div>
+            <Hands />
         </div>
     </div>
 </main>
+
+<style scoped>
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    @media only screen and (max-width: 1250px) {
+        .grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+</style>

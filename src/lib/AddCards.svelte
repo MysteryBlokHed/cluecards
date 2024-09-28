@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { Panel, Header, Content } from '@smui-extra/accordion';
     import Button, { Label, Icon } from '@smui/button';
     import IconButton from '@smui/icon-button';
     import Select, { Option } from '@smui/select';
@@ -29,54 +28,52 @@
     }
 </script>
 
-<Panel>
-    <Header>Add Cards</Header>
-    <Content>
-        <span>Add cards to your hand at the start of the game.</span>
-        <br />
-        <Select bind:value={player} label="Player">
-            {#each $players as player, i}
-                <Option value={i}>{player}</Option>
-            {/each}
-        </Select>
-        <br />
-        {#each cards as card, i}
-            <!-- Choose card type -->
-            <Select bind:value={card[0]} label="Card Type">
-                <Option value={CardType.Suspect}>Suspect</Option>
-                <Option value={CardType.Weapon}>Weapon</Option>
-                <Option value={CardType.Room}>Room</Option>
-            </Select>
-            {#if card[0] != null}
-                <!-- Choose actual card -->
-                <Select bind:value={card[1]} label={cardTypeToString(card[0])}>
-                    {#each $set[1][cardTypeToKey(card[0])] as cardName, j}
-                        <Option value={j}>{cardName}</Option>
-                    {/each}
-                </Select>
-            {/if}
-            <IconButton
-                on:click={() => {
-                    cards.splice(i, 1);
-                    cards = cards;
-                }}
-                class="material-icons">delete</IconButton
-            >
-            <br />
+<div>
+    <h2>Add Cards</h2>
+    <span>Add cards to your hand at the start of the game.</span>
+    <br />
+    <Select bind:value={player} label="Player">
+        {#each $players as player, i}
+            <Option value={i}>{player}</Option>
         {/each}
-
-        <Button on:click={() => (cards = [...cards, [undefined, undefined]])}>
-            <Label>Add Card</Label>
-            <Icon class="material-icons">add</Icon>
-        </Button>
-
-        <Button
-            variant="raised"
-            disabled={!cards.length || cards.some(card => card[0] == null || card[1] == null)}
-            on:click={saveCards}
+    </Select>
+    <br />
+    {#each cards as card, i}
+        <!-- Choose card type -->
+        <Select bind:value={card[0]} label="Card Type">
+            <Option value={CardType.Suspect}>Suspect</Option>
+            <Option value={CardType.Weapon}>Weapon</Option>
+            <Option value={CardType.Room}>Room</Option>
+        </Select>
+        {#if card[0] != null}
+            <!-- Choose actual card -->
+            <Select bind:value={card[1]} label={cardTypeToString(card[0])}>
+                {#each $set[1][cardTypeToKey(card[0])] as cardName, j}
+                    <Option value={j}>{cardName}</Option>
+                {/each}
+            </Select>
+        {/if}
+        <IconButton
+            on:click={() => {
+                cards.splice(i, 1);
+                cards = cards;
+            }}
+            class="material-icons">delete</IconButton
         >
-            <Label>Save</Label>
-            <Icon class="material-icons">save</Icon>
-        </Button>
-    </Content>
-</Panel>
+        <br />
+    {/each}
+
+    <Button on:click={() => (cards = [...cards, [undefined, undefined]])}>
+        <Label>Add Card</Label>
+        <Icon class="material-icons">add</Icon>
+    </Button>
+
+    <Button
+        variant="raised"
+        disabled={!cards.length || cards.some(card => card[0] == null || card[1] == null)}
+        on:click={saveCards}
+    >
+        <Label>Save</Label>
+        <Icon class="material-icons">save</Icon>
+    </Button>
+</div>

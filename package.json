@@ -29,6 +29,8 @@
         "@smui/paper": "^7.0.0",
         "@smui/select": "patch:@smui/select@npm%3A7.0.0#~/.yarn/patches/@smui-select-npm-7.0.0-40cd9ea81d.patch",
         "@smui/switch": "^7.0.0",
+        "@smui/tab": "^7.0.0",
+        "@smui/tab-bar": "^7.0.0",
         "@smui/textfield": "^7.0.0",
         "@smui/tooltip": "^7.0.0",
         "@sveltejs/vite-plugin-svelte": "^3.1.2",
