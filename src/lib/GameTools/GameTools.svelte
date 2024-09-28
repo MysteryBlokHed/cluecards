@@ -8,7 +8,7 @@
     export let amendedSuggestions: readonly Suggestion[];
 </script>
 
-<Paper style="height: min-content;">
+<Paper style="height: min-content; max-width: 650px;">
     <h2>Game Tools</h2>
     <p>Leverage inferences to gain more information.</p>
     <hr />

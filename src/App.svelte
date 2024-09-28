@@ -139,11 +139,11 @@
 <style scoped>
     .grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 4fr 3fr;
         gap: 1rem;
     }
 
-    @media only screen and (max-width: 1250px) {
+    @media only screen and (max-width: 1130px) {
         .grid {
             display: flex;
             flex-direction: column;
