@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { Panel, Header, Content } from '@smui-extra/accordion';
     import Button, { Icon, Label } from '@smui/button';
     import IconButton from '@smui/icon-button';
     import Textfield from '@smui/textfield';
@@ -49,43 +48,41 @@
     }
 </script>
 
-<Panel>
-    <Header>Players</Header>
-    <Content>
-        <span style="font-weight: bold;">
-            Cards Per Hand:
-            {#if cards === cardsFrac}
-                <!-- Show exact -->
-                {cards}
-            {:else}
-                <!-- Show range -->
-                {Math.floor(cardsFrac)}&ndash;{Math.ceil(cardsFrac)}
-                <!-- Less-rounded number -->
-                (Avg. {cardsFrac.toFixed(2)})
-            {/if}
-        </span>
+<div>
+    <h2>Players</h2>
+    <span style="font-weight: bold;">
+        Cards Per Hand:
+        {#if cards === cardsFrac}
+            <!-- Show exact -->
+            {cards}
+        {:else}
+            <!-- Show range -->
+            {Math.floor(cardsFrac)}&ndash;{Math.ceil(cardsFrac)}
+            <!-- Less-rounded number -->
+            (Avg. {cardsFrac.toFixed(2)})
+        {/if}
+    </span>
 
-        {#each $players as player, i}
-            <div>
-                <Textfield bind:value={player} label={i === 0 ? 'Your Name' : 'Player Name'} />
-                <Textfield
-                    type="number"
-                    bind:value={$playerCardCounts[i]}
-                    label="Hand Size"
-                    style="width: 4rem;"
-                    invalid={!countsValid}
-                />
-                <IconButton
-                    class="material-icons"
-                    disabled={uneditable || $players.length === 1}
-                    on:click={() => removePlayer(i)}>delete</IconButton
-                >
-            </div>
-        {/each}
+    {#each $players as player, i}
+        <div>
+            <Textfield bind:value={player} label={i === 0 ? 'Your Name' : 'Player Name'} />
+            <Textfield
+                type="number"
+                bind:value={$playerCardCounts[i]}
+                label="Hand Size"
+                style="width: 4rem;"
+                invalid={!countsValid}
+            />
+            <IconButton
+                class="material-icons"
+                disabled={uneditable || $players.length === 1}
+                on:click={() => removePlayer(i)}>delete</IconButton
+            >
+        </div>
+    {/each}
 
-        <Button disabled={uneditable} on:click={addPlayer}>
-            <Label>Add</Label>
-            <Icon class="material-icons">add</Icon>
-        </Button>
-    </Content>
-</Panel>
+    <Button disabled={uneditable} on:click={addPlayer}>
+        <Label>Add</Label>
+        <Icon class="material-icons">add</Icon>
+    </Button>
+</div>

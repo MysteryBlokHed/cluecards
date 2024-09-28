@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { Panel, Header, Content } from '@smui-extra/accordion';
     import Button, { Label, Icon } from '@smui/button';
     import IconButton from '@smui/icon-button';
     import Select, { Option } from '@smui/select';
@@ -34,41 +33,39 @@
 </script>
 
 <SetManager bind:creatorOpen bind:updating />
-<Panel>
-    <Header>Set Selector</Header>
-    <Content>
-        <span>The version of the game being used.</span>
-        <br />
-        <Select bind:value={setName} menu$class="set-menu">
-            {#each Object.keys($sets) as name}
-                <Option value={name}>{name}</Option>
-            {/each}
-        </Select>
-        <IconButton
-            class="material-icons"
-            on:click={() => {
-                updating = setName;
-                creatorOpen = true;
-            }}>edit</IconButton
-        >
-        <IconButton class="material-icons" on:click={deleteSet}>delete</IconButton>
-        <br />
+<div>
+    <h2>Set Selector</h2>
+    <span>The version of the game being used.</span>
+    <br />
+    <Select bind:value={setName} menu$class="set-menu">
+        {#each Object.keys($sets) as name}
+            <Option value={name}>{name}</Option>
+        {/each}
+    </Select>
+    <IconButton
+        class="material-icons"
+        on:click={() => {
+            updating = setName;
+            creatorOpen = true;
+        }}>edit</IconButton
+    >
+    <IconButton class="material-icons" on:click={deleteSet}>delete</IconButton>
+    <br />
 
-        <Button
-            on:click={() => {
-                updating = null;
-                creatorOpen = true;
-            }}
-        >
-            <Label>Create New Set</Label>
-            <Icon class="material-icons">add</Icon>
+    <Button
+        on:click={() => {
+            updating = null;
+            creatorOpen = true;
+        }}
+    >
+        <Label>Create New Set</Label>
+        <Icon class="material-icons">add</Icon>
+    </Button>
+    <Wrapper>
+        <Button on:click={restore}>
+            <Label>Reload Builtin Sets</Label>
+            <Icon class="material-icons">restart_alt</Icon>
         </Button>
-        <Wrapper>
-            <Button on:click={restore}>
-                <Label>Reload Builtin Sets</Label>
-                <Icon class="material-icons">restart_alt</Icon>
-            </Button>
-            <Tooltip>Restore the builtin sets to their default values.</Tooltip>
-        </Wrapper>
-    </Content>
-</Panel>
+        <Tooltip>Restore the builtin sets to their default values.</Tooltip>
+    </Wrapper>
+</div>
