@@ -4,7 +4,14 @@
     import Textfield from '@smui/textfield';
 
     import { cardsPerHand, cardsPerHandFrac } from '../cards';
-    import { players, playerHands, playerCardCounts, set, suggestions } from '../stores';
+    import {
+        players,
+        playerHands,
+        playerCardCounts,
+        set,
+        suggestions,
+        preferences,
+    } from '../stores';
 
     let uneditable: boolean;
     $: uneditable = !!$suggestions.length;
@@ -65,7 +72,10 @@
 
     {#each $players as player, i}
         <div>
-            <Textfield bind:value={player} label={i === 0 ? 'Your Name' : 'Player Name'} />
+            <Textfield
+                bind:value={player}
+                label={$preferences.firstIsSelf && i === 0 ? 'Your Name' : 'Player Name'}
+            />
             <Textfield
                 type="number"
                 bind:value={$playerCardCounts[i]}
