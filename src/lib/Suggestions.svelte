@@ -61,7 +61,7 @@
 
     <Accordion multiple>
         {#each [...suggestions].reverse() as { player, cards, responses }, i}
-            <Panel {open} style="background-color: #37373a;">
+            <Panel {open} class="suggestions__suggestion">
                 <Header>
                     <b>{$players[player]}</b>
                     suggested
