@@ -74,7 +74,6 @@
         </div>
     {/if}
 
-    <div style="display: flex; align-items: center; justify-content: center;"></div>
     <ClueList type={CardType.Suspect} />
     <ClueList type={CardType.Weapon} />
     <ClueList type={CardType.Room} />

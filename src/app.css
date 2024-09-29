@@ -60,3 +60,9 @@ body {
 .set-menu {
     max-height: 336px !important;
 }
+
+@media only screen and (min-width: 1131px) {
+    .gametools__paper {
+        margin-top: 48px;
+    }
+}

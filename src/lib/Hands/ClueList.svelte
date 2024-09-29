@@ -27,7 +27,7 @@
 <div style="display: table-row;">
     <DataTable table$aria-label="{cardTypeToString(type)} clue list" style="display: table-cell;">
         <Head>
-            <Row>
+            <Row style="height: 2.5em;">
                 <Cell>{cardTypeToString(type)}</Cell>
                 {#each hideFirst ? $players.slice(1) : $players as player, _i}
                     <!-- `i` would be off by one if we're ignoring the first player -->
@@ -47,7 +47,7 @@
         <Body>
             {#each $set[1][cardTypeToKey(type)] as card, index}
                 {@const packed = packCard(type, index)}
-                <Row style="height: 3em;">
+                <Row style="height: 2.5em;">
                     <Cell>
                         <!-- Strikethrough if any player has this -->
                         {#if $innocents.has(packed)}
