@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Button, { Icon } from '@smui/button';
     import Paper from '@smui/paper';
     import Tab, { Label } from '@smui/tab';
     import TabBar from '@smui/tab-bar';
@@ -82,7 +83,18 @@
 </script>
 
 <main>
-    <h1>Cluecards</h1>
+    <h1>
+        Cluecards
+        <Button
+            variant="raised"
+            color="secondary"
+            href="https://gitlab.com/MysteryBlokHed/cluecards"
+            target="_blank"
+        >
+            <Label>Source</Label>
+            <Icon class="material-icons">open_in_new</Icon>
+        </Button>
+    </h1>
     <div class="grid">
         <div>
             <TabBar
