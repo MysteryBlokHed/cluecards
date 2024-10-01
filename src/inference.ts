@@ -314,7 +314,7 @@ function _infer(
 
     // Recurse if the hands changed
     if (handsEqual(hands, lastHands)) return hands;
-    else return _infer(playerCardCounts, set, hands, packedSet);
+    return _infer(playerCardCounts, set, hands, packedSet);
 }
 
 /**
@@ -590,19 +590,23 @@ function _probabilities(
     occurrences: Record<Triplet, number>,
     startTime: number,
 ) {
-    const [suspect, weapon, room] = guiltyFromHands(hands);
+    const allHandsFull = hands.every((hand, i) => hand.has.size === playerCardCounts[i]);
 
-    // Return if we know suspects, weapons, and rooms
-    if (suspect != null && weapon != null && room != null) {
-        // Do not count if this particular arrangement of cards has already been seen
-        const asString = handsHasToString(hands);
-        if (seen.has(asString)) return {};
-        seen.add(asString);
+    if (allHandsFull) {
+        // Return if we know suspects, weapons, and rooms
+        const [suspect, weapon, room] = guiltyFromHands(hands);
 
-        const key = `${suspect}|${weapon}|${room}` as const;
-        occurrences[key] ??= 0;
-        occurrences[key]++;
-        return occurrences;
+        if (suspect != null && weapon != null && room != null) {
+            // Do not count if this particular arrangement of cards has already been seen
+            const asString = handsHasToString(hands);
+            if (seen.has(asString)) return {};
+            seen.add(asString);
+
+            const key = `${suspect}|${weapon}|${room}` as const;
+            occurrences[key] ??= 0;
+            occurrences[key]++;
+            return occurrences;
+        }
     }
 
     for (let packedIndex = packOffset; packedIndex < packedSet.length; packedIndex++) {
