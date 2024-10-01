@@ -576,6 +576,7 @@ type Triplet = `${number}|${number}|${number}`;
 /** Used when probabilities run for too long */
 class TimeoutError extends Error {}
 
+/** Internal recursive function for {@link probabilities}. */
 function _probabilities(
     suggestions: readonly Suggestion[],
     set: GameSet,
@@ -667,6 +668,18 @@ function _probabilities(
     return occurrences;
 }
 
+/**
+ * Determine the odds of each suspect/weapon/room being the murder cards
+ * @param suggestions The amended suggestion list
+ * @param set The active game set
+ * @param hands Players' hands
+ * @param playerCardCounts The amount of cards in each player's hands
+ * @param firstIsSelf Whether the first player is the user
+ * @param knowns Starting knowns
+ * @param limit Milliseconds before giving up
+ * @returns A record of {@link Triplets} to the amount of times those cards were found.
+ * Formatted as `suspect|weapon|room` (unpacked), eg. `2|3|3`
+ */
 export function probabilities(
     suggestions: readonly Suggestion[],
     set: GameSet,
