@@ -32,6 +32,18 @@
 
     let activeTab: string = 'Set Selector';
 
+    // Update viewport based on device size
+    window.addEventListener(
+        'load',
+        () => {
+            if (screen.width < 750) {
+                const viewport = document.getElementById('viewport') as HTMLMetaElement;
+                viewport.content = 'width=750';
+            }
+        },
+        { once: true },
+    );
+
     $: {
         // Run inferences
         const [newHands, newInnocents] = infer(
