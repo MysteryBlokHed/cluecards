@@ -1,0 +1,16 @@
+{
+    "$schema": "https://json.schemastore.org/web-manifest.json",
+    "short_name": "Cluecards",
+    "description": "Automatic inference for interactions in Clue (Cluedo).",
+    "start_url": "/",
+    "background_color": "#000000",
+    "theme_color": "#ff3e00",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "favicon.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
+}
