@@ -8,6 +8,8 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 assetFileNames(chunkInfo) {
+                    // eslint-disable-next-line
+                    // @ts-ignore
                     if (chunkInfo.originalFileName?.includes('images/'))
                         return chunkInfo.originalFileName;
                     return chunkInfo.name || '';
