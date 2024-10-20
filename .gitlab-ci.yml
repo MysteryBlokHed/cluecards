@@ -1,6 +1,7 @@
 image: node:latest
 
 stages:
+    - build
     - deploy
 
 cache:
@@ -21,8 +22,8 @@ cache:
     - .gitlab-ci.yml
     - .prettier*
 
-pages:
-    stage: deploy
+build:
+    stage: build
     script:
         - corepack enable
         - corepack install --global yarn@stable
@@ -36,6 +37,19 @@ pages:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
         - if: $CI_MERGE_REQUEST_ID
+          changes: *changes
+    artifacts:
+        paths: ['dist']
+
+pages:
+    image: alpine:latest
+    stage: deploy
+    dependencies:
+        - build
+    script:
+        - echo Deploying to Pages
+    rules:
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
     artifacts:
         paths: ['dist']
