@@ -96,7 +96,7 @@
 
 <main>
     <h1>
-        Cluecards
+        SOME OBVIOUS CHANGE
         <Button
             variant="raised"
             color="secondary"
@@ -107,6 +107,7 @@
             <Icon class="material-icons">open_in_new</Icon>
         </Button>
     </h1>
+    <p>To tell at a glance if this MR changed the deployment</p>
     <div class="grid">
         <div>
             <TabBar
