@@ -6,12 +6,16 @@ import 'core-js/actual/set/union';
 import './app.css';
 import App from './App.svelte';
 
-// Include icons in output
-import '../images/icon-192.png';
-import '../images/icon-512.png';
-
 const app = new App({
     target: document.getElementById('app')!,
 });
+
+// Load service worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+        .register('/sw.js')
+        .then(() => console.log('Worker registered'))
+        .catch(err => console.error('Worker registration failed:', err));
+}
 
 export default app;
