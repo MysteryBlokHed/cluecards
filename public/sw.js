@@ -1,7 +1,7 @@
 async function cacheFirstWithRefresh(request) {
     const fetchResponsePromise = fetch(request).then(async networkResponse => {
         if (networkResponse.ok) {
-            const cache = await caches.open('ClueCards');
+            const cache = await caches.open('Cluecards');
             cache.put(request, networkResponse.clone());
         }
         return networkResponse;
