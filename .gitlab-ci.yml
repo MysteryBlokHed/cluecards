@@ -1,7 +1,6 @@
 image: node:latest
 
 stages:
-    - install_lint_build_test
     - deploy
 
 cache:
@@ -10,8 +9,6 @@ cache:
               - yarn.lock
       paths:
           - node_modules/
-          - dist/
-          - smui/
           - .yarn/install-state.gz
 
 .changes: &changes
@@ -24,12 +21,12 @@ cache:
     - .gitlab-ci.yml
     - .prettier*
 
-install_lint_build_test:
-    stage: install_lint_build_test
+pages:
+    stage: deploy
     script:
         - corepack enable
         - corepack install --global yarn@stable
-        - yarn install --immutable --check-cache --check-resolutions
+        - YARN_CHECKSUM_BEHAVIOR=update yarn install
         - yarn run lint
         - yarn run check
         - yarn run smui
@@ -40,15 +37,6 @@ install_lint_build_test:
           changes: *changes
         - if: $CI_MERGE_REQUEST_ID
           changes: *changes
-
-pages:
-    stage: deploy
-    image: alpine:latest
-    script:
-        - echo 'Deploying...'
     artifacts:
         paths: ['dist']
     publish: dist
-    rules:
-        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-          changes: *changes
