@@ -4,7 +4,6 @@ stages:
     - build
     - deploy
 
-
 .changes: &changes
     - public/**/*
     - src/**/*
@@ -20,9 +19,9 @@ build:
     stage: build
     cache:
         - key:
-            prefix: $CI_MERGE_REQUEST_IID
-            files:
-                - yarn.lock
+              prefix: $CI_MERGE_REQUEST_IID
+              files:
+                  - yarn.lock
           paths:
               - node_modules/
               - .yarn/install-state.gz
