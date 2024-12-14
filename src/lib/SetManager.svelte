@@ -8,6 +8,7 @@
 
     import { set as activeSet, sets } from '../stores';
     import type { GameSet } from '../types';
+    import { decompressFromBase64 } from 'lz-string';
 
     export let creatorOpen = false;
     export let updating: string | null = null;
@@ -82,6 +83,23 @@
     <Title id="creator-title">Set Creator</Title>
     <Content id="creator-content" style="display: flex; flex-direction: column;">
         <p>Create a custom game set.</p>
+        <Button
+            on:click={() => {
+                const data = prompt('Paste the exported string here:');
+                if (data) {
+                    try {
+                        const parsed = JSON.parse(decompressFromBase64(data));
+                        setName = parsed[0];
+                        set = parsed[1];
+                    } catch {
+                        alert('Invalid data.');
+                    }
+                }
+            }}
+        >
+            <Label>Import</Label>
+            <Icon class="material-icons">download</Icon>
+        </Button>
         <Textfield bind:value={setName} label="Set Name" disabled={updating != null} />
         <table>
             <tbody>

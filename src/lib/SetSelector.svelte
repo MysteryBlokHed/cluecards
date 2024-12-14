@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { compressToBase64 } from 'lz-string';
     import Button, { Label, Icon } from '@smui/button';
     import IconButton from '@smui/icon-button';
     import Select, { Option } from '@smui/select';
@@ -49,6 +50,15 @@
             creatorOpen = true;
         }}>edit</IconButton
     >
+    <Wrapper>
+        <IconButton
+            class="material-icons"
+            on:click={() => {
+                navigator.clipboard.writeText(compressToBase64(JSON.stringify($set)));
+            }}>content_copy</IconButton
+        >
+        <Tooltip>Export this set to a shareable string.</Tooltip>
+    </Wrapper>
     <IconButton class="material-icons" on:click={deleteSet}>delete</IconButton>
     <br />
 
