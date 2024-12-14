@@ -3,3 +3,6 @@ dist/
 smui/
 pnpm-lock.yaml
 vite.config.*.timestamp*
+
+# For some reason Prettier messes with LaTeX here
+Inference.md
