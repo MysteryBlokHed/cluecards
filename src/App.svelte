@@ -145,13 +145,6 @@
                     showExtraPossible
                     open
                 />
-                <br />
-
-                <Suggestions
-                    suggestions={$suggestions}
-                    title="Game Log (Unmodified)"
-                    remove={removeSuggestion}
-                />
             </div>
         </div>
         <div>
