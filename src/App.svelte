@@ -100,7 +100,7 @@
         <Button
             variant="raised"
             color="secondary"
-            href="https://gitlab.com/MysteryBlokHed/cluecards"
+            href="https://github.com/MysteryBlokHed/cluecards"
             target="_blank"
         >
             <Label>Source</Label>
