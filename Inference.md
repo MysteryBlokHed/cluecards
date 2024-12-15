@@ -10,10 +10,7 @@ applying the gained knowledge with each iteration, until finally no new knowledg
 ## Preface
 
 It's worth noting that I have not taken any actual mathematical proofs classes or things of that nature.
-However, I will, to the best of my ability, use logic/set symbols to describe inference methods where possible,
-since I find it to be the most unambiguous way to document the logic I've come up with.
-
-I apologize in advance if any of this is overly confusing to follow.
+I apologize if any of this is overly confusing to follow.
 
 ## Notation
 
