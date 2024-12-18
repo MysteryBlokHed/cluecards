@@ -256,6 +256,11 @@ function _infer(
         emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
     }
 
+    // These variables are used in the inference below the following one,
+    // but the immediately following one can add cards
+    const allHasPacked = hands.map(hand => hand.has).reduce((allHas, has) => allHas.union(has));
+    const allHas: [Set<number>, Set<number>, Set<number>] = [new Set(), new Set(), new Set()];
+
     // =========================
     // If there are two maybe groups of size 2 that are common between two players,
     // then one card in the group must be held by each player (i.e. they cannot be murder cards)
@@ -282,6 +287,8 @@ function _infer(
                         const values = set1.values();
                         const card1 = values.next().value!;
                         const card2 = values.next().value!;
+                        allHasPacked.add(card1);
+                        allHasPacked.add(card2);
 
                         // Rule the cards out for other players
                         for (const hand of hands.filter(
@@ -300,8 +307,6 @@ function _infer(
     // If all but one card in a category is marked off,
     // the remaining card must be guilty
     // =========================
-    const allHasPacked = hands.map(hand => hand.has).reduce((allHas, has) => allHas.union(has));
-    const allHas: [Set<number>, Set<number>, Set<number>] = [new Set(), new Set(), new Set()];
 
     for (const packed of allHasPacked) {
         const [type, card] = unpackCard(packed);
