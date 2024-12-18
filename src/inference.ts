@@ -167,13 +167,14 @@ function _infer(
                     if (!group.has(card) && !hand.has.has(card)) hand.missing.add(card);
                 }
             }
-
-            // =========================
-            // If the amount of disjoint maybeGroups in the player's hand
-            // equals the number of unknown cards in their hand,
-            // all cards outside of those maybeGroups can be eliminated from the possibilities
-            // =========================
-        } else if (Object.keys(hand.maybeGroups).length >= playerCardCounts[i] - hand.has.size) {
+        }
+        // =========================
+        // If the amount of disjoint maybeGroups in the player's hand
+        // equals the number of unknown cards in their hand,
+        // all cards outside of those maybeGroups can be eliminated from the possibilities.
+        // This is a generalization of the previous case, but it is harder to compute so we try the former first
+        // =========================
+        else if (Object.keys(hand.maybeGroups).length >= playerCardCounts[i] - hand.has.size) {
             const eligibleGroups = Object.values(hand.maybeGroups).filter(cards =>
                 cards.isDisjointFrom(hand.has),
             );
@@ -253,6 +254,46 @@ function _infer(
         }
 
         emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
+    }
+
+    // =========================
+    // If there are two maybe groups of size 2 that are common between two players,
+    // then one card in the group must be held by each player (i.e. they cannot be murder cards)
+    // =========================
+    const sizeTwoGroups = hands.map(hand =>
+        Object.values(hand.maybeGroups).filter(group => group.size == 2),
+    );
+
+    for (let i = 0; i < hands.length - 1; i++) {
+        if (!sizeTwoGroups[i].length) {
+            continue;
+        }
+
+        for (let j = i + 1; j < hands.length; j++) {
+            if (!sizeTwoGroups[j].length) {
+                continue;
+            }
+
+            // See if any sets are the same
+            for (const set1 of sizeTwoGroups[i]) {
+                for (const set2 of sizeTwoGroups[j]) {
+                    if (set1.symmetricDifference(set2).size == 0) {
+                        // Get the two cards from this set
+                        const values = set1.values();
+                        const card1 = values.next().value!;
+                        const card2 = values.next().value!;
+
+                        // Rule the cards out for other players
+                        for (const hand of hands.filter(
+                            (hand, index) => index != i && index != j,
+                        )) {
+                            hand.missing.add(card1);
+                            hand.missing.add(card2);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // =========================
