@@ -76,7 +76,7 @@ Any time we discover some card in some player $`m`$'s hand $`c \in H_m`$ (i.e. e
 we can say $`c \in N^p_n \forall n \in \mathbb{N}, m \neq n`$,
 i.e. we can say the card will not be in any other player's hand.
 
-## Information from Suggestions
+## Information from suggestions
 
 Each turn, a player may have to opportunity to make a suggestion
 $`S_k = \{ s, w, l \} : s \in D_s, w \in D_w, l \in D_l`$.
@@ -371,6 +371,28 @@ just using $`S_1`$ to narrow the suggestion down to $`\{c\}`$ rather than $`S_2`
 
 This inference method allowed us to deduce the final card of a player
 by discovering another piece of information that may at first seem entirely unrelated.
+
+## Repeated elements across $`C^p_n`$
+
+Imagine that there are two players $`m`$ and $`n`$.
+For each of these players, consider the sets $`C^p_m`$ and $`C^p_n`$ [as defined above](#a-more-general-case).
+
+Now, imagine that there is some element $`S = \{c, d\}`$ (i.e. a set with two elements) that is common to both sets—that is, $`S \in C^p_m \cap C^p_n`$.
+
+We know by the definition of the sets $`C^p_m, C^p_n`$ that each player _must_ hold a card in $`S`$
+(i.e. $`S \cap H_m \neq \emptyset, S \cap H_n \neq \emptyset`$).
+We also know that all hands are disjoint from each other (for these two hands in particular we can write $`H_m \cap H_n = \emptyset`$).
+
+If $`c \in H_m \iff d \in H_n`$. Conversely, if $`d \in H_m \iff c \in H_n`$.
+Notably, no matter who holds which card, it is guaranteed that both cards _must_ be held by somebody.
+
+Even without knowing which of the cards belongs to who, we can make the following deductions:
+
+- $`c, d \in K_p`$ (they must not be murder cards).
+- $`c ,d \in N^p_i \forall i \neq m, n`$ (no player other than $`m`$ or $`n`$ could hold the cards in $`S`$).
+
+This technique can also be expanded for some $`S : |S| = 3`$ which is common across _three_ players,
+but this is exceedingly unlikely to happen in a real game.
 
 ## License
 
