@@ -5,18 +5,18 @@ import type { GameSet, Known, KnownInnocent, PlayerHand, Suggestion } from './ty
 export function handsEqual(hands1: readonly PlayerHand[], hands2: readonly PlayerHand[]) {
     // Lists should be of the same length in the first place
     if (hands1.length !== hands2.length) return false;
-    for (const [i, hand] of hands1.entries()) {
+    for (const [i, hand1] of hands1.entries()) {
         const hand2 = hands2[i];
 
-        // Sets should be of same size
-        if (hand.has.size !== hand2.has.size) return false;
-        if (hand.missing.size !== hand2.missing.size) return false;
-        if (hand.maybe.size !== hand2.maybe.size) return false;
+        // Sets should be the same size
+        if (hand1.has.size !== hand2.has.size) return false;
+        if (hand1.missing.size !== hand2.missing.size) return false;
+        if (hand1.maybe.size !== hand2.maybe.size) return false;
 
-        // Sets should contain all the same elements (therefore there should be no difference)
-        if (hand.has.symmetricDifference(hand2.has).size !== 0) return false;
-        if (hand.missing.symmetricDifference(hand2.missing).size !== 0) return false;
-        if (hand.maybe.symmetricDifference(hand2.maybe).size !== 0) return false;
+        // Sets should contain all the same elements
+        if (hand1.has.values().some(el => !hand2.has.has(el))) return false;
+        if (hand1.missing.values().some(el => !hand2.missing.has(el))) return false;
+        if (hand1.maybe.values().some(el => !hand2.maybe.has(el))) return false;
     }
 
     return true;
