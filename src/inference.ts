@@ -138,7 +138,8 @@ function approximateMDS<T extends Set<unknown>>(sets: T[]): T[] {
 }
 
 /**
- * Internal recursive function for {@link infer}.
+ * Iterative function to do repeated inference for {@link infer}.
+ * Originally recursive, now just separated into its own function for readability.
  */
 function _infer(
     playerCardCounts: readonly number[],
@@ -146,221 +147,224 @@ function _infer(
     hands: PlayerHand[],
     packedSet: readonly number[],
 ): PlayerHand[] {
-    const lastHands = structuredClone(hands);
+    let lastHands: PlayerHand[];
     const totalCards = packedSet.length;
 
-    // Hand-by-hand inferences
-    for (const [i, hand] of hands.entries()) {
-        // =========================
-        // If we know all but one card in a player's hand, and there exists a "maybe group"
-        // which has no intersection with the "has" set,
-        // then the final card must be one of the cards in the "maybe group"
-        // =========================
-        if (hand.has.size === playerCardCounts[i] - 1) {
-            const eligibleGroups = Object.values(hand.maybeGroups).filter(cards =>
-                cards.isDisjointFrom(hand.has),
-            );
+    do {
+        // Tracked to see if anything changes after inference
+        lastHands = structuredClone(hands);
 
-            if (eligibleGroups.length) {
-                const group = eligibleGroups[0];
+        // Hand-by-hand inferences
+        for (const [i, hand] of hands.entries()) {
+            // =========================
+            // If we know all but one card in a player's hand, and there exists a "maybe group"
+            // which has no intersection with the "has" set,
+            // then the final card must be one of the cards in the "maybe group"
+            // =========================
+            if (hand.has.size === playerCardCounts[i] - 1) {
+                const eligibleGroups = Object.values(hand.maybeGroups).filter(cards =>
+                    cards.isDisjointFrom(hand.has),
+                );
+
+                if (eligibleGroups.length) {
+                    const group = eligibleGroups[0];
+                    for (const card of packedSet) {
+                        if (!group.has(card) && !hand.has.has(card)) hand.missing.add(card);
+                    }
+                }
+            }
+            // =========================
+            // If the amount of disjoint maybeGroups in the player's hand
+            // equals the number of unknown cards in their hand,
+            // all cards outside of those maybeGroups can be eliminated from the possibilities.
+            // This is a generalization of the previous case, but it is harder to compute so we try the former first
+            // =========================
+            else if (Object.keys(hand.maybeGroups).length >= playerCardCounts[i] - hand.has.size) {
+                const eligibleGroups = Object.values(hand.maybeGroups).filter(cards =>
+                    cards.isDisjointFrom(hand.has),
+                );
+                if (eligibleGroups.length) {
+                    const disjointGroups = approximateMDS(eligibleGroups);
+
+                    if (disjointGroups.length >= playerCardCounts[i] - hand.has.size) {
+                        const cardsInHand = disjointGroups.reduce((union, current) =>
+                            union.union(current),
+                        );
+
+                        const missingCards = new Set(packedSet)
+                            .difference(hand.has)
+                            .difference(cardsInHand);
+
+                        for (const card of missingCards) hand.missing.add(card);
+                    }
+                }
+            }
+
+            // =========================
+            // Actions based on card count
+            // =========================
+            if (hand.has.size >= playerCardCounts[i]) {
+                // If a player has all the cards allowed in their hand, check everything else off
                 for (const card of packedSet) {
-                    if (!group.has(card) && !hand.has.has(card)) hand.missing.add(card);
+                    if (!hand.has.has(card)) hand.missing.add(card);
+                }
+            } else if (hand.missing.size >= totalCards - playerCardCounts[i]) {
+                // If a player has every card crossed off except for the # of cards in their hand, they must have those cards
+                for (const card of packedSet) {
+                    if (!hand.missing.has(card)) hand.has.add(card);
                 }
             }
-        }
-        // =========================
-        // If the amount of disjoint maybeGroups in the player's hand
-        // equals the number of unknown cards in their hand,
-        // all cards outside of those maybeGroups can be eliminated from the possibilities.
-        // This is a generalization of the previous case, but it is harder to compute so we try the former first
-        // =========================
-        else if (Object.keys(hand.maybeGroups).length >= playerCardCounts[i] - hand.has.size) {
-            const eligibleGroups = Object.values(hand.maybeGroups).filter(cards =>
-                cards.isDisjointFrom(hand.has),
-            );
-            if (eligibleGroups.length) {
-                const disjointGroups = approximateMDS(eligibleGroups);
 
-                if (disjointGroups.length >= playerCardCounts[i] - hand.has.size) {
-                    const cardsInHand = disjointGroups.reduce((union, current) =>
-                        union.union(current),
-                    );
+            // =========================
+            // If a player is confirmed to have a card, mark it as missing for everyone else
+            // =========================
+            for (const card of hand.has) {
+                hands
+                    // All other hands
+                    .filter(otherHand => otherHand !== hand)
+                    // Mark card missing
+                    .forEach(otherHand => otherHand.missing.add(card));
+            }
 
-                    const missingCards = new Set(packedSet)
-                        .difference(hand.has)
-                        .difference(cardsInHand);
+            // =========================
+            // Make sure that no player has cards appearing in more than one list
+            // =========================
+            if (hand.has.intersection(hand.missing).size !== 0) {
+                console.error('Player', i, hand, hand.has.intersection(hand.missing));
+                throw new Error('A player is marked as both having and not having a card');
+            }
 
-                    for (const card of missingCards) hand.missing.add(card);
+            const hasAndMaybe = hand.has.intersection(hand.maybe);
+            const missingAndMaybe = hand.missing.intersection(hand.maybe);
+            const toRemove = hasAndMaybe.union(missingAndMaybe);
+            toRemove.forEach(card => hand.maybe.delete(card));
+
+            // =========================
+            // Update maybeGroups
+            // =========================
+            const emptied: string[] = [];
+            for (const [key, maybeGroup] of Object.entries(hand.maybeGroups)) {
+                // Remove any cards from maybeGroups that are marked missing
+                maybeGroup.intersection(hand.missing).forEach(card => maybeGroup.delete(card));
+
+                // If the group has one card, mark it as "has"
+                if (maybeGroup.size === 1) {
+                    const finalCard = maybeGroup.values().next().value!;
+                    hand.has.add(finalCard);
+                    maybeGroup.delete(finalCard);
                 }
-            }
-        }
 
-        // =========================
-        // Actions based on card count
-        // =========================
-        if (hand.has.size >= playerCardCounts[i]) {
-            // If a player has all the cards allowed in their hand, check everything else off
-            for (const card of packedSet) {
-                if (!hand.has.has(card)) hand.missing.add(card);
-            }
-        } else if (hand.missing.size >= totalCards - playerCardCounts[i]) {
-            // If a player has every card crossed off except for the # of cards in their hand, they must have those cards
-            for (const card of packedSet) {
-                if (!hand.missing.has(card)) hand.has.add(card);
-            }
-        }
-
-        // =========================
-        // If a player is confirmed to have a card, mark it as missing for everyone else
-        // =========================
-        for (const card of hand.has) {
-            hands
-                // All other hands
-                .filter(otherHand => otherHand !== hand)
-                // Mark card missing
-                .forEach(otherHand => otherHand.missing.add(card));
-        }
-
-        // =========================
-        // Make sure that no player has cards appearing in more than one list
-        // =========================
-        if (hand.has.intersection(hand.missing).size !== 0) {
-            console.error('Player', i, hand, hand.has.intersection(hand.missing));
-            throw new Error('A player is marked as both having and not having a card');
-        }
-
-        const hasAndMaybe = hand.has.intersection(hand.maybe);
-        const missingAndMaybe = hand.missing.intersection(hand.maybe);
-        const toRemove = hasAndMaybe.union(missingAndMaybe);
-        toRemove.forEach(card => hand.maybe.delete(card));
-
-        // =========================
-        // Update maybeGroups
-        // =========================
-        const emptied: string[] = [];
-        for (const [key, maybeGroup] of Object.entries(hand.maybeGroups)) {
-            // Remove any cards from maybeGroups that are marked missing
-            maybeGroup.intersection(hand.missing).forEach(card => maybeGroup.delete(card));
-
-            // If the group has one card, mark it as "has"
-            if (maybeGroup.size === 1) {
-                const finalCard = maybeGroup.values().next().value!;
-                hand.has.add(finalCard);
-                maybeGroup.delete(finalCard);
+                // If the group is empty or no longer contains any actual maybes, mark it for deletion
+                if (maybeGroup.size === 0 || maybeGroup.isDisjointFrom(hand.maybe))
+                    emptied.push(key);
             }
 
-            // If the group is empty or no longer contains any actual maybes, mark it for deletion
-            if (maybeGroup.size === 0 || maybeGroup.isDisjointFrom(hand.maybe)) emptied.push(key);
+            emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
         }
 
-        emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
-    }
+        // These variables are used in the inference below the following one,
+        // but the immediately following one can add cards
+        const allHasPacked = hands.map(hand => hand.has).reduce((allHas, has) => allHas.union(has));
+        const allHas: [Set<number>, Set<number>, Set<number>] = [new Set(), new Set(), new Set()];
 
-    // These variables are used in the inference below the following one,
-    // but the immediately following one can add cards
-    const allHasPacked = hands.map(hand => hand.has).reduce((allHas, has) => allHas.union(has));
-    const allHas: [Set<number>, Set<number>, Set<number>] = [new Set(), new Set(), new Set()];
+        // =========================
+        // If there are two maybe groups of size 2 that are common between two players,
+        // then one card in the group must be held by each player (i.e. they cannot be murder cards)
+        // =========================
+        const sizeTwoGroups = hands.map(hand =>
+            Object.values(hand.maybeGroups).filter(group => group.size == 2),
+        );
 
-    // =========================
-    // If there are two maybe groups of size 2 that are common between two players,
-    // then one card in the group must be held by each player (i.e. they cannot be murder cards)
-    // =========================
-    const sizeTwoGroups = hands.map(hand =>
-        Object.values(hand.maybeGroups).filter(group => group.size == 2),
-    );
-
-    for (let i = 0; i < hands.length - 1; i++) {
-        if (!sizeTwoGroups[i].length) {
-            continue;
-        }
-
-        for (let j = i + 1; j < hands.length; j++) {
-            if (!sizeTwoGroups[j].length) {
+        for (let i = 0; i < hands.length - 1; i++) {
+            if (!sizeTwoGroups[i].length) {
                 continue;
             }
 
-            // See if any sets are the same
-            for (const set1 of sizeTwoGroups[i]) {
-                for (const set2 of sizeTwoGroups[j]) {
-                    if (set1.symmetricDifference(set2).size == 0) {
-                        // Get the two cards from this set
-                        const values = set1.values();
-                        const card1 = values.next().value!;
-                        const card2 = values.next().value!;
-                        allHasPacked.add(card1);
-                        allHasPacked.add(card2);
+            for (let j = i + 1; j < hands.length; j++) {
+                if (!sizeTwoGroups[j].length) {
+                    continue;
+                }
 
-                        // Rule the cards out for other players
-                        for (const hand of hands.filter(
-                            (hand, index) => index != i && index != j,
-                        )) {
-                            hand.missing.add(card1);
-                            hand.missing.add(card2);
+                // See if any sets are the same
+                for (const set1 of sizeTwoGroups[i]) {
+                    for (const set2 of sizeTwoGroups[j]) {
+                        if (set1.symmetricDifference(set2).size == 0) {
+                            // Get the two cards from this set
+                            const values = set1.values();
+                            const card1 = values.next().value!;
+                            const card2 = values.next().value!;
+                            allHasPacked.add(card1);
+                            allHasPacked.add(card2);
+
+                            // Rule the cards out for other players
+                            for (const hand of hands.filter(
+                                (hand, index) => index != i && index != j,
+                            )) {
+                                hand.missing.add(card1);
+                                hand.missing.add(card2);
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    // =========================
-    // If all but one card in a category is marked off,
-    // the remaining card must be guilty
-    // =========================
-
-    for (const packed of allHasPacked) {
-        const [type, card] = unpackCard(packed);
-        allHas[type as 0 | 1 | 2].add(card);
-    }
-
-    for (const [type, cards] of allHas.entries()) {
-        const setType = set[cardTypeToKey(type)];
-        if (cards.size === setType.length - 1) {
-            // Find the card that is not held by any player
-            const possible = new Set(new Array(setType.length).keys());
-            const card = possible.difference(cards).values().next().value!;
-            // Mark this card as missing for all players
-            const packed = packCard(type, card);
-            for (const hand of hands) hand.missing.add(packed);
+        // =========================
+        // If all but one card in a category is marked off,
+        // the remaining card must be guilty
+        // =========================
+        for (const packed of allHasPacked) {
+            const [type, card] = unpackCard(packed);
+            allHas[type as 0 | 1 | 2].add(card);
         }
-    }
 
-    const guiltyIsKnown = guiltyFromHands(hands);
-
-    // =========================
-    // If all but one player has a card marked missing,
-    // and the guilty card for that category is known,
-    // that one player must have the card
-    // =========================
-    if (guiltyIsKnown[0] || guiltyIsKnown[1] || guiltyIsKnown[2]) {
-        /** A mapping of packed cards to the players who do _not_ have it */
-        const missingMap: Record<number, number[]> = {};
-        for (const [player, hand] of hands.entries()) {
-            for (const card of hand.missing) {
-                missingMap[card] ||= [];
-                missingMap[card].push(player);
+        for (const [type, cards] of allHas.entries()) {
+            const setType = set[cardTypeToKey(type)];
+            if (cards.size === setType.length - 1) {
+                // Find the card that is not held by any player
+                const possible = new Set(new Array(setType.length).keys());
+                const card = possible.difference(cards).values().next().value!;
+                // Mark this card as missing for all players
+                const packed = packCard(type, card);
+                for (const hand of hands) hand.missing.add(packed);
             }
         }
 
-        for (const [card, missingPlayers] of Object.entries(missingMap)) {
-            if (missingPlayers.length === hands.length - 1) {
-                // Ignore if the guilty card is not known for this category
-                const [type] = unpackCard(parseInt(card));
-                if (!guiltyIsKnown[type as 0 | 1 | 2]) continue;
+        const guiltyIsKnown = guiltyFromHands(hands);
 
-                // Find the player that does not have the card
-                const player = Array.from(new Array(hands.length).keys()).find(
-                    player => !missingPlayers.includes(player),
-                )!;
-                // Mark them as having the card
-                hands[player].has.add(parseInt(card));
+        // =========================
+        // If all but one player has a card marked missing,
+        // and the guilty card for that category is known,
+        // that one player must have the card
+        // =========================
+        if (guiltyIsKnown[0] || guiltyIsKnown[1] || guiltyIsKnown[2]) {
+            /** A mapping of packed cards to the players who do _not_ have it */
+            const missingMap: Record<number, number[]> = {};
+            for (const [player, hand] of hands.entries()) {
+                for (const card of hand.missing) {
+                    missingMap[card] ||= [];
+                    missingMap[card].push(player);
+                }
+            }
+
+            for (const [card, missingPlayers] of Object.entries(missingMap)) {
+                if (missingPlayers.length === hands.length - 1) {
+                    // Ignore if the guilty card is not known for this category
+                    const [type] = unpackCard(parseInt(card));
+                    if (!guiltyIsKnown[type as 0 | 1 | 2]) continue;
+
+                    // Find the player that does not have the card
+                    const player = Array.from(new Array(hands.length).keys()).find(
+                        player => !missingPlayers.includes(player),
+                    )!;
+                    // Mark them as having the card
+                    hands[player].has.add(parseInt(card));
+                }
             }
         }
-    }
+    } while (!handsEqual(hands, lastHands));
 
-    // Recurse if the hands changed
-    if (handsEqual(hands, lastHands)) return hands;
-    return _infer(playerCardCounts, set, hands, packedSet);
+    return hands;
 }
 
 /**
@@ -383,7 +387,7 @@ export function infer(
     const startingHands = emptyHands(players);
 
     // =======================
-    // Non-recursive inference
+    // Non-iterative inference
     // =======================
     // Handle custom knowns
     for (const known of knowns) {
@@ -437,9 +441,10 @@ export function infer(
     }
 
     // ==============================
-    // End of non-recursive inference
+    // End of non-iterative inference
     // ==============================
 
+    // Run iterative inference
     const hands = _infer(playerCardCounts, set, startingHands, packedSet);
 
     /** All innocent cards, derived from {@link knowns}. */
