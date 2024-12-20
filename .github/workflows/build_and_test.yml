@@ -36,14 +36,11 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - name: Stupid
-              run: echo $HOME
-
             - name: Yarn cache
               uses: actions/cache@v4
               id: yarn-cache
               with:
-                  path: ${{ env }}/.yarn
+                  path: /home/runner/.yarn
                   key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
                   restore-keys: |
                       ${{ runner.os }}-yarn-
