@@ -30,6 +30,7 @@ build:
     script:
         # Rust configuration + build
         - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        - . "$HOME/.cargo/env"
         - rustup update
         - cd inference
         - cargo check
