@@ -29,7 +29,7 @@ export default [
     },
     {
         ignores: [
-            'cargo',
+            '.cargo',
             '.rustup',
             '.svelte-kit/',
             'dist/',
