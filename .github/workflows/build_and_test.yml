@@ -29,7 +29,7 @@ on:
 
 jobs:
     build:
-        name: Build
+        name: Build & Test
         runs-on: ubuntu-latest
 
         steps:
@@ -61,7 +61,7 @@ jobs:
                   corepack enable
                   corepack install
                   yarn --version
-                  yarn install
+                  YARN_CHECKSUM_BEHAVIOR=update yarn install
 
             - name: Lint project
               run: |
