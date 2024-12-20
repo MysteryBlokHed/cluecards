@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet};
 
 use itertools::Itertools;
 use serde::{Deserialize, Deserializer, Serialize};
@@ -36,14 +36,14 @@ pub struct PlayerHand {
     missing: BTreeSet<u8>,
     maybe: BTreeSet<u8>,
     #[serde(deserialize_with = "string_to_usize_keys")]
-    maybe_groups: HashMap<usize, BTreeSet<u8>>,
+    maybe_groups: BTreeMap<usize, BTreeSet<u8>>,
 }
 
 fn string_to_usize_keys<'de, D: Deserializer<'de>, T: serde::Deserialize<'de>>(
     deserializer: D,
-) -> Result<HashMap<usize, T>, D::Error> {
-    let string_keys: HashMap<String, T> = HashMap::deserialize(deserializer)?;
-    let mut converted = HashMap::new();
+) -> Result<BTreeMap<usize, T>, D::Error> {
+    let string_keys: BTreeMap<String, T> = BTreeMap::deserialize(deserializer)?;
+    let mut converted = BTreeMap::new();
     for (key, value) in string_keys {
         converted.insert(key.parse().map_err(serde::de::Error::custom)?, value);
     }
@@ -139,7 +139,7 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
         // The index of max_intersection_set in overall sets
         let mut max_index: Option<usize> = None;
         // Sets that each set intersects with
-        let mut all_intersecting_sets: HashMap<usize, Box<[&BTreeSet<T>]>> = HashMap::new();
+        let mut all_intersecting_sets: BTreeMap<usize, Box<[&BTreeSet<T>]>> = BTreeMap::new();
 
         for (i, set) in sets.iter().enumerate() {
             // Find sets that this set intersects with
@@ -507,7 +507,7 @@ fn infer_iterative(
             || guilty_is_known[2].is_some()
         {
             // A mapping of packed cards to players who do _not_ have it
-            let mut missing_map = HashMap::<u8, Vec<usize>>::new();
+            let mut missing_map = BTreeMap::<u8, Vec<usize>>::new();
             for (player, hand) in hands.iter().enumerate() {
                 for packed in hand.missing.iter() {
                     missing_map.entry(*packed).or_default().push(player);
@@ -721,7 +721,7 @@ fn probabilities_recursive(
     pack_offset: usize,
     seen: &mut BTreeSet<String>,
     limit: f64,
-    occurrences: &mut HashMap<(u8, u8, u8), usize>,
+    occurrences: &mut BTreeMap<(u8, u8, u8), usize>,
     start: f64,
 ) {
     let player_count = hands.len();
@@ -831,7 +831,7 @@ pub fn probabilities(
 
     let packed_set = pack_set(&set);
 
-    let mut occurrences = HashMap::new();
+    let mut occurrences = BTreeMap::new();
 
     probabilities_recursive(
         &suggestions,
