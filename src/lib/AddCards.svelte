@@ -1,5 +1,3 @@
-<svelte:options runes />
-
 <script lang="ts">
     import Button, { Label, Icon } from '@smui/button';
     import IconButton from '@smui/icon-button';

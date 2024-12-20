@@ -27,10 +27,11 @@
     } from './stores';
     import { infer, stripSuggestions, updateSuggestions } from './inference';
     import type { Suggestion } from './types';
+    import { untrack } from 'svelte';
 
-    let amendedSuggestions: Suggestion[] = structuredClone($suggestions);
+    let amendedSuggestions: Suggestion[] = $state(structuredClone($suggestions));
 
-    let activeTab: string = 'Set Selector';
+    let activeTab: string = $state('Set Selector');
 
     // Update viewport based on device size
     window.addEventListener(
@@ -44,45 +45,64 @@
         { once: true },
     );
 
-    $: {
-        // Run inferences
-        const [newHands, newInnocents] = infer(
-            $suggestions,
+    $effect(() => {
+        // @ts-expect-error Just to manually set dependencies
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        $suggestions,
             $startingKnowns,
             $players.length,
             $playerCardCounts,
-            $set[1],
-            $preferences.firstIsSelf,
-        );
+            $set,
+            $preferences,
+            $playerPov;
 
-        $playerHands = newHands;
-        $innocents = newInnocents;
-
-        // Update suggestion details
-        amendedSuggestions = updateSuggestions($suggestions, newHands);
-
-        // If we are trying to see another player's POV
-        if ($preferences.firstIsSelf && $playerPov !== 0) {
-            const updatedSuggestions = stripSuggestions(amendedSuggestions, $playerPov);
-
-            const updatedStartingKnowns = $startingKnowns.filter(
-                known => known.type === 'innocent' && known.player === $playerPov,
-            );
-
-            // Re-run inferences
+        // Figuring out dependencies was too much of a disaster so let's just untrack the whole thing
+        untrack(() => {
+            // Run inferences
             const [newHands, newInnocents] = infer(
-                updatedSuggestions,
-                updatedStartingKnowns,
+                $suggestions,
+                $startingKnowns,
                 $players.length,
                 $playerCardCounts,
                 $set[1],
-                false,
+                $preferences.firstIsSelf,
+            );
+
+            // Update suggestion details
+            amendedSuggestions = updateSuggestions(
+                $state.snapshot($suggestions) as Suggestion[],
+                newHands,
             );
 
             $playerHands = newHands;
             $innocents = newInnocents;
-        }
-    }
+
+            // If we are trying to see another player's POV
+            if ($preferences.firstIsSelf && $playerPov !== 0) {
+                const updatedSuggestions = stripSuggestions(
+                    $state.snapshot(amendedSuggestions) as Suggestion[],
+                    $playerPov,
+                );
+
+                const updatedStartingKnowns = $startingKnowns.filter(
+                    known => known.type === 'innocent' && known.player === $playerPov,
+                );
+
+                // Re-run inferences
+                const [newHands, newInnocents] = infer(
+                    updatedSuggestions,
+                    updatedStartingKnowns,
+                    $players.length,
+                    $playerCardCounts,
+                    $set[1],
+                    false,
+                );
+
+                $playerHands = newHands;
+                $innocents = newInnocents;
+            }
+        });
+    });
 
     function removeSuggestion(index: number) {
         $suggestions.splice(index, 1);

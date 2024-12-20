@@ -8,10 +8,10 @@
     import { findSuggestionForces } from '../../inference';
     import { players, playerHands, set } from '../../stores';
 
-    let forceDialogOpen = false;
-    let potentialForceTargets: number[] = [];
-    let forceTarget: number | null = null;
-    let potentialForceSuggestions: Record<number, Array<[string, string[]]>> = {};
+    let forceDialogOpen = $state(false);
+    let potentialForceTargets: number[] = $state([]);
+    let forceTarget: number | null = $state(null);
+    let potentialForceSuggestions: Record<number, Array<[string, string[]]>> = $state({});
 
     function forceReveal() {
         const packedSet = packSet($set[1]);

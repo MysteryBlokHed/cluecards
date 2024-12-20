@@ -10,13 +10,17 @@
     import { playerCardCounts, playerHands, preferences, set, startingKnowns } from '../../stores';
     import type { Suggestion } from '../../types';
 
-    export let amendedSuggestions: readonly Suggestion[];
+    export interface Props {
+        amendedSuggestions: readonly Suggestion[];
+    }
 
-    let oddsOpen = false;
-    let showPercentages = true;
-    let overrideBody = '';
-    let oddsTable: Record<string, number> = {};
-    let totalOccurences = 0;
+    let { amendedSuggestions }: Props = $props();
+
+    let oddsOpen = $state(false);
+    let showPercentages = $state(true);
+    let overrideBody = $state('');
+    let oddsTable: Record<string, number> = $state({});
+    let totalOccurences = $state(0);
 
     function calculateOdds() {
         oddsTable = {};
@@ -28,9 +32,9 @@
 
         try {
             probs = probabilities(
-                amendedSuggestions,
+                $state.snapshot(amendedSuggestions) as Suggestion[],
                 $set[1],
-                $playerHands,
+                $state.snapshot($playerHands),
                 $playerCardCounts,
                 $preferences.firstIsSelf,
                 $startingKnowns,

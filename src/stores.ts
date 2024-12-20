@@ -36,13 +36,14 @@ set.subscribe(newSet => (sessionStorage.setName = newSet[0]));
 
 export const players = persistent('players', ['', '', '']);
 
-export const playerHands = writable<PlayerHand[]>([
-    { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} },
-    { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} },
-    { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} },
-]);
-
 export const playerCardCounts = persistent('playerCards', [6, 6, 6]);
+
+const playerHandsInit: PlayerHand[] = [];
+for (let i = 0; i < get(playerCardCounts).length; i++) {
+    playerHandsInit.push({ has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} });
+}
+
+export const playerHands = writable<PlayerHand[]>(playerHandsInit);
 
 export const innocents = writable<Set<number>>(new Set());
 

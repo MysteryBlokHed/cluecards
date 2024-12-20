@@ -10,18 +10,26 @@
         innocents,
         set,
         preferences,
+        playerPov,
     } from '../../stores';
 
-    export let type: CardType;
-    let sortedMaybeGroups: Array<Array<[string, Set<number>]>>;
-    $: sortedMaybeGroups = $playerHands
-        // Get maybeGroups
-        .map(hand => hand.maybeGroups)
-        // Sort by key
-        .map(group => Object.entries(group).sort(([a], [b]) => parseInt(a) - parseInt(b)));
+    export interface Props {
+        type: CardType;
+    }
 
-    let hideFirst: boolean;
-    $: hideFirst = $preferences.hideFirstColumn && $preferences.firstIsSelf;
+    let { type }: Props = $props();
+
+    let sortedMaybeGroups = $derived(
+        $playerHands
+            // Get maybeGroups
+            .map(hand => hand.maybeGroups)
+            // Sort by key
+            .map(group => Object.entries(group).sort(([a], [b]) => parseInt(a) - parseInt(b))),
+    );
+
+    let hideFirst = $derived(
+        $preferences.hideFirstColumn && $preferences.firstIsSelf && $playerPov === 0,
+    );
 </script>
 
 <div style="display: table-row;">

@@ -10,11 +10,13 @@
     import SETS from '../sets';
     import { set, sets } from '../stores';
 
-    let setName = $set[0];
-    $: $set = [setName, $sets[setName]];
+    let setName = $state($set[0]);
+    $effect(() => {
+        $set = [setName, $sets[setName]];
+    });
 
-    let creatorOpen = false;
-    let updating: string | null = null;
+    let creatorOpen = $state(false);
+    let updating: string | null = $state(null);
 
     function deleteSet() {
         delete $sets[setName];

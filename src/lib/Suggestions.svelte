@@ -4,19 +4,21 @@
     import Paper from '@smui/paper';
 
     import { players, playerHands, set } from '../stores';
-    import { CardType, RevealMethod, type GameSet, type Suggestion } from '../types';
+    import { CardType, RevealMethod, type Suggestion } from '../types';
     import { cardTypeToKey, cardTypeToString, packCard } from '../cards';
     import SourceTooltip from './SourceTooltip.svelte';
 
-    export let suggestions: Suggestion[];
-    export let showExtraPossible = false;
-    export let title: string;
-    export let open = false;
+    export interface Props {
+        suggestions: Suggestion[];
+        showExtraPossible?: boolean | undefined;
+        title: string;
+        open?: boolean | undefined;
+        remove: (index: number) => void;
+    }
 
-    export let remove: (index: number) => void;
+    let { suggestions, showExtraPossible = false, title, open = false, remove }: Props = $props();
 
-    let setContents: GameSet;
-    $: setContents = $set[1];
+    let setContents = $derived($set[1]);
 
     function getPossibleCards(cards: Suggestion['cards'], player: number): string[] {
         // Convert suggestion cards to [type, card] format

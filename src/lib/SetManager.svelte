@@ -4,29 +4,34 @@
     import IconButton from '@smui/icon-button';
     import Textfield from '@smui/textfield';
 
-    import { get } from 'svelte/store';
-
     import { set as activeSet, sets } from '../stores';
     import type { GameSet } from '../types';
     import { decompressFromBase64 } from 'lz-string';
 
-    export let creatorOpen = false;
-    export let updating: string | null = null;
-    let setName: string = '';
-    let set: GameSet;
-
-    $: if (updating != null) {
-        setName = updating;
-        set = structuredClone(get(sets)[setName]);
+    export interface Props {
+        creatorOpen: boolean;
+        updating: string | null;
     }
 
-    let setIsValid = false;
+    let { creatorOpen = $bindable(), updating = $bindable() }: Props = $props();
 
-    $: {
-        setIsValid = false;
+    let setName: string = $state('');
+    let set: GameSet = $state(null);
+
+    function updateActiveSet(updating: string | null) {
+        if (updating != null) {
+            setName = updating;
+            set = structuredClone($sets[setName]);
+        }
+    }
+
+    $effect(() => updateActiveSet(updating));
+
+    let setIsValid = $derived.by(() => {
+        if (!set) return false;
         // Ensure at least 2 of each category
         if (set.suspects.length < 2 || set.weapons.length < 2 || set.rooms.length < 2) {
-            break $;
+            return false;
         }
         // Ensure everything has a value
         if (
@@ -34,7 +39,7 @@
             set.weapons.some(val => !val) ||
             set.rooms.some(val => !val)
         ) {
-            break $;
+            return false;
         }
         // Ensure values are unique across all categories
         const suspectSet = new Set(set.suspects.map(val => val.trim()));
@@ -42,11 +47,11 @@
         const roomSet = new Set(set.rooms.map(val => val.trim()));
         const totalSet = suspectSet.union(weaponSet).union(roomSet);
         if (totalSet.size !== set.suspects.length + set.weapons.length + set.rooms.length) {
-            break $;
+            return false;
         }
 
-        setIsValid = true;
-    }
+        return true;
+    });
 
     function resetSet() {
         set = {
@@ -126,8 +131,8 @@
                 <tr>
                     <td>
                         <br />
-                        {#each set.suspects as suspect, i}
-                            <Textfield bind:value={suspect} label="Suspect" />
+                        {#each set.suspects, i}
+                            <Textfield bind:value={set.suspects[i]} label="Suspect" />
                             <IconButton
                                 class="material-icons"
                                 onclick={() => {
@@ -140,8 +145,8 @@
                     </td>
                     <td>
                         <br />
-                        {#each set.weapons as weapon, i}
-                            <Textfield bind:value={weapon} label="Weapon" />
+                        {#each set.weapons, i}
+                            <Textfield bind:value={set.weapons[i]} label="Weapon" />
                             <IconButton
                                 class="material-icons"
                                 onclick={() => {
@@ -154,8 +159,8 @@
                     </td>
                     <td>
                         <br />
-                        {#each set.rooms as room, i}
-                            <Textfield bind:value={room} label="Room" />
+                        {#each set.rooms, i}
+                            <Textfield bind:value={set.rooms[i]} label="Room" />
                             <IconButton
                                 class="material-icons"
                                 onclick={() => {
