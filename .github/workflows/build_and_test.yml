@@ -11,7 +11,7 @@ on:
             - package.json
             - tsconfig*.json
             - yarn.lock
-            - .gitlab-ci.yml
+            - .github/workflows/build_and_test.yml
             - .prettier*
     push:
         branches:
@@ -24,7 +24,7 @@ on:
             - package.json
             - tsconfig*.json
             - yarn.lock
-            - .gitlab-ci.yml
+            - .github/workflows/build_and_test.yml
             - .prettier*
 
 jobs:
