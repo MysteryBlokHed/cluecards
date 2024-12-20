@@ -23,9 +23,18 @@ build:
               files:
                   - yarn.lock
           paths:
+              - ~/.cargo/
+              - ~/.rustup/
               - node_modules/
               - .yarn/install-state.gz
     script:
+        # Rust configuration + build
+        - apt-get install -y rustup
+        - rustup update
+        - cd inference
+        - wasm-pack build --release --target bundler
+        - cd ..
+        # TypeScript configuration + build
         - corepack enable
         - corepack install --global yarn@stable
         - YARN_CHECKSUM_BEHAVIOR=update yarn install
