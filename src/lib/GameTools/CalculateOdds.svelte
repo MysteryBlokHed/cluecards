@@ -81,7 +81,9 @@
         {:else}
             <FormField>
                 <Switch bind:checked={showPercentages} />
-                <span slot="label">Show Percentages</span>
+                {#snippet label()}
+                    Show Percentages
+                {/snippet}
             </FormField>
             <DataTable table$aria-label="Table of card odds">
                 <Head>
