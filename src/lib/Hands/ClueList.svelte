@@ -24,7 +24,7 @@
             // Get maybeGroups
             .map(hand => hand.maybeGroups)
             // Sort by key
-            .map(group => Object.entries(group).sort(([a], [b]) => parseInt(a) - parseInt(b))),
+            .map(group => [...group.entries()].sort(([a], [b]) => a - b)),
     );
 
     let hideFirst = $derived(

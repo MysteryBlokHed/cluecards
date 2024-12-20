@@ -1,4 +1,7 @@
 import 'core-js/actual/iterator/every';
+import 'core-js/actual/iterator/filter';
+import 'core-js/actual/iterator/map';
+import 'core-js/actual/iterator/some';
 import 'core-js/actual/set/difference';
 import 'core-js/actual/set/intersection';
 import 'core-js/actual/set/is-disjoint-from';

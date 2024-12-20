@@ -40,7 +40,12 @@ export const playerCardCounts = persistent('playerCards', [6, 6, 6]);
 
 const playerHandsInit: PlayerHand[] = [];
 for (let i = 0; i < get(playerCardCounts).length; i++) {
-    playerHandsInit.push({ has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} });
+    playerHandsInit.push({
+        has: new Set(),
+        missing: new Set(),
+        maybe: new Set(),
+        maybeGroups: new Map(),
+    });
 }
 
 export const playerHands = writable<PlayerHand[]>(playerHandsInit);

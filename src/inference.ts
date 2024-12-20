@@ -35,7 +35,12 @@ export function handsHasToString(hands: readonly PlayerHand[]) {
 export function emptyHands(players: number) {
     const hands: PlayerHand[] = [];
     for (let i = 0; i < players; i++) {
-        hands.push({ has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} });
+        hands.push({
+            has: new Set(),
+            missing: new Set(),
+            maybe: new Set(),
+            maybeGroups: new Map(),
+        });
     }
     return hands;
 }

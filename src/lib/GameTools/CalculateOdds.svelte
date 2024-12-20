@@ -58,7 +58,7 @@
                 .map((card, type) => $set[1][cardTypeToKey(type)][card]);
             oddsTable[cards.join(', ')] = count;
         }
-        console.table(oddsTable);
+        console.table($state.snapshot(oddsTable));
 
         console.timeEnd('Calculating and displaying probabilities');
 
