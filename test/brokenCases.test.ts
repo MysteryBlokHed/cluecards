@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 
-import { handsEqual, infer } from '../src/inference';
+import { handsEqual } from '../src/inference';
+import { infer } from '../inference/pkg/inference';
+
 import SETS from '../src/sets';
 import type { Known, Suggestion } from '../src/types';
 import * as states from './states';

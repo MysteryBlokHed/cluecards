@@ -6,7 +6,7 @@
     import Switch from '@smui/switch';
 
     import { cardTypeToKey } from '../../cards';
-    import { probabilities } from '../../inference';
+    import { probabilities } from '../../../inference/pkg/inference';
     import { playerCardCounts, playerHands, preferences, set, startingKnowns } from '../../stores';
     import type { Suggestion } from '../../types';
 
