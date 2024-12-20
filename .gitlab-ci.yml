@@ -29,7 +29,7 @@ build:
               - .yarn/install-state.gz
     script:
         # Rust configuration + build
-        - apt-get install -y rustup
+        - apt-get update && apt-get install -y rustup
         - rustup update
         - cd inference
         - cargo check
