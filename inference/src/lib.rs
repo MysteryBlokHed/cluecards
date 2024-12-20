@@ -1,7 +1,7 @@
 use std::collections::{BTreeSet, HashMap};
 
 use itertools::Itertools;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_wasm_bindgen::from_value;
 use wasm_bindgen::prelude::*;
 
@@ -35,7 +35,20 @@ pub struct PlayerHand {
     has: BTreeSet<u8>,
     missing: BTreeSet<u8>,
     maybe: BTreeSet<u8>,
+    #[serde(deserialize_with = "string_to_usize_keys")]
     maybe_groups: HashMap<usize, BTreeSet<u8>>,
+}
+
+fn string_to_usize_keys<'de, D: Deserializer<'de>, T: serde::Deserialize<'de>>(
+    deserializer: D,
+) -> Result<HashMap<usize, T>, D::Error> {
+    let string_keys: HashMap<String, T> = HashMap::deserialize(deserializer)?;
+    let mut converted = HashMap::new();
+    for (key, value) in string_keys {
+        converted.insert(key.parse().map_err(serde::de::Error::custom)?, value);
+    }
+
+    Ok(converted)
 }
 
 impl PlayerHand {
