@@ -27,6 +27,7 @@ build:
               - ~/.rustup/
               - node_modules/
               - .yarn/install-state.gz
+              - inference/target/
     script:
         # Rust configuration + build
         - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
