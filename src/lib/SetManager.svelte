@@ -16,6 +16,7 @@
     let { creatorOpen = $bindable(), updating = $bindable() }: Props = $props();
 
     let setName: string = $state('');
+    // @ts-expect-error This null is resolved before anything actually tries to use it
     let set: GameSet = $state(null);
 
     function updateActiveSet(updating: string | null) {
