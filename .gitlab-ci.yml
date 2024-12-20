@@ -32,6 +32,7 @@ build:
         - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         - . "$HOME/.cargo/env"
         - rustup update
+        - cargo install wasm-pack
         - cd inference
         - cargo check
         - wasm-pack build --release --target bundler
