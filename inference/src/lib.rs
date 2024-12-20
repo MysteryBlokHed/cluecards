@@ -132,12 +132,17 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
     let mut disjoint_sets = Vec::new();
 
     while !sets.is_empty() {
+        // Current set with the most intersections
         let mut max_intersection_set: Option<&BTreeSet<T>> = None;
+        // Number of intersections associated with max_intersection_set
         let mut max_intersections = 0usize;
+        // The index of max_intersection_set in overall sets
         let mut max_index: Option<usize> = None;
+        // Sets that each set intersects with
         let mut all_intersecting_sets: HashMap<usize, Box<[&BTreeSet<T>]>> = HashMap::new();
 
         for (i, set) in sets.iter().enumerate() {
+            // Find sets that this set intersects with
             let intersecting_sets = sets
                 .iter()
                 .filter(|candidate| !candidate.is_disjoint(set))
@@ -147,6 +152,7 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
             let intersections = intersecting_sets.len();
             all_intersecting_sets.insert(i, intersecting_sets);
 
+            // Update highest-intersection set if required
             if intersections > max_intersections {
                 max_intersections = intersections;
                 max_intersection_set = Some(set);
@@ -154,12 +160,16 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
             }
         }
 
+        // No eligible set
         if max_intersection_set.is_none() {
             break;
         }
 
+        // Current set with the fewest intersections
         let mut min_intersection_set: Option<&BTreeSet<T>> = None;
+        // Number of intersections associated with min_intersection_set
         let mut min_intersections = usize::MAX;
+        // The index of min_intersection_set in overall sets
         let mut min_index: Option<usize> = None;
 
         for candidate in all_intersecting_sets
@@ -169,6 +179,7 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
         {
             let i = sets.iter().position(|x| x == candidate).unwrap();
             let intersections = all_intersecting_sets.get(&i).unwrap().len();
+            // Update lowest-intersection set if required
             if intersections < min_intersections {
                 min_intersections = intersections;
                 min_intersection_set = Some(candidate);
@@ -177,12 +188,15 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
         }
 
         let Some(min_intersection_set) = min_intersection_set else {
+            // No eligible set
             break;
         };
 
+        // Save this set and remove it from the original list
         disjoint_sets.push(min_intersection_set);
         sets.remove(min_index.unwrap());
 
+        // Remove all sets that minIntersectionSet intersected with
         for set in all_intersecting_sets
             .get(&min_index.unwrap())
             .unwrap()
@@ -195,6 +209,7 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
         }
     }
 
+    // Return the final list
     disjoint_sets
 }
 
