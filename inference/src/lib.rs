@@ -5,6 +5,10 @@ use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::from_value;
 use wasm_bindgen::prelude::*;
 
+#[global_allocator]
+#[cfg(target_arch = "wasm32")]
+static ALLOC: mini_alloc::MiniAlloc = mini_alloc::MiniAlloc::INIT;
+
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct GameSet {

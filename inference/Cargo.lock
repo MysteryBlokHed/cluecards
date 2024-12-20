@@ -26,6 +26,7 @@ version = "0.0.0"
 dependencies = [
  "itertools",
  "js-sys",
+ "mini-alloc",
  "serde",
  "serde-wasm-bindgen",
  "wasm-bindgen",
@@ -55,6 +56,15 @@ name = "log"
 version = "0.4.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
+
+[[package]]
+name = "mini-alloc"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14eacc4bfcf10da9b6d5185ef51b2dc75434afac34b4d8aabe40f6b141ee071c"
+dependencies = [
+ "cfg-if",
+]
 
 [[package]]
 name = "once_cell"
