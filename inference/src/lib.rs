@@ -1,7 +1,4 @@
-use std::{
-    collections::{BTreeSet, HashMap},
-    hint::unreachable_unchecked,
-};
+use std::collections::{BTreeSet, HashMap};
 
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};

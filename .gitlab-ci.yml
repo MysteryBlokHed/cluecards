@@ -32,6 +32,7 @@ build:
         - apt-get install -y rustup
         - rustup update
         - cd inference
+        - cargo check
         - wasm-pack build --release --target bundler
         - cd ..
         # TypeScript configuration + build
