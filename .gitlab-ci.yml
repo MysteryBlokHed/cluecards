@@ -26,6 +26,7 @@ build:
         - key:
               prefix: $CI_MERGE_REQUEST_IID
               files:
+                  - inference/Cargo.lock
                   - yarn.lock
           paths:
               - $CARGO_HOME
