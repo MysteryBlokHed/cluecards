@@ -40,18 +40,7 @@ jobs:
               id: yarn-cache-dir-path
               run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
 
-            - name: Yarn cache
-              uses: actions/cache@v4
-              id: yarn-cache
-              with:
-                  path: |
-                      ${{ steps.yarn-cache-dir-path.outputs.dir }}
-                      .yarn/install-state.gz
-                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-                  restore-keys: |
-                      ${{ runner.os }}-yarn-
-
-            - name: Set up node
+            - name: Set up Node
               uses: actions/setup-node@v4
               with:
                   node-version: lts/*
@@ -61,7 +50,20 @@ jobs:
                   corepack enable
                   corepack install
                   yarn --version
-                  YARN_CHECKSUM_BEHAVIOR=update yarn install
+
+            - name: Yarn cache
+              uses: actions/cache@v4
+              id: yarn-cache
+              with:
+                  path: |
+                      ${{ steps.yarn-cache-dir-path.outputs.dir }}
+                      ${{ github.workspace }}/.yarn/install-state.gz
+                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-yarn-
+
+            - name: Install dependencies
+              run: YARN_CHECKSUM_BEHAVIOR=update yarn install
 
             - name: Lint project
               run: |
