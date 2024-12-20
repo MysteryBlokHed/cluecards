@@ -47,8 +47,14 @@ pages:
     stage: deploy
     dependencies:
         - build
+    before_script:
+        - apk update
+        - apk add --no-cache brotli gzip
     script:
-        - echo Deploying to Pages
+        - echo Compressing files...
+        - find dist -type f \( -name '*.js' -o -name '*.html' -o -name '*.css' -o -name '*.wasm' \)  -exec gzip -fk {} \;
+        - find dist -type f \( -name '*.js' -o -name '*.html' -o -name '*.css' -o -name '*.wasm' \)  -exec brotli -fk {} \;
+        - echo Done. Deploying to Pages
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
