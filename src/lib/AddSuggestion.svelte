@@ -152,12 +152,12 @@
 
     <h3>
         Responses
-        <Button on:click={addResponse} variant="raised">
+        <Button onclick={addResponse} variant="raised">
             <Label>Add</Label>
             <Icon class="material-icons">add_circle</Icon>
         </Button>
         <Wrapper>
-            <Button on:click={addNoneResponses} variant="raised" color="secondary">
+            <Button onclick={addNoneResponses} variant="raised" color="secondary">
                 <Label>No Responses</Label>
                 <Icon class="material-icons">help</Icon>
             </Button>
@@ -200,7 +200,7 @@
         </Select>
         <IconButton
             class="material-icons"
-            on:click={() => {
+            onclick={() => {
                 responses.splice(i, 1);
                 responses = responses;
             }}>delete</IconButton
@@ -210,7 +210,7 @@
 
     <br />
 
-    <Button on:click={saveSuggestion} disabled={!responses.length} variant="raised">
+    <Button onclick={saveSuggestion} disabled={!responses.length} variant="raised">
         <Label>Save Suggestion</Label>
         <Icon class="material-icons">save</Icon>
     </Button>

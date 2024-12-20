@@ -1,0 +1,13 @@
+diff --git a/dist/Select.svelte b/dist/Select.svelte
+index 42b8be38714daef28427b9a5111940dbd63be959..9d28a8637678e295cf303917606bd34243a15c8d 100644
+--- a/dist/Select.svelte
++++ b/dist/Select.svelte
+@@ -425,7 +425,7 @@
+     noLabel = false,
+     label = undefined,
+     value = $bindable(),
+-    key = (item) => item,
++    key = (item) => item?.toString?.(),
+     dirty = $bindable(false),
+     invalid = $bindable(uninitializedValue as unknown as boolean),
+     updateInvalid = isUninitializedValue(invalid),

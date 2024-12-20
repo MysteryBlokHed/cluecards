@@ -45,7 +45,7 @@
     </Select>
     <IconButton
         class="material-icons"
-        on:click={() => {
+        onclick={() => {
             updating = setName;
             creatorOpen = true;
         }}>edit</IconButton
@@ -53,17 +53,17 @@
     <Wrapper>
         <IconButton
             class="material-icons"
-            on:click={() => {
+            onclick={() => {
                 navigator.clipboard.writeText(compressToBase64(JSON.stringify($set)));
             }}>content_copy</IconButton
         >
         <Tooltip>Export this set to a shareable string.</Tooltip>
     </Wrapper>
-    <IconButton class="material-icons" on:click={deleteSet}>delete</IconButton>
+    <IconButton class="material-icons" onclick={deleteSet}>delete</IconButton>
     <br />
 
     <Button
-        on:click={() => {
+        onclick={() => {
             updating = null;
             creatorOpen = true;
         }}
@@ -72,7 +72,7 @@
         <Icon class="material-icons">add</Icon>
     </Button>
     <Wrapper>
-        <Button on:click={restore}>
+        <Button onclick={restore}>
             <Label>Reload Builtin Sets</Label>
             <Icon class="material-icons">restart_alt</Icon>
         </Button>

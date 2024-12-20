@@ -6,8 +6,9 @@ import 'core-js/actual/set/symmetric-difference';
 import 'core-js/actual/set/union';
 import './app.css';
 import App from './App.svelte';
+import { mount } from 'svelte';
 
-const app = new App({
+const app = mount(App, {
     target: document.getElementById('app')!,
 });
 

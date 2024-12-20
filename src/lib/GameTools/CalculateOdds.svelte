@@ -63,7 +63,7 @@
 </script>
 
 <div>
-    <Button variant="raised" color="secondary" on:click={calculateOdds} style="width: 100%;">
+    <Button variant="raised" color="secondary" onclick={calculateOdds} style="width: 100%;">
         <Label>Calculate Odds</Label>
         <Icon class="material-icons">casino</Icon>
     </Button>

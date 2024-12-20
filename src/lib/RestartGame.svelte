@@ -19,7 +19,7 @@
 <div>
     <h2>Restart Game</h2>
     <p>Click the button below to reset the current game (players, cards, and suggestions).</p>
-    <Button on:click={restart}>
+    <Button onclick={restart}>
         <Label>Restart</Label>
         <Icon class="material-icons">restart_alt</Icon>
     </Button>
