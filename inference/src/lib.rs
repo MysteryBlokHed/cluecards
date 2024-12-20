@@ -657,21 +657,51 @@ fn infer_internal(
     Ok((hands, innocents))
 }
 
+// TypeScript types--used for documentation only
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(extends = js_sys::Array, typescript_type = "readonly Suggestion[]")]
+    pub type JsReadonlySuggestions;
+
+    #[wasm_bindgen(extends = js_sys::Array, typescript_type = "readonly Known[]")]
+    pub type JsReadonlyKnowns;
+
+    #[wasm_bindgen(extends = js_sys::Array, typescript_type = "readonly PlayerHand[]")]
+    pub type JsReadonlyPlayerHands;
+
+    #[wasm_bindgen(extends = js_sys::Object, typescript_type = "GameSet")]
+    pub type JsGameSet;
+
+    #[wasm_bindgen(extends = js_sys::Array, typescript_type = "readonly number[]")]
+    pub type JsReadonlyNumbers;
+}
+
+#[wasm_bindgen(typescript_custom_section)]
+const TYPESCRIPT: &'static str = r#"import type { Suggestion, Known, PlayerHand, GameSet } from "../../src/types.js";
+import type { updateSuggestions } from "../../src/inference.js";"#;
+
+/// Create player hand info based on suggestions and other inference.
+/// Related to {@link updateSuggestions} and should likely only be called from there.
+/// @param suggestions The suggestions to use
+/// @param knowns Any knowns to take into consideration (that are _not_ derived from suggestions)
+/// @param hands The hands to update
+/// @param firstIsSelf Whether the player at index 0 is the user
+/// @returns {[hands: PlayerHand[], innocents: Set<number>]}
 #[wasm_bindgen]
 pub fn infer(
-    suggestions: JsValue,
-    knowns: JsValue,
+    suggestions: JsReadonlySuggestions,
+    knowns: JsReadonlyKnowns,
     players: usize,
-    player_card_counts: JsValue,
+    player_card_counts: JsReadonlyNumbers,
     set: JsValue,
     first_is_self: bool,
 ) -> std::result::Result<js_sys::Array, JsError> {
     // Convert passed values to Rust versions
     let suggestions: Box<[Suggestion]> =
-        from_value(suggestions).map_err(|_| JsError::new("Failed to parse suggestions."))?;
+        from_value(suggestions.into()).map_err(|_| JsError::new("Failed to parse suggestions."))?;
     let knowns: Box<[Known]> =
-        from_value(knowns).map_err(|_| JsError::new("Failed to parse knowns."))?;
-    let player_card_counts: Box<[usize]> = from_value(player_card_counts)
+        from_value(knowns.into()).map_err(|_| JsError::new("Failed to parse knowns."))?;
+    let player_card_counts: Box<[usize]> = from_value(player_card_counts.into())
         .map_err(|_| JsError::new("Failed to parse player card counts"))?;
     #[rustfmt::skip]
     let set: GameSet =
@@ -806,28 +836,38 @@ fn probabilities_recursive(
     }
 }
 
+/// Determine the odds of each suspect/weapon/room being the murder cards
+/// @param suggestions The amended suggestion list
+/// @param set The active game set
+/// @param hands Players' hands
+/// @param playerCardCounts The amount of cards in each player's hands
+/// @param firstIsSelf Whether the first player is the user
+/// @param knowns Starting knowns
+/// @param limit Milliseconds before giving up
+/// @returns {Record<`${number}|${number}|${number}`, number>} A record of strings, representing a set of murder cards, to the amount of times those cards were found.
+/// Formatted as `suspect|weapon|room` (unpacked), eg. `2|3|3`
 #[wasm_bindgen]
 pub fn probabilities(
-    suggestions: JsValue,
-    set: JsValue,
-    hands: JsValue,
-    player_card_counts: JsValue,
+    suggestions: JsReadonlySuggestions,
+    set: JsGameSet,
+    hands: JsReadonlyPlayerHands,
+    player_card_counts: JsReadonlyNumbers,
     first_is_self: bool,
-    knowns: JsValue,
+    knowns: JsReadonlyKnowns,
     limit: Option<f64>,
 ) -> Result<js_sys::Object, JsError> {
     // Convert passed values to Rust versions
     let suggestions: Box<[Suggestion]> =
-        from_value(suggestions).map_err(|_| JsError::new("Failed to parse suggestions."))?;
+        from_value(suggestions.into()).map_err(|_| JsError::new("Failed to parse suggestions."))?;
     #[rustfmt::skip]
     let set: GameSet =
-        from_value(set).map_err(|_| JsError::new("Failed to parse set."))?;
+        from_value(set.into()).map_err(|_| JsError::new("Failed to parse set."))?;
     let hands: Box<[PlayerHand]> =
-        from_value(hands).map_err(|_| JsError::new("Failed to parse hands."))?;
-    let player_card_counts: Box<[usize]> = from_value(player_card_counts)
+        from_value(hands.into()).map_err(|_| JsError::new("Failed to parse hands."))?;
+    let player_card_counts: Box<[usize]> = from_value(player_card_counts.into())
         .map_err(|_| JsError::new("Failed to parse player card counts."))?;
     let knowns: Box<[Known]> =
-        from_value(knowns).map_err(|_| JsError::new("Failed to parse knowns."))?;
+        from_value(knowns.into()).map_err(|_| JsError::new("Failed to parse knowns."))?;
 
     let packed_set = pack_set(&set);
 
