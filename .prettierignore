@@ -1,5 +1,7 @@
 node_modules/
 dist/
+inference/pkg/
+inference/target/
 smui/
 pnpm-lock.yaml
 vite.config.*.timestamp*
