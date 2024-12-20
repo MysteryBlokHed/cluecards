@@ -351,7 +351,7 @@ function _infer(
                 if (missingPlayers.length === hands.length - 1) {
                     // Ignore if the guilty card is not known for this category
                     const [type] = unpackCard(parseInt(card));
-                    if (!guiltyIsKnown[type as 0 | 1 | 2]) continue;
+                    if (guiltyIsKnown[type as 0 | 1 | 2] == null) continue;
 
                     // Find the player that does not have the card
                     const player = Array.from(new Array(hands.length).keys()).find(
