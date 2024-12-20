@@ -5,6 +5,8 @@ stages:
     - deploy
 
 .changes: &changes
+    - inference/src/**/*
+    - inference/Cargo.*
     - public/**/*
     - src/**/*
     - '*.config.*'
@@ -16,6 +18,9 @@ stages:
     - .prettier*
 
 build:
+    variables:
+        CARGO_HOME: $CI_PROJECT_DIR/.cargo
+        RUSTUP_HOME: $CI_PROJECT_DIR/.rustup
     stage: build
     cache:
         - key:
@@ -23,8 +28,8 @@ build:
               files:
                   - yarn.lock
           paths:
-              - ~/.cargo/
-              - ~/.rustup/
+              - $CARGO_HOME
+              - $RUSTUP_HOME
               - node_modules/
               - .yarn/install-state.gz
               - inference/target/
