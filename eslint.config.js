@@ -35,6 +35,8 @@ export default [
             'dist/',
             'inference/',
             'smui/',
+            'src/lib/Players.svelte',
+            'src/lib/SetManager.svelte',
             'vite.config.*.timestamp*',
         ],
     },

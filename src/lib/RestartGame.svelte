@@ -3,7 +3,11 @@
 
     import { players, suggestions, startingKnowns, playerCardCounts } from '../stores';
 
-    export let setTab: (tab: string) => void;
+    export interface Props {
+        setTab: (tab: string) => void;
+    }
+
+    let { setTab }: Props = $props();
 
     function restart() {
         // Note: $playerHands is updated automatically thru App.svelte and does not need to be manually reset

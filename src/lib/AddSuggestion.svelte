@@ -6,13 +6,7 @@
     import Tooltip, { Wrapper } from '@smui/tooltip';
 
     import { players, playerHands, set, suggestions, preferences } from '../stores';
-    import {
-        CardType,
-        RevealMethod,
-        type GameSet,
-        type Suggestion,
-        type SuggestionResponse,
-    } from '../types';
+    import { CardType, RevealMethod, type Suggestion, type SuggestionResponse } from '../types';
     import { packCard, unpackCard } from '../cards';
 
     interface WorkingSuggestionRespose extends Partial<SuggestionResponse> {
@@ -23,22 +17,17 @@
         source?: RevealMethod | undefined;
     }
 
-    let setContents: GameSet;
-    $: setContents = $set[1];
+    let setContents = $derived($set[1]);
 
-    let player: number | null = null;
-    let suspect: number | null = null;
-    let weapon: number | null = null;
-    let room: number | null = null;
-    let responses: WorkingSuggestionRespose[] = [];
+    let player: number | null = $state(null);
+    let suspect: number | null = $state(null);
+    let weapon: number | null = $state(null);
+    let room: number | null = $state(null);
+    let responses: WorkingSuggestionRespose[] = $state([]);
 
-    let suspectPacked = -1;
-    let weaponPacked = -1;
-    let roomPacked = -1;
-
-    $: suspectPacked = suspect != null ? packCard(CardType.Suspect, suspect) : -1;
-    $: weaponPacked = weapon != null ? packCard(CardType.Weapon, weapon) : -1;
-    $: roomPacked = room != null ? packCard(CardType.Room, room) : -1;
+    let suspectPacked = $derived(suspect != null ? packCard(CardType.Suspect, suspect) : -1);
+    let weaponPacked = $derived(weapon != null ? packCard(CardType.Weapon, weapon) : -1);
+    let roomPacked = $derived(room != null ? packCard(CardType.Room, room) : -1);
 
     function addResponse() {
         let responder: number;
@@ -63,13 +52,10 @@
             if (previous && previous.packed === -1) previous.packed = -2;
         }
 
-        responses = [
-            ...responses,
-            {
-                player: responder!,
-                packed: -1,
-            },
-        ];
+        responses.push({
+            player: responder!,
+            packed: -1,
+        });
     }
 
     function addNoneResponses() {

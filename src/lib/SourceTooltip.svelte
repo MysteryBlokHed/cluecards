@@ -1,7 +1,12 @@
 <script lang="ts">
     import Tooltip, { Wrapper } from '@smui/tooltip';
-    export let text: string;
-    export let style = '';
+
+    export interface Props {
+        text: string;
+        style?: string | undefined;
+    }
+
+    let { text, style = '' }: Props = $props();
 </script>
 
 <Wrapper>

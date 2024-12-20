@@ -13,19 +13,13 @@
         preferences,
     } from '../stores';
 
-    let uneditable: boolean;
-    $: uneditable = !!$suggestions.length;
+    let uneditable = $derived(!!$suggestions[0]);
 
-    let cards: number;
-    let cardsFrac: number;
-    let cardsInSet: number;
+    let cardsFrac = $derived(cardsPerHandFrac($set[1], $players.length));
+    let cards = $derived(Math.ceil(cardsFrac));
+    let cardsInSet = $derived(cardsPerHand($set[1], 1));
 
-    $: cardsFrac = cardsPerHandFrac($set[1], $players.length);
-    $: cards = Math.ceil(cardsFrac);
-    $: cardsInSet = cardsPerHand($set[1], 1);
-
-    let countsValid: boolean;
-    $: countsValid = $playerCardCounts.reduce((sum, curr) => sum + curr) === cardsInSet;
+    let countsValid = $derived($playerCardCounts.reduce((sum, curr) => sum + curr) === cardsInSet);
 
     function addPlayer() {
         $players = [...$players, ''];
@@ -70,10 +64,10 @@
         {/if}
     </span>
 
-    {#each $players as player, i}
+    {#each $players, i}
         <div>
             <Textfield
-                bind:value={player}
+                bind:value={$players[i]}
                 label={$preferences.firstIsSelf && i === 0 ? 'Your Name' : 'Player Name'}
             />
             <Textfield

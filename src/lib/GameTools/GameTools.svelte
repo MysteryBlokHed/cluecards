@@ -5,7 +5,11 @@
     import CalculateOdds from './CalculateOdds.svelte';
     import ForceReveal from './ForceReveal.svelte';
 
-    export let amendedSuggestions: readonly Suggestion[];
+    export interface Props {
+        amendedSuggestions: readonly Suggestion[];
+    }
+
+    let { amendedSuggestions }: Props = $props();
 </script>
 
 <Paper class="gametools__paper" style="height: min-content; max-width: 650px;">
