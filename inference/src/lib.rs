@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use itertools::Itertools;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::from_value;
 use wasm_bindgen::prelude::*;
 
@@ -35,20 +35,7 @@ pub struct PlayerHand {
     has: BTreeSet<u8>,
     missing: BTreeSet<u8>,
     maybe: BTreeSet<u8>,
-    #[serde(deserialize_with = "string_to_usize_keys")]
     maybe_groups: BTreeMap<usize, BTreeSet<u8>>,
-}
-
-fn string_to_usize_keys<'de, D: Deserializer<'de>, T: serde::Deserialize<'de>>(
-    deserializer: D,
-) -> Result<BTreeMap<usize, T>, D::Error> {
-    let string_keys: BTreeMap<String, T> = BTreeMap::deserialize(deserializer)?;
-    let mut converted = BTreeMap::new();
-    for (key, value) in string_keys {
-        converted.insert(key.parse().map_err(serde::de::Error::custom)?, value);
-    }
-
-    Ok(converted)
 }
 
 impl PlayerHand {
@@ -68,13 +55,13 @@ impl PlayerHand {
         }
 
         // Convert maybe groups
-        let maybe_groups_js = js_sys::Object::default();
+        let maybe_groups_js = js_sys::Map::default();
         for (i, maybe_group) in self.maybe_groups.iter() {
             let maybe_group_js = js_sys::Set::default();
             for value in maybe_group.iter() {
                 maybe_group_js.add(&JsValue::from(*value));
             }
-            js_sys::Reflect::set(&maybe_groups_js, &JsValue::from(*i), &maybe_group_js)?;
+            maybe_groups_js.set(&JsValue::from(*i), &maybe_group_js);
         }
 
         // Create PlayerHand object
