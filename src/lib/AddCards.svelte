@@ -1,3 +1,5 @@
+<svelte:options runes />
+
 <script lang="ts">
     import Button, { Label, Icon } from '@smui/button';
     import IconButton from '@smui/icon-button';
@@ -7,8 +9,8 @@
     import { CardType, RevealMethod } from '../types';
     import { cardTypeToKey, cardTypeToString } from '../cards';
 
-    let player: number = 0;
-    let cards: Array<[type?: CardType, card?: number]> = [];
+    let player: number = $state(0);
+    let cards: Array<[type?: CardType, card?: number]> = $state([]);
 
     function saveCards() {
         for (const card of cards) {
@@ -54,7 +56,7 @@
             </Select>
         {/if}
         <IconButton
-            on:click={() => {
+            onclick={() => {
                 cards.splice(i, 1);
                 cards = cards;
             }}
@@ -63,7 +65,7 @@
         <br />
     {/each}
 
-    <Button on:click={() => (cards = [...cards, [undefined, undefined]])}>
+    <Button onclick={() => cards.push([undefined, undefined])}>
         <Label>Add Card</Label>
         <Icon class="material-icons">add</Icon>
     </Button>
@@ -71,7 +73,7 @@
     <Button
         variant="raised"
         disabled={!cards.length || cards.some(card => card[0] == null || card[1] == null)}
-        on:click={saveCards}
+        onclick={saveCards}
     >
         <Label>Save</Label>
         <Icon class="material-icons">save</Icon>

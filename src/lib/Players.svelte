@@ -86,12 +86,12 @@
             <IconButton
                 class="material-icons"
                 disabled={uneditable || $players.length === 1}
-                on:click={() => removePlayer(i)}>delete</IconButton
+                onclick={() => removePlayer(i)}>delete</IconButton
             >
         </div>
     {/each}
 
-    <Button disabled={uneditable} on:click={addPlayer}>
+    <Button disabled={uneditable} onclick={addPlayer}>
         <Label>Add</Label>
         <Icon class="material-icons">add</Icon>
     </Button>

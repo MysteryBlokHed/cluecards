@@ -81,7 +81,7 @@
 </script>
 
 <div>
-    <Button on:click={forceReveal} variant="raised" color="secondary" style="width: 100%;">
+    <Button onclick={forceReveal} variant="raised" color="secondary" style="width: 100%;">
         <Label>Force Reveal</Label>
         <Icon class="material-icons">build</Icon>
     </Button>

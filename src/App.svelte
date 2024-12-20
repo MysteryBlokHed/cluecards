@@ -113,10 +113,11 @@
         <div>
             <TabBar
                 tabs={['Set Selector', 'Players', 'Add Cards', 'Preferences', 'Restart']}
-                let:tab
                 bind:active={activeTab}
             >
-                <Tab {tab}><Label>{tab}</Label></Tab>
+                {#snippet tab(tab)}
+                    <Tab {tab}><Label>{tab}</Label></Tab>
+                {/snippet}
             </TabBar>
 
             <Paper>

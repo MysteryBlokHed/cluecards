@@ -84,7 +84,7 @@
     <Content id="creator-content" style="display: flex; flex-direction: column;">
         <p>Create a custom game set.</p>
         <Button
-            on:click={() => {
+            onclick={() => {
                 const data = prompt('Paste the exported string here:');
                 if (data) {
                     try {
@@ -105,19 +105,19 @@
             <tbody>
                 <tr>
                     <td>
-                        <Button on:click={() => (set.suspects = [...set.suspects, ''])}>
+                        <Button onclick={() => (set.suspects = [...set.suspects, ''])}>
                             <Label>Add Suspect</Label>
                             <Icon class="material-icons">add</Icon>
                         </Button>
                     </td>
                     <td>
-                        <Button on:click={() => (set.weapons = [...set.weapons, ''])}>
+                        <Button onclick={() => (set.weapons = [...set.weapons, ''])}>
                             <Label>Add Weapon</Label>
                             <Icon class="material-icons">add</Icon>
                         </Button>
                     </td>
                     <td>
-                        <Button on:click={() => (set.rooms = [...set.rooms, ''])}>
+                        <Button onclick={() => (set.rooms = [...set.rooms, ''])}>
                             <Label>Add Room</Label>
                             <Icon class="material-icons">add</Icon>
                         </Button>
@@ -130,7 +130,7 @@
                             <Textfield bind:value={suspect} label="Suspect" />
                             <IconButton
                                 class="material-icons"
-                                on:click={() => {
+                                onclick={() => {
                                     set.suspects.splice(i, 1);
                                     set.suspects = set.suspects;
                                 }}>delete</IconButton
@@ -144,7 +144,7 @@
                             <Textfield bind:value={weapon} label="Weapon" />
                             <IconButton
                                 class="material-icons"
-                                on:click={() => {
+                                onclick={() => {
                                     set.weapons.splice(i, 1);
                                     set.weapons = set.weapons;
                                 }}>delete</IconButton
@@ -158,7 +158,7 @@
                             <Textfield bind:value={room} label="Room" />
                             <IconButton
                                 class="material-icons"
-                                on:click={() => {
+                                onclick={() => {
                                     set.rooms.splice(i, 1);
                                     set.rooms = set.rooms;
                                 }}>delete</IconButton
@@ -176,7 +176,7 @@
             <Label>Cancel</Label>
             <Icon class="material-icons">delete_forever</Icon>
         </Button>
-        <Button variant="raised" on:click={saveSet} disabled={!setIsValid}>
+        <Button variant="raised" onclick={saveSet} disabled={!setIsValid}>
             <Label>Save</Label>
             <Icon class="material-icons">save</Icon>
         </Button>

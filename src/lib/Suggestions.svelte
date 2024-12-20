@@ -37,7 +37,7 @@
 <Paper>
     <h2 style="margin-bottom: 0;">{title}</h2>
     <Button
-        on:click={() => {
+        onclick={() => {
             // Set to opposite first in case some panels are manually closed
             open = false;
             open = true;
@@ -48,7 +48,7 @@
         <Icon class="material-icons">unfold_more</Icon>
     </Button>
     <Button
-        on:click={() => {
+        onclick={() => {
             // Set to opposite first in case some panels are manually open
             open = true;
             open = false;
@@ -124,7 +124,7 @@
                             <br />
                         </div>
                     {/each}
-                    <Button on:click={() => remove(suggestions.length - i - 1)}>
+                    <Button onclick={() => remove(suggestions.length - i - 1)}>
                         <Label>Delete</Label>
                         <Icon class="material-icons">delete</Icon>
                     </Button>

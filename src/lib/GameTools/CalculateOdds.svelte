@@ -63,7 +63,7 @@
 </script>
 
 <div>
-    <Button variant="raised" color="secondary" on:click={calculateOdds} style="width: 100%;">
+    <Button variant="raised" color="secondary" onclick={calculateOdds} style="width: 100%;">
         <Label>Calculate Odds</Label>
         <Icon class="material-icons">casino</Icon>
     </Button>
@@ -81,7 +81,9 @@
         {:else}
             <FormField>
                 <Switch bind:checked={showPercentages} />
-                <span slot="label">Show Percentages</span>
+                {#snippet label()}
+                    Show Percentages
+                {/snippet}
             </FormField>
             <DataTable table$aria-label="Table of card odds">
                 <Head>

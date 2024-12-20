@@ -13,30 +13,38 @@
     <h2>Gameplay</h2>
     <hr />
     <FormField>
-        <Switch on:change={persist} bind:checked={$preferences.firstIsSelf} />
-        <span slot="label">You are the first player (disable to spectate)</span>
+        <Switch onchange={persist} bind:checked={$preferences.firstIsSelf} />
+        {#snippet label()}
+            You are the first player (disable to spectate)
+        {/snippet}
     </FormField>
     <br />
     <FormField>
         <Switch
-            on:change={persist}
+            onchange={persist}
             bind:checked={$preferences.hideFirstColumn}
             disabled={!$preferences.firstIsSelf}
         />
-        <span slot="label">Hide the first player's column from the clues</span>
+        {#snippet label()}
+            Hide the first player's column from the clues
+        {/snippet}
     </FormField>
 
     <h2>QOL</h2>
     <hr />
     <FormField>
-        <Switch on:change={persist} bind:checked={$preferences.autoSelectNone} />
-        <span slot="label">Auto-change last player's card to "None" after add</span>
+        <Switch onchange={persist} bind:checked={$preferences.autoSelectNone} />
+        {#snippet label()}
+            Auto-change last player's card to "None" after add
+        {/snippet}
     </FormField>
     <div>
         <Wrapper>
             <FormField>
-                <Switch on:change={persist} bind:checked={$preferences.autoHideImpossible} />
-                <span slot="label">Hide impossible cards from response selector</span>
+                <Switch onchange={persist} bind:checked={$preferences.autoHideImpossible} />
+                {#snippet label()}
+                    Hide impossible cards from response selector
+                {/snippet}
             </FormField>
             <Tooltip>
                 Currently, adding a card that should be hidden will just cause the site to crash.
@@ -44,13 +52,9 @@
         </Wrapper>
     </div>
     <FormField>
-        <Switch on:change={persist} bind:checked={$preferences.selectNextPlayers} />
-        <span slot="label">Auto-select player while adding responses</span>
+        <Switch onchange={persist} bind:checked={$preferences.selectNextPlayers} />
+        {#snippet label()}
+            Auto-select player while adding responses
+        {/snippet}
     </FormField>
 </div>
-
-<style scoped>
-    span {
-        font-size: 1rem;
-    }
-</style>
