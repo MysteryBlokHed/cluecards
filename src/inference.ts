@@ -35,7 +35,12 @@ export function handsHasToString(hands: readonly PlayerHand[]) {
 export function emptyHands(players: number) {
     const hands: PlayerHand[] = [];
     for (let i = 0; i < players; i++) {
-        hands.push({ has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: {} });
+        hands.push({
+            has: new Set(),
+            missing: new Set(),
+            maybe: new Set(),
+            maybeGroups: new Map(),
+        });
     }
     return hands;
 }
@@ -162,12 +167,12 @@ function _infer(
             // then the final card must be one of the cards in the "maybe group"
             // =========================
             if (hand.has.size === playerCardCounts[i] - 1) {
-                const eligibleGroups = Object.values(hand.maybeGroups).filter(cards =>
-                    cards.isDisjointFrom(hand.has),
-                );
+                const group = hand.maybeGroups
+                    .values()
+                    .filter(cards => cards.isDisjointFrom(hand.has))
+                    .next().value;
 
-                if (eligibleGroups.length) {
-                    const group = eligibleGroups[0];
+                if (group) {
                     for (const card of packedSet) {
                         if (!group.has(card) && !hand.has.has(card)) hand.missing.add(card);
                     }
@@ -179,10 +184,11 @@ function _infer(
             // all cards outside of those maybeGroups can be eliminated from the possibilities.
             // This is a generalization of the previous case, but it is harder to compute so we try the former first
             // =========================
-            else if (Object.keys(hand.maybeGroups).length >= playerCardCounts[i] - hand.has.size) {
-                const eligibleGroups = Object.values(hand.maybeGroups).filter(cards =>
-                    cards.isDisjointFrom(hand.has),
-                );
+            else if (hand.maybeGroups.size >= playerCardCounts[i] - hand.has.size) {
+                const eligibleGroups = [
+                    ...hand.maybeGroups.values().filter(cards => cards.isDisjointFrom(hand.has)),
+                ];
+
                 if (eligibleGroups.length) {
                     const disjointGroups = approximateMDS(eligibleGroups);
 
@@ -242,8 +248,8 @@ function _infer(
             // =========================
             // Update maybeGroups
             // =========================
-            const emptied: string[] = [];
-            for (const [key, maybeGroup] of Object.entries(hand.maybeGroups)) {
+            const emptied: number[] = [];
+            for (const [key, maybeGroup] of hand.maybeGroups) {
                 // Remove any cards from maybeGroups that are marked missing
                 maybeGroup.intersection(hand.missing).forEach(card => maybeGroup.delete(card));
 
@@ -259,7 +265,7 @@ function _infer(
                     emptied.push(key);
             }
 
-            emptied.forEach(key => delete hand.maybeGroups[key as unknown as number]);
+            emptied.forEach(key => hand.maybeGroups.delete(key));
         }
 
         // These variables are used in the inference below the following one,
@@ -271,9 +277,9 @@ function _infer(
         // If there are two maybe groups of size 2 that are common between two players,
         // then one card in the group must be held by each player (i.e. they cannot be murder cards)
         // =========================
-        const sizeTwoGroups = hands.map(hand =>
-            Object.values(hand.maybeGroups).filter(group => group.size == 2),
-        );
+        const sizeTwoGroups = hands.map(hand => [
+            ...hand.maybeGroups.values().filter(group => group.size == 2),
+        ]);
 
         for (let i = 0; i < hands.length - 1; i++) {
             if (!sizeTwoGroups[i].length) {
@@ -339,26 +345,26 @@ function _infer(
         // =========================
         if (guiltyIsKnown[0] || guiltyIsKnown[1] || guiltyIsKnown[2]) {
             /** A mapping of packed cards to the players who do _not_ have it */
-            const missingMap: Record<number, number[]> = {};
+            const missingMap: Map<number, Set<number>> = new Map();
             for (const [player, hand] of hands.entries()) {
                 for (const card of hand.missing) {
-                    missingMap[card] ||= [];
-                    missingMap[card].push(player);
+                    if (!missingMap.has(card)) missingMap.set(card, new Set());
+                    missingMap.get(card)!.add(player);
                 }
             }
 
-            for (const [card, missingPlayers] of Object.entries(missingMap)) {
-                if (missingPlayers.length === hands.length - 1) {
+            for (const [card, missingPlayers] of missingMap.entries()) {
+                if (missingPlayers.size === hands.length - 1) {
                     // Ignore if the guilty card is not known for this category
-                    const [type] = unpackCard(parseInt(card));
+                    const [type] = unpackCard(card);
                     if (guiltyIsKnown[type as 0 | 1 | 2] == null) continue;
 
                     // Find the player that does not have the card
                     const player = Array.from(new Array(hands.length).keys()).find(
-                        player => !missingPlayers.includes(player),
+                        player => !missingPlayers.has(player),
                     )!;
                     // Mark them as having the card
-                    hands[player].has.add(parseInt(card));
+                    hands[player].has.add(card);
                 }
             }
         }
@@ -424,10 +430,11 @@ export function infer(
                     break;
                 // A player showed a card, but we do not know which
                 case CardType.Unknown:
-                    startingHands[response.player].maybeGroups[i] ||= new Set();
+                    if (!startingHands[response.player].maybeGroups.has(i))
+                        startingHands[response.player].maybeGroups.set(i, new Set());
                     suggestionCards.forEach(card => {
                         startingHands![response.player].maybe.add(card);
-                        startingHands![response.player].maybeGroups[i].add(card);
+                        startingHands![response.player].maybeGroups.get(i)!.add(card);
                     });
                     break;
                 // A player showed a card we know the type of
