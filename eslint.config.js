@@ -28,6 +28,13 @@ export default [
         },
     },
     {
-        ignores: ['.svelte-kit/', 'dist/', 'smui/', 'vite.config.*.timestamp*'],
+        ignores: [
+            '.svelte-kit/',
+            'dist/',
+            'smui/',
+            'src/lib/Players.svelte',
+            'src/lib/SetManager.svelte',
+            'vite.config.*.timestamp*',
+        ],
     },
 ];
