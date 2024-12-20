@@ -1,0 +1,78 @@
+name: Build & Test
+on:
+    pull_request:
+        branches:
+            - main
+        paths:
+            - public/**/*
+            - src/**/*
+            - '*.config.*'
+            - index.html
+            - package.json
+            - tsconfig*.json
+            - yarn.lock
+            - .gitlab-ci.yml
+            - .prettier*
+    push:
+        branches:
+            - main
+        paths:
+            - public/**/*
+            - src/**/*
+            - '*.config.*'
+            - index.html
+            - package.json
+            - tsconfig*.json
+            - yarn.lock
+            - .gitlab-ci.yml
+            - .prettier*
+
+jobs:
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Get yarn cache directory path
+              id: yarn-cache-dir-path
+              run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+
+            - name: Yarn cache
+              uses: actions/cache@v4
+              id: yarn-cache
+              with:
+                  path: |
+                      ${{ steps.yarn-cache-dir-path.outputs.dir }}
+                      .yarn/install-state.gz
+                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-yarn-
+
+            - name: Set up node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: lts/*
+
+            - name: Set up Yarn
+              run: |
+                  corepack enable
+                  corepack install
+                  yarn --version
+                  yarn install
+
+            - name: Lint project
+              run: |
+                  yarn run lint
+                  yarn run check
+
+            - name: Build project
+              run: |
+                  yarn run smui
+                  yarn run build
+
+            - name: Test project
+              run: |
+                  yarn test -- --run
