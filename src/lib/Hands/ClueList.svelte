@@ -56,7 +56,7 @@
             {#each $set[1][cardTypeToKey(type)] as card, index}
                 {@const packed = packCard(type, index)}
                 <Row style="height: 2.5em;">
-                    <Cell>
+                    <Cell style="width: 170px;">
                         <!-- Strikethrough if any player has this -->
                         {#if $innocents.has(packed)}
                             <s class="red">{card}</s>
