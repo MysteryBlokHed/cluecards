@@ -1,6 +1,6 @@
 import { get, writable } from 'svelte/store';
-import SETS from './sets';
-import type { Known, GameSet, Suggestion, PlayerHand, Preferences } from './types';
+import SETS from './sets.js';
+import type { Known, GameSet, Suggestion, PlayerHand, Preferences } from './types.js';
 
 /**
  * Creates a {@link writable} store which automatically loads from/saves to a storage.
