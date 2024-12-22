@@ -1,4 +1,4 @@
-import type { GameSet } from './types';
+import type { GameSet } from './types.js';
 
 /** Default list of suspects */
 const suspects = () => ['Green', 'Plum', 'Mustard', 'Peacock', 'Scarlett', 'White'];

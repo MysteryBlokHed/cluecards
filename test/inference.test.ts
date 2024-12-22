@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 
-import { infer } from '../src/inference';
-import SETS from '../src/sets';
-import { CardType, RevealMethod, type Known, type Suggestion } from '../src/types';
-import { packSet } from '../src/cards';
+import { packSet } from '../src/cards.js';
+import { infer } from '../src/inference.js';
+import SETS from '../src/sets.js';
+import { CardType, RevealMethod, type Known, type Suggestion } from '../src/types.js';
 
 const EMPTY_SET: Set<unknown> = new Set();
 const EMPTY_MAP: Map<unknown, unknown> = new Map();

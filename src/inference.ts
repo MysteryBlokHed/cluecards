@@ -1,6 +1,6 @@
-import { packSet, packCard, unpackCard, packSuggestions, cardTypeToKey } from './cards';
-import { CardType, RevealMethod } from './types';
-import type { GameSet, Known, KnownInnocent, PlayerHand, Suggestion } from './types';
+import { packSet, packCard, unpackCard, packSuggestions, cardTypeToKey } from './cards.js';
+import { CardType, RevealMethod } from './types.js';
+import type { GameSet, Known, KnownInnocent, PlayerHand, Suggestion } from './types.js';
 
 export function handsEqual(hands1: readonly PlayerHand[], hands2: readonly PlayerHand[]) {
     // Lists should be of the same length in the first place
