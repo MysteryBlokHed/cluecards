@@ -25,7 +25,9 @@
         innocents,
         playerPov,
     } from './stores';
-    import { infer, stripSuggestions, updateSuggestions } from './inference';
+    import { stripSuggestions, updateSuggestions } from './inference';
+    import { infer } from '../inference/pkg/inference';
+
     import type { Suggestion } from './types';
     import { untrack } from 'svelte';
 

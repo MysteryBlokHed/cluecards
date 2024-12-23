@@ -29,8 +29,11 @@ export default [
     },
     {
         ignores: [
+            '.cargo',
+            '.rustup',
             '.svelte-kit/',
             'dist/',
+            'inference/',
             'smui/',
             'src/lib/Players.svelte',
             'src/lib/SetManager.svelte',

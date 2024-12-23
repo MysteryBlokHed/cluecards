@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { packSet } from '../src/cards.js';
-import { infer } from '../src/inference.js';
+import { infer } from '../inference/pkg/inference.js';
 import SETS from '../src/sets.js';
 import { CardType, RevealMethod, type Known, type Suggestion } from '../src/types.js';
 

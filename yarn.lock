@@ -2542,6 +2542,7 @@ __metadata:
     typescript: "npm:^5.7.2"
     typescript-eslint: "npm:^8.18.1"
     vite: "npm:^6.0.4"
+    vite-plugin-wasm: "npm:^3.3.0"
     vitest: "npm:^2.1.8"
   languageName: unknown
   linkType: soft
@@ -4868,6 +4869,15 @@ __metadata:
   bin:
     vite-node: vite-node.mjs
   checksum: 10c0/cb28027a7425ba29780e216164c07d36a4ff9eb60d83afcad3bc222fd5a5f3e36030071c819edd6d910940f502d49e52f7564743617bc1c5875485b0952c72d5
+  languageName: node
+  linkType: hard
+
+"vite-plugin-wasm@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "vite-plugin-wasm@npm:3.3.0"
+  peerDependencies:
+    vite: ^2 || ^3 || ^4 || ^5
+  checksum: 10c0/382ba2f2ffef31dde717ad43a69427bc930a6e2ec453d17b700ef7937b48996893a61657fdee3122654e027b1933341548493b35e6469520a8d4ae6c522d1ee2
   languageName: node
   linkType: hard
 

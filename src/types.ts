@@ -68,7 +68,6 @@ export interface Suggestion {
     responses: SuggestionResponse[];
 }
 
-/** Information about a card as it relates to a player. */
 export interface PlayerHand {
     /** A set of {@link packCard packed} cards that the player has. */
     has: Set<number>;

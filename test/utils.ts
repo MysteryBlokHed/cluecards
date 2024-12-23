@@ -1,5 +1,5 @@
 import { expect } from 'vitest';
-import { infer } from '../src/inference.js';
+import { infer } from '../inference/pkg/inference.js';
 import SETS from '../src/sets.js';
 import type { Known, PlayerHand, Suggestion } from '../src/types.js';
 
