@@ -13,6 +13,35 @@ You don't need to read it to use the website, but it might be interesting.
 Note that GitLab has a maximum number of LaTeX cells per markdown file,
 so it will not display properly unless you're looking at this repository [on GitHub](https://github.com/MysteryBlokHed/cluecards).
 
+## Folder structure
+
+| Folder    | Purpose                                                            |
+| :-------- | :----------------------------------------------------------------- |
+| inference | Rust WebAssembly implementation of the site's inference logic.     |
+| public    | Static website assets.                                             |
+| scripts   | Convenience scripts for testing/development.                       |
+| src       | Source code for the UI and the TypeScript portions of the website. |
+| test      | Unit and integration tests for the inference logic.                |
+
+## Building
+
+The inference logic must be built _before_ the rest of the website.
+Instructions are available [here](./inference/README.md).
+
+After that, this project requires Yarn v4.
+After installing [Node.js](https://nodejs.org/en/download/package-manager), run the following in the project directory:
+
+```sh
+corepack enable
+corepack install
+```
+
+Then, to build for release:
+
+```sh
+yarn run build
+```
+
 ## License
 
 This project is licensed under the GNU Affero General Public License, Version 3.0

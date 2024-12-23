@@ -26,16 +26,6 @@ export function unpackCard(packed: number): [type: CardType, card: number] {
 }
 
 /**
- * {@link packCard Packs} the three cards from a suggestion into an array of the same size.
- * @see {@link packCard}
- */
-export function packSuggestions(
-    cards: [suspect: number, weapon: number, room: number],
-): [number, number, number] {
-    return cards.map((card, type) => packCard(type, card)) as [number, number, number];
-}
-
-/**
  * Return all cards in a game set, {@link packCard packed}
  * @param set The set to use
  */

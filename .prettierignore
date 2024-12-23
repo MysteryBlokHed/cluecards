@@ -1,8 +1,12 @@
 node_modules/
 dist/
+inference/pkg/
+inference/target/
 smui/
 pnpm-lock.yaml
 vite.config.*.timestamp*
+.cargo/
+.rustup/
 
 # For some reason Prettier messes with LaTeX here
 Inference.md
