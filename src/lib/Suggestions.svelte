@@ -1,8 +1,4 @@
 <script lang="ts">
-    import Accordion, { Panel, Header, Content } from '@smui-extra/accordion';
-    import Button, { Icon, Label } from '@smui/button';
-    import Paper from '@smui/paper';
-
     import { players, playerHands, set } from '../stores';
     import { CardType, RevealMethod, type Suggestion } from '../types';
     import { cardTypeToKey, cardTypeToString, packCard } from '../cards';
@@ -36,35 +32,40 @@
     }
 </script>
 
-<Paper>
-    <h2 style="margin-bottom: 0;">{title}</h2>
-    <Button
-        onclick={() => {
-            // Set to opposite first in case some panels are manually closed
-            open = false;
-            open = true;
-        }}
-        disabled={!suggestions.length}
-    >
-        <Label>Expand All</Label>
-        <Icon class="material-icons">unfold_more</Icon>
-    </Button>
-    <Button
-        onclick={() => {
-            // Set to opposite first in case some panels are manually open
-            open = true;
-            open = false;
-        }}
-        disabled={!suggestions.length}
-    >
-        <Label>Collapse All</Label>
-        <Icon class="material-icons">unfold_less</Icon>
-    </Button>
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title">{title}</h2>
+        <div>
+            <button
+                class="btn btn-ghost text-primary"
+                onclick={() => {
+                    // Set to opposite first in case some panels are manually closed
+                    open = false;
+                    setTimeout(() => (open = true), 0);
+                }}
+                disabled={!suggestions.length}
+            >
+                Expand All
+                <span class="material-icons">unfold_more</span>
+            </button>
+            <button
+                class="btn btn-ghost text-primary"
+                onclick={() => {
+                    // Set to opposite first in case some panels are manually open
+                    open = true;
+                    setTimeout(() => (open = false), 0);
+                }}
+                disabled={!suggestions.length}
+            >
+                Collapse All
+                <span class="material-icons">unfold_less</span>
+            </button>
+        </div>
 
-    <Accordion multiple>
         {#each [...suggestions].reverse() as { player, cards, responses }, i}
-            <Panel {open} class="suggestions__suggestion">
-                <Header>
+            <div class="collapse bg-base-200">
+                <input type="checkbox" checked={open} />
+                <div class="collapse-title">
                     <b>{$players[player]}</b>
                     suggested
                     <b>{setContents.suspects[cards[0]]}</b>
@@ -72,8 +73,8 @@
                     <b>{setContents.weapons[cards[1]]}</b>
                     in
                     <b>{setContents.rooms[cards[2]]}</b>
-                </Header>
-                <Content>
+                </div>
+                <div class="collapse-content">
                     {#if !responses.length}
                         No cards here...did something go wrong?
                     {/if}
@@ -82,12 +83,6 @@
                             response.source === RevealMethod.InferSuggestion
                                 ? 'color: lightseagreen;'
                                 : ''}
-                        <!--
-                        FUN FACT! 
-                        Without this <div> element, the <Tooltip> will occasionally
-                        crap itself entirely and cause the entire page to crash.
-                        That was a fun one to figure out!
-                        -->
                         <div>
                             <b>{$players[response.player]}</b>
                             showed
@@ -126,12 +121,12 @@
                             <br />
                         </div>
                     {/each}
-                    <Button onclick={() => remove(suggestions.length - i - 1)}>
-                        <Label>Delete</Label>
-                        <Icon class="material-icons">delete</Icon>
-                    </Button>
-                </Content>
-            </Panel>
+                    <button class="btn" onclick={() => remove(suggestions.length - i - 1)}>
+                        Delete
+                        <span class="material-icons">delete</span>
+                    </button>
+                </div>
+            </div>
         {/each}
-    </Accordion>
-</Paper>
+    </div>
+</div>

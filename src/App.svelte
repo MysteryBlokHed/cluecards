@@ -1,8 +1,5 @@
 <script lang="ts">
-    import Button, { Icon } from '@smui/button';
-    import Paper from '@smui/paper';
-    import Tab, { Label } from '@smui/tab';
-    import TabBar from '@smui/tab-bar';
+    import './app.css';
 
     import AddCards from './lib/AddCards.svelte';
     import AddSuggestion from './lib/AddSuggestion.svelte';
@@ -33,6 +30,7 @@
 
     let amendedSuggestions: Suggestion[] = $state(structuredClone($suggestions));
 
+    const tabs = ['Set Selector', 'Players', 'Add Cards', 'Preferences', 'Restart'] as const;
     let activeTab: string = $state('Set Selector');
 
     // Update viewport based on device size
@@ -117,30 +115,32 @@
 </script>
 
 <main>
-    <h1>
+    <h1 class="flex items-center justify-center gap-4 text-4xl">
         Cluecards
-        <Button
-            variant="raised"
-            color="secondary"
-            href="https://github.com/MysteryBlokHed/cluecards"
-            target="_blank"
-        >
-            <Label>Source</Label>
-            <Icon class="material-icons">open_in_new</Icon>
-        </Button>
+        <a href="https://github.com/MysteryBlokHed/cluecards" target="_blank">
+            <button class="btn">
+                Source
+                <span class="material-icons">open_in_new</span>
+            </button>
+        </a>
     </h1>
-    <div class="grid">
+    <div class="mt-4 grid">
         <div>
-            <TabBar
-                tabs={['Set Selector', 'Players', 'Add Cards', 'Preferences', 'Restart']}
-                bind:active={activeTab}
-            >
-                {#snippet tab(tab)}
-                    <Tab {tab}><Label>{tab}</Label></Tab>
-                {/snippet}
-            </TabBar>
+            <div role="tablist" class="group tabs tabs-bordered">
+                {#each tabs as tab}
+                    <input
+                        bind:group={activeTab}
+                        type="radio"
+                        role="tab"
+                        class="tab pb-8 text-lg checked:[--fallback-bc:theme(colors.primary)]"
+                        name="app_tabs"
+                        value={tab}
+                        aria-label={tab}
+                    />
+                {/each}
+            </div>
 
-            <Paper>
+            <div class="card rounded-t-none bg-base-100 shadow-xl">
                 {#if activeTab === 'Set Selector'}
                     <SetSelector />
                 {:else if activeTab === 'Players'}
@@ -151,10 +151,10 @@
                     <Preferences />
                 {:else if activeTab === 'Restart'}
                     <RestartGame {setTab} />
-                {/if}</Paper
-            >
+                {/if}
+            </div>
         </div>
-        <div>
+        <div class="mt-8">
             <GameTools {amendedSuggestions} />
         </div>
         <div>

@@ -1,9 +1,5 @@
 <script lang="ts">
     import { compressToBase64 } from 'lz-string';
-    import Button, { Label, Icon } from '@smui/button';
-    import IconButton from '@smui/icon-button';
-    import Select, { Option } from '@smui/select';
-    import Tooltip, { Wrapper } from '@smui/tooltip';
 
     import SetManager from './SetManager.svelte';
 
@@ -15,7 +11,8 @@
         $set = [setName, $sets[setName]];
     });
 
-    let creatorOpen = $state(false);
+    let creator: SetManager;
+
     let updating: string | null = $state(null);
 
     function deleteSet() {
@@ -35,49 +32,62 @@
     }
 </script>
 
-<SetManager bind:creatorOpen bind:updating />
-<div>
-    <h2>Set Selector</h2>
+<SetManager bind:this={creator} bind:updating />
+<div class="card-body">
+    <h2 class="card-title">Set Selector</h2>
     <span>The version of the game being used.</span>
     <br />
-    <Select bind:value={setName} menu$class="set-menu">
-        {#each Object.keys($sets) as name}
-            <Option value={name}>{name}</Option>
-        {/each}
-    </Select>
-    <IconButton
-        class="material-icons"
-        onclick={() => {
-            updating = setName;
-            creatorOpen = true;
-        }}>edit</IconButton
-    >
-    <Wrapper>
-        <IconButton
-            class="material-icons"
-            onclick={() => {
-                navigator.clipboard.writeText(compressToBase64(JSON.stringify($set)));
-            }}>content_copy</IconButton
-        >
-        <Tooltip>Export this set to a shareable string.</Tooltip>
-    </Wrapper>
-    <IconButton class="material-icons" onclick={deleteSet}>delete</IconButton>
-    <br />
 
-    <Button
-        onclick={() => {
-            updating = null;
-            creatorOpen = true;
-        }}
-    >
-        <Label>Create New Set</Label>
-        <Icon class="material-icons">add</Icon>
-    </Button>
-    <Wrapper>
-        <Button onclick={restore}>
-            <Label>Reload Builtin Sets</Label>
-            <Icon class="material-icons">restart_alt</Icon>
-        </Button>
-        <Tooltip>Restore the builtin sets to their default values.</Tooltip>
-    </Wrapper>
+    <div class="flex items-center justify-center gap-2">
+        <select class="select select-bordered" bind:value={setName}>
+            {#each Object.keys($sets) as name}
+                <option value={name}>{name}</option>
+            {/each}
+        </select>
+
+        <button
+            class="btn btn-circle"
+            onclick={() => {
+                updating = setName;
+                creator.openCreator();
+            }}
+        >
+            <span class="material-icons">edit</span>
+        </button>
+        <div class="tooltip" data-tip="Export this set to a shareable string.">
+            <button
+                class="btn btn-circle"
+                onclick={() => {
+                    navigator.clipboard.writeText(compressToBase64(JSON.stringify($set)));
+                }}
+            >
+                <span class="material-icons">content_copy</span>
+            </button>
+        </div>
+        <button class="btn btn-circle" onclick={deleteSet}>
+            <span class="material-icons">delete</span>
+        </button>
+    </div>
+
+    <div>
+        <button
+            class="btn btn-ghost text-primary"
+            onclick={() => {
+                updating = null;
+                creator.openCreator();
+            }}
+        >
+            Create New Set
+            <span class="material-icons">add</span>
+        </button>
+        <div
+            class="tooltip tooltip-bottom"
+            data-tip="Restore the builtin sets to their default values."
+        >
+            <button class="btn btn-ghost text-primary" onclick={restore}>
+                Reload Builtin Sets
+                <span class="material-icons">restart_alt</span>
+            </button>
+        </div>
+    </div>
 </div>

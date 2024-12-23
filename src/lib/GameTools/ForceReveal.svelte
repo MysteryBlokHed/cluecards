@@ -1,14 +1,10 @@
 <script lang="ts">
-    import Button, { Label, Icon } from '@smui/button';
-    import DataTable, { Body, Cell, Head, Row } from '@smui/data-table';
-    import Dialog, { Actions, Title, Content } from '@smui/dialog';
-    import Select, { Option } from '@smui/select';
-
     import { unpackCard, packSet, cardTypeToKey } from '../../cards';
     import { findSuggestionForces } from '../../inference';
     import { players, playerHands, set } from '../../stores';
 
-    let forceDialogOpen = $state(false);
+    let forceDialog: HTMLDialogElement;
+
     let potentialForceTargets: number[] = $state([]);
     let forceTarget: number | null = $state(null);
     let potentialForceSuggestions: Record<number, Array<[string, string[]]>> = $state({});
@@ -76,80 +72,85 @@
             }
         }
 
-        forceDialogOpen = true;
+        forceDialog.showModal();
     }
 </script>
 
 <div>
-    <Button onclick={forceReveal} variant="raised" color="secondary" style="width: 100%;">
-        <Label>Force Reveal</Label>
-        <Icon class="material-icons">build</Icon>
-    </Button>
+    <button class="btn btn-secondary w-full" onclick={forceReveal}>
+        Force Reveal
+        <span class="material-icons">build</span>
+    </button>
     <br />
     See if there are any cards that can be forced to reveal with a suggestion.
 </div>
 
-<Dialog
-    bind:open={forceDialogOpen}
-    aria-labelledby="force-title"
-    aria-describedby="force-content"
-    surface$style="width: 500px; max-width: calc(100vw - 32px); min-height: 45vh;"
->
-    <Title id="force-title">Force Reveal</Title>
-    <Content id="force-content">
-        <Select
+<dialog class="modal" bind:this={forceDialog}>
+    <div class="modal-box" id="force-content">
+        <h2 class="text-xl" id="force-title">Force Reveal</h2>
+
+        <select
+            class="select select-bordered"
             bind:value={forceTarget}
-            label="Card to force"
-            menu$class="force-menu"
             disabled={!potentialForceTargets.length}
         >
+            <!-- Pseudo-placeholder -->
+            <option value={null} disabled hidden selected>Card to force</option>
             {#each potentialForceTargets as potential}
                 {@const [type, card] = unpackCard(potential)}
-                <Option value={potential}>{$set[1][cardTypeToKey(type)][card]}</Option>
+                <option value={potential}>{$set[1][cardTypeToKey(type)][card]}</option>
             {/each}
-        </Select>
+        </select>
         <br />
         {#if forceTarget != null && potentialForceSuggestions[forceTarget].length}
-            <DataTable>
-                <Head>
-                    <Row>
-                        <Cell>Cards</Cell>
-                        <Cell>Sources</Cell>
-                    </Row>
-                </Head>
-                <Body>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Cards</th>
+                        <th>Sources</th>
+                    </tr>
+                </thead>
+                <tbody>
                     {#each potentialForceSuggestions[forceTarget] as [cards, sources]}
-                        <Row>
-                            <Cell>{cards}</Cell>
-                            <Cell>
+                        <tr>
+                            <td>{cards}</td>
+                            <td>
                                 {#each sources as source}
                                     <span>{source}</span>
                                     <br />
                                 {/each}
-                            </Cell>
-                        </Row>
+                            </td>
+                        </tr>
                     {/each}
-                </Body>
-            </DataTable>
+                </tbody>
+            </table>
             <br />
         {:else if forceTarget != null}
             {@const [type, card] = unpackCard(forceTarget)}
             <h2>Cannot force {$set[1][cardTypeToKey(type)][card]}</h2>
         {:else if potentialForceTargets.length}
-            <h2>Select a card</h2>
-            <h3>If a card is not listed, it cannot be forced.</h3>
+            <p>
+                Select a card.
+                <br />
+                If a card is not listed, it cannot currently be forced.
+            </p>
         {:else}
             <h3>No cards can currently be forced.</h3>
         {/if}
-        <b>
+
+        <br />
+
+        <p class="font-bold">
             Note: Forcing a reveal like this can also reveal information to other players if they
             know one or both of the cards besides the target card. If there are multiple ways to
             make the reveal happen, you can preview other players' clue sheets to see what cards
             they know about.
-        </b>
-    </Content>
-    <Actions>
-        <!-- This doesn't need an event handler--dialog is automatically closed -->
-        <Button>Close</Button>
-    </Actions>
-</Dialog>
+        </p>
+
+        <div class="modal-action">
+            <form method="dialog">
+                <button class="btn">Close</button>
+            </form>
+        </div>
+    </div>
+</dialog>

@@ -63,10 +63,7 @@ jobs:
                   yarn run check
 
             - name: Build project
-              run: |
-                  yarn run smui
-                  yarn run build
+              run: yarn run build
 
             - name: Test project
-              run: |
-                  yarn test -- --run
+              run: yarn test -- --run

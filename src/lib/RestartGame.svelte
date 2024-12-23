@@ -1,6 +1,4 @@
 <script lang="ts">
-    import Button, { Label, Icon } from '@smui/button';
-
     import { players, suggestions, startingKnowns, playerCardCounts } from '../stores';
 
     export interface Props {
@@ -20,11 +18,11 @@
     }
 </script>
 
-<div>
-    <h2>Restart Game</h2>
+<div class="card-body">
+    <h2 class="card-title">Restart Game</h2>
     <p>Click the button below to reset the current game (players, cards, and suggestions).</p>
-    <Button onclick={restart}>
-        <Label>Restart</Label>
-        <Icon class="material-icons">restart_alt</Icon>
-    </Button>
+    <button class="btn btn-primary" onclick={restart}>
+        Restart
+        <span class="material-icons">restart_alt</span>
+    </button>
 </div>

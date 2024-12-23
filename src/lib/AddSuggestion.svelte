@@ -1,10 +1,4 @@
 <script lang="ts">
-    import Button, { Label, Icon } from '@smui/button';
-    import IconButton from '@smui/icon-button';
-    import Paper from '@smui/paper';
-    import Select, { Option } from '@smui/select';
-    import Tooltip, { Wrapper } from '@smui/tooltip';
-
     import { players, playerHands, set, suggestions, preferences } from '../stores';
     import { CardType, RevealMethod, type Suggestion, type SuggestionResponse } from '../types';
     import { packCard, unpackCard } from '../cards';
@@ -109,95 +103,120 @@
     }
 </script>
 
-<Paper>
-    <h2 style="margin-bottom: 0;">Add Suggestion</h2>
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title">Add Suggestion</h2>
 
-    <Select bind:value={player} label="Player" style="width: 150px;">
-        {#each $players as playerName, i}
-            <Option value={i}>{playerName}</Option>
-        {/each}
-    </Select>
-    suggests
-    <Select bind:value={suspect} label="Suspect" style="width: 150px;">
-        {#each setContents.suspects as suspect, i}
-            <Option value={i}>{suspect}</Option>
-        {/each}
-    </Select>
-    used
-    <Select bind:value={weapon} label="Weapon" style="width: 150px;">
-        {#each setContents.weapons as weapon, i}
-            <Option value={i}>{weapon}</Option>
-        {/each}
-    </Select>
-    in
-    <Select bind:value={room} label="Room">
-        {#each setContents.rooms as room, i}
-            <Option value={i}>{room}</Option>
-        {/each}
-    </Select>
+        <div>
+            <select class="select select-bordered" bind:value={player} style="width: 150px;">
+                <!-- Pseudo-placeholder -->
+                <option value={null} disabled hidden selected>Player</option>
+                {#each $players as playerName, i}
+                    <option value={i}>{playerName}</option>
+                {/each}
+            </select>
+            suggests
+            <select class="select select-bordered" bind:value={suspect} style="width: 150px;">
+                <!-- Pseudo-placeholder -->
+                <option value={null} disabled hidden selected>Suspect</option>
+                {#each setContents.suspects as suspect, i}
+                    <option value={i}>{suspect}</option>
+                {/each}
+            </select>
+            used
+            <select class="select select-bordered" bind:value={weapon} style="width: 150px;">
+                <!-- Pseudo-placeholder -->
+                <option value={null} disabled hidden selected>Weapon</option>
+                {#each setContents.weapons as weapon, i}
+                    <option value={i}>{weapon}</option>
+                {/each}
+            </select>
+            in
+            <select class="select select-bordered" bind:value={room}>
+                <!-- Pseudo-placeholder -->
+                <option value={null} disabled hidden selected>Room</option>
+                {#each setContents.rooms as room, i}
+                    <option value={i}>{room}</option>
+                {/each}
+            </select>
+        </div>
 
-    <h3>
-        Responses
-        <Button onclick={addResponse} variant="raised">
-            <Label>Add</Label>
-            <Icon class="material-icons">add_circle</Icon>
-        </Button>
-        <Wrapper>
-            <Button onclick={addNoneResponses} variant="raised" color="secondary">
-                <Label>No Responses</Label>
-                <Icon class="material-icons">help</Icon>
-            </Button>
-            <Tooltip>None of the players showed a card.</Tooltip>
-        </Wrapper>
-    </h3>
-    {#if responses.length === 0}
-        You must specify a response (including no cards shown).
-    {/if}
-    {#each responses as response, i}
-        <Select bind:value={response.player} label="Player" style="width: 150px;">
-            {#each $players as playerName, i}
-                <Option value={i}>{playerName}</Option>
-            {/each}
-        </Select>
-        shows card
-        <Select bind:value={response.packed} label="Card" style="width: 150px;">
-            <!-- Unknown card -->
-            <Option value={-1}>Unknown</Option>
-            <!-- Suggested suspect card -->
-            {#if suspect != null && ($preferences.autoHideImpossible ? !$playerHands[response.player].missing.has(suspectPacked) : true)}
-                <Option value={suspectPacked}>
-                    {setContents.suspects[suspect]}
-                </Option>
-            {/if}
-            <!-- Suggested weapon card -->
-            {#if weapon != null && ($preferences.autoHideImpossible ? !$playerHands[response.player].missing.has(weaponPacked) : true)}
-                <Option value={weaponPacked}>
-                    {setContents.weapons[weapon]}
-                </Option>
-            {/if}
-            <!-- Suggested room card -->
-            {#if room != null && ($preferences.autoHideImpossible ? !$playerHands[response.player].missing.has(roomPacked) : true)}
-                <Option value={roomPacked}>
-                    {setContents.rooms[room]}
-                </Option>
-            {/if}
-            <!-- Nothing was shown -->
-            <Option value={-2}>None</Option>
-        </Select>
-        <IconButton
-            class="material-icons"
-            onclick={() => {
-                responses.splice(i, 1);
-                responses = responses;
-            }}>delete</IconButton
-        >
+        <h3>
+            Responses
+            <button class="btn btn-primary h-10 min-h-10" onclick={addResponse}>
+                Add
+                <span class="material-icons">add_circle</span>
+            </button>
+            <div class="tooltip" data-tip="None of the players showed a card.">
+                <button class="btn btn-secondary h-10 min-h-10" onclick={addNoneResponses}>
+                    No Responses
+                    <span class="material-icons">help</span>
+                </button>
+            </div>
+        </h3>
+        {#if responses.length === 0}
+            You must specify a response (including no cards shown).
+        {/if}
+        {#each responses as response, i}
+            <div class="flex items-center justify-center">
+                <select
+                    class="select select-bordered"
+                    bind:value={response.player}
+                    style="width: 150px;"
+                >
+                    {#each $players as playerName, i}
+                        <option value={i}>{playerName}</option>
+                    {/each}
+                </select>
+
+                shows card
+
+                <select
+                    class="select select-bordered"
+                    bind:value={response.packed}
+                    style="width: 150px;"
+                >
+                    <!-- Unknown card -->
+                    <option value={-1}>Unknown</option>
+                    <!-- Suggested suspect card -->
+                    {#if suspect != null && ($preferences.autoHideImpossible ? !$playerHands[response.player].missing.has(suspectPacked) : true)}
+                        <option value={suspectPacked}>
+                            {setContents.suspects[suspect]}
+                        </option>
+                    {/if}
+                    <!-- Suggested weapon card -->
+                    {#if weapon != null && ($preferences.autoHideImpossible ? !$playerHands[response.player].missing.has(weaponPacked) : true)}
+                        <option value={weaponPacked}>
+                            {setContents.weapons[weapon]}
+                        </option>
+                    {/if}
+                    <!-- Suggested room card -->
+                    {#if room != null && ($preferences.autoHideImpossible ? !$playerHands[response.player].missing.has(roomPacked) : true)}
+                        <option value={roomPacked}>
+                            {setContents.rooms[room]}
+                        </option>
+                    {/if}
+                    <!-- Nothing was shown -->
+                    <option value={-2}>None</option>
+                </select>
+                <button
+                    class="btn btn-circle"
+                    onclick={() => {
+                        responses.splice(i, 1);
+                        responses = responses;
+                    }}
+                >
+                    <span class="material-icons"> delete </span>
+                </button>
+                <br />
+            </div>
+        {/each}
+
         <br />
-    {/each}
 
-    <br />
-
-    <Button onclick={saveSuggestion} disabled={!responses.length} variant="raised">
-        <Label>Save Suggestion</Label>
-        <Icon class="material-icons">save</Icon>
-    </Button>
-</Paper>
+        <button class="btn btn-primary" onclick={saveSuggestion} disabled={!responses.length}>
+            Save Suggestion
+            <span class="material-icons">save</span>
+        </button>
+    </div>
+</div>
