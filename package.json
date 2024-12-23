@@ -12,33 +12,16 @@
         "test": "vitest",
         "create-test": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' scripts/generate-test.ts",
         "prettier": "prettier",
-        "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
-        "smui": "npm run smui-theme-light && npm run smui-theme-dark",
-        "smui-theme-light": "smui-theme compile smui/smui.css -i src/theme",
-        "smui-theme-dark": "smui-theme compile smui/smui-dark.css -i src/theme/dark"
+        "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"
     },
     "devDependencies": {
-        "@smui-extra/accordion": "^8.0.0-beta.2",
-        "@smui/button": "^8.0.0-beta.2",
-        "@smui/card": "^8.0.0-beta.2",
-        "@smui/data-table": "^8.0.0-beta.2",
-        "@smui/dialog": "^8.0.0-beta.2",
-        "@smui/form-field": "^8.0.0-beta.2",
-        "@smui/icon-button": "^8.0.0-beta.2",
-        "@smui/layout-grid": "^8.0.0-beta.2",
-        "@smui/list": "^8.0.0-beta.2",
-        "@smui/paper": "^8.0.0-beta.2",
-        "@smui/select": "patch:@smui/select@npm%3A8.0.0-beta.2#~/.yarn/patches/@smui-select-npm-8.0.0-beta.2-7a5cdf0318.patch",
-        "@smui/switch": "^8.0.0-beta.2",
-        "@smui/tab": "^8.0.0-beta.2",
-        "@smui/tab-bar": "^8.0.0-beta.2",
-        "@smui/textfield": "^8.0.0-beta.2",
-        "@smui/tooltip": "^8.0.0-beta.2",
         "@sveltejs/vite-plugin-svelte": "^5.0.3",
         "@tsconfig/svelte": "^5.0.4",
         "@types/eslint": "^9.6.1",
         "@types/node": "^22.10.2",
+        "autoprefixer": "^10.4.20",
         "core-js": "^3.39.0",
+        "daisyui": "^4.12.22",
         "eslint": "^9.17.0",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-svelte": "^2.46.1",
@@ -46,9 +29,10 @@
         "lz-string": "^1.5.0",
         "prettier": "^3.4.2",
         "prettier-plugin-svelte": "^3.3.2",
-        "smui-theme": "^8.0.0-beta.2",
+        "prettier-plugin-tailwindcss": "^0.6.5",
         "svelte": "^5.15.0",
         "svelte-check": "^4.1.1",
+        "tailwindcss": "^3.4.9",
         "ts-node": "^10.9.2",
         "tslib": "^2.8.1",
         "typescript": "^5.7.2",
@@ -57,8 +41,5 @@
         "vite-plugin-wasm": "^3.3.0",
         "vitest": "^2.1.8"
     },
-    "packageManager": "yarn@4.4.1+sha512.f825273d0689cc9ead3259c14998037662f1dcd06912637b21a450e8da7cfeb4b1965bbee73d16927baa1201054126bc385c6f43ff4aa705c8631d26e12460f1",
-    "resolutions": {
-        "@smui/select@npm:^8.0.0-beta.2": "patch:@smui/select@npm%3A8.0.0-beta.2#~/.yarn/patches/@smui-select-npm-8.0.0-beta.2-7a5cdf0318.patch"
-    }
+    "packageManager": "yarn@4.4.1+sha512.f825273d0689cc9ead3259c14998037662f1dcd06912637b21a450e8da7cfeb4b1965bbee73d16927baa1201054126bc385c6f43ff4aa705c8631d26e12460f1"
 }

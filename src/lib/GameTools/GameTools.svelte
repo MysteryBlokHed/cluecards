@@ -1,5 +1,4 @@
 <script lang="ts">
-    import Paper from '@smui/paper';
     import type { Suggestion } from '../../types';
 
     import CalculateOdds from './CalculateOdds.svelte';
@@ -12,11 +11,13 @@
     let { amendedSuggestions }: Props = $props();
 </script>
 
-<Paper class="gametools__paper" style="height: min-content; max-width: 650px;">
-    <h2>Game Tools</h2>
-    <p>Leverage inferences to gain more information.</p>
-    <hr />
-    <ForceReveal />
-    <hr />
-    <CalculateOdds {amendedSuggestions} />
-</Paper>
+<div class="card max-w-[650px] bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title justify-center text-2xl">Game Tools</h2>
+        <p>Leverage inferences to gain more information.</p>
+        <hr />
+        <ForceReveal />
+        <hr />
+        <CalculateOdds {amendedSuggestions} />
+    </div>
+</div>

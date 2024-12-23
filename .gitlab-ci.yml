@@ -50,7 +50,6 @@ build:
         - YARN_CHECKSUM_BEHAVIOR=update yarn install
         - yarn run lint
         - yarn run check
-        - yarn run smui
         - yarn run build
         - yarn run test -- --run
     rules:

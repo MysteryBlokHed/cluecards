@@ -1,8 +1,4 @@
 <script lang="ts">
-    import Button, { Icon, Label } from '@smui/button';
-    import IconButton from '@smui/icon-button';
-    import Textfield from '@smui/textfield';
-
     import { cardsPerHand, cardsPerHandFrac } from '../cards';
     import {
         players,
@@ -49,8 +45,8 @@
     }
 </script>
 
-<div>
-    <h2>Players</h2>
+<div class="card-body">
+    <h2 class="card-title">Players</h2>
     <span style="font-weight: bold;">
         Cards Per Hand:
         {#if cards === cardsFrac}
@@ -64,29 +60,54 @@
         {/if}
     </span>
 
-    {#each $players, i}
-        <div>
-            <Textfield
-                bind:value={$players[i]}
-                label={$preferences.firstIsSelf && i === 0 ? 'Your Name' : 'Player Name'}
-            />
-            <Textfield
-                type="number"
-                bind:value={$playerCardCounts[i]}
-                label="Hand Size"
-                style="width: 4rem;"
-                invalid={!countsValid}
-            />
-            <IconButton
-                class="material-icons"
-                disabled={uneditable || $players.length === 1}
-                onclick={() => removePlayer(i)}>delete</IconButton
-            >
-        </div>
-    {/each}
+    <div>
+        {#each $players, i}
+            <div class="align-center">
+                <div class="flex items-center justify-center gap-2">
+                    <label class="form-control">
+                        <div class="label p-0">
+                            <span class="label-text">
+                                {$preferences.firstIsSelf && i === 0 ? 'Your Name' : 'Player Name'}
+                            </span>
+                        </div>
+                        <input
+                            type="text"
+                            class="input input-bordered"
+                            placeholder={$preferences.firstIsSelf && i === 0
+                                ? 'Your Name'
+                                : 'Player Name'}
+                            bind:value={$players[i]}
+                            aria-invalid={!countsValid}
+                        />
+                    </label>
 
-    <Button disabled={uneditable} onclick={addPlayer}>
-        <Label>Add</Label>
-        <Icon class="material-icons">add</Icon>
-    </Button>
+                    <label class="form-control">
+                        <div class="label p-0">
+                            <span class="label-text">Hand Size</span>
+                        </div>
+                        <input
+                            type="number"
+                            class="appearance-textfield input input-bordered w-16 {!countsValid
+                                ? 'border-red-600 text-red-600'
+                                : ''}"
+                            bind:value={$playerCardCounts[i]}
+                        />
+                    </label>
+
+                    <button
+                        class="btn btn-circle relative top-2"
+                        disabled={uneditable || $players.length === 1}
+                        onclick={() => removePlayer(i)}
+                    >
+                        <span class="material-icons">delete</span>
+                    </button>
+                </div>
+            </div>
+        {/each}
+
+        <button class="btn btn-ghost text-primary" disabled={uneditable} onclick={addPlayer}>
+            Add
+            <span class="material-icons">add</span>
+        </button>
+    </div>
 </div>

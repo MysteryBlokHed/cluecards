@@ -1,5 +1,4 @@
 <script lang="ts">
-    import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
     import { CardType } from '../../types';
     import { cardTypeToKey, cardTypeToString, packCard } from '../../cards';
 
@@ -33,14 +32,14 @@
 </script>
 
 <div style="display: table-row;">
-    <DataTable table$aria-label="{cardTypeToString(type)} clue list" style="display: table-cell;">
-        <Head>
-            <Row style="height: 2.5em;">
-                <Cell>{cardTypeToString(type)}</Cell>
+    <table class="table" aria-label="{cardTypeToString(type)} clue list">
+        <thead>
+            <tr style="height: 2.5em;">
+                <th>{cardTypeToString(type)}</th>
                 {#each hideFirst ? $players.slice(1) : $players as player, _i}
                     <!-- `i` would be off by one if we're ignoring the first player -->
                     {@const i = hideFirst ? _i + 1 : _i}
-                    <Cell style="text-align: center;">
+                    <th style="text-align: center;">
                         <!-- Name -->
                         {player}
                         {#if type === CardType.Suspect}
@@ -48,15 +47,15 @@
                             <!-- # of known cards -->
                             ({$playerHands[i].has.size}/{$playerCardCounts[i]})
                         {/if}
-                    </Cell>
+                    </th>
                 {/each}
-            </Row>
-        </Head>
-        <Body>
+            </tr>
+        </thead>
+        <tbody>
             {#each $set[1][cardTypeToKey(type)] as card, index}
                 {@const packed = packCard(type, index)}
-                <Row style="height: 2.5em;">
-                    <Cell style="width: 170px;">
+                <tr style="height: 2.5em;">
+                    <td style="width: 170px;">
                         <!-- Strikethrough if any player has this -->
                         {#if $innocents.has(packed)}
                             <s class="red">{card}</s>
@@ -65,14 +64,14 @@
                         {:else}
                             <span>{card}</span>
                         {/if}
-                    </Cell>
+                    </td>
                     {#each hideFirst ? $playerHands.slice(1) : $playerHands as hand, _i}
                         <!-- `i` would be off by one if we're ignoring the first player -->
                         {@const i = hideFirst ? _i + 1 : _i}
-                        <Cell style="text-align: center;">
-                            {@const has = hand.has.has(packed)}
-                            {@const missing = hand.missing.has(packed)}
-                            {@const maybe = hand.maybe.has(packed)}
+                        {@const has = hand.has.has(packed)}
+                        {@const missing = hand.missing.has(packed)}
+                        {@const maybe = hand.maybe.has(packed)}
+                        <td style="text-align: center;">
                             {#if has}
                                 <span class="green">&check;</span>
                             {:else if missing}
@@ -88,12 +87,12 @@
                                     {/if}
                                 {/each}
                             {/if}
-                        </Cell>
+                        </td>
                     {/each}
-                </Row>
+                </tr>
             {/each}
-        </Body>
-    </DataTable>
+        </tbody>
+    </table>
 </div>
 
 <style scoped>
