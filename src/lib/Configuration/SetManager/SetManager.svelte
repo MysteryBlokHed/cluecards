@@ -129,25 +129,19 @@
             <tbody>
                 <tr>
                     <td>
-                        <button
-                            class="btn w-full"
-                            onclick={() => (set.suspects = [...set.suspects, ''])}
-                        >
+                        <button class="btn w-full" onclick={() => set.suspects.push('')}>
                             Add Suspect
                             <span class="material-icons">add</span>
                         </button>
                     </td>
                     <td>
-                        <button
-                            class="btn w-full"
-                            onclick={() => (set.weapons = [...set.weapons, ''])}
-                        >
+                        <button class="btn w-full" onclick={() => set.weapons.push('')}>
                             Add Weapon
                             <span class="material-icons">add</span>
                         </button>
                     </td>
                     <td>
-                        <button class="btn w-full" onclick={() => (set.rooms = [...set.rooms, ''])}>
+                        <button class="btn w-full" onclick={() => set.rooms.push('')}>
                             Add Room
                             <span class="material-icons">add</span>
                         </button>

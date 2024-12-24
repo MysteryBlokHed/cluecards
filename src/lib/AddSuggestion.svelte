@@ -69,8 +69,6 @@
         for (const responder of responders) {
             responses.push({ player: responder, packed: CardType.Nothing });
         }
-
-        responses = responses;
     }
 
     function saveSuggestion() {
@@ -96,7 +94,7 @@
             responses: responses as SuggestionResponse[],
         };
 
-        $suggestions = [...$suggestions, suggestion];
+        $suggestions.push(suggestion);
 
         player = suspect = weapon = room = null;
         responses = [];

@@ -37,8 +37,8 @@
             $sets.set(builtin, structuredClone(SETS[builtin]));
         }
 
-        $sets = $sets;
         $set = [$set[0], $sets.get($set[0])!];
+        $sets = $sets;
     }
 </script>
 

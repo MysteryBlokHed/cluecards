@@ -18,11 +18,13 @@
     let countsValid = $derived($playerCardCounts.reduce((sum, curr) => sum + curr) === cardsInSet);
 
     function addPlayer() {
-        $players = [...$players, ''];
-        $playerHands = [
-            ...$playerHands,
-            { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: new Map() },
-        ];
+        $players.push('');
+        $playerHands.push({
+            has: new Set(),
+            missing: new Set(),
+            maybe: new Set(),
+            maybeGroups: new Map(),
+        });
         $playerCardCounts = defaultCardCounts();
     }
 
@@ -30,8 +32,6 @@
         if ($players.length === 1) return;
         $players.splice(index, 1);
         $playerHands.splice(index, 1);
-        $players = $players;
-        $playerHands = $playerHands;
         $playerCardCounts = defaultCardCounts();
     }
 
