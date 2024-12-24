@@ -786,15 +786,21 @@ fn probabilities_recursive(
 
     let all_hands_full = hands
         .iter()
-        .enumerate()
-        .all(|(i, hand)| hand.has.len() == player_card_counts[i]);
+        .zip(player_card_counts.iter())
+        .all(|(hand, &card_count)| hand.has.len() == card_count);
 
     if all_hands_full {
-        let [suspect, weapon, room] = guilty_from_hands(hands);
-        if suspect.is_some() && weapon.is_some() && room.is_some() {
-            let suspect = suspect.unwrap();
-            let weapon = weapon.unwrap();
-            let room = room.unwrap();
+        'hands_full: {
+            let [suspect, weapon, room] = guilty_from_hands(hands);
+            let Some(suspect) = suspect else {
+                break 'hands_full;
+            };
+            let Some(weapon) = weapon else {
+                break 'hands_full;
+            };
+            let Some(room) = room else {
+                break 'hands_full;
+            };
 
             // Do not count if this particular arrangement of cards has already been seen
             let as_string = hands_has_to_string(hands);
