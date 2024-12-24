@@ -21,7 +21,7 @@ crate-type = ["cdylib"]
 [dependencies]
 itertools = "0.13.0"
 js-sys = "0.3.76"
-mini-alloc = "0.6.0"
 serde = "1.0.216"
 serde-wasm-bindgen = "0.6.5"
 wasm-bindgen = "0.2"
+wee_alloc = "0.4.5"

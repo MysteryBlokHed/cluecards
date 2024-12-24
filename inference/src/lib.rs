@@ -7,7 +7,7 @@ use wasm_bindgen::prelude::*;
 
 #[global_allocator]
 #[cfg(target_arch = "wasm32")]
-static ALLOC: mini_alloc::MiniAlloc = mini_alloc::MiniAlloc::INIT;
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 /// A way to represent the data that comes with a variant of Clue.
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
