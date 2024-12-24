@@ -1,15 +1,10 @@
 <script lang="ts">
     import './app.css';
 
-    import AddCards from './lib/AddCards.svelte';
     import AddSuggestion from './lib/AddSuggestion.svelte';
     import GameTools from './lib/GameTools/';
     import Hands from './lib/Hands';
-    import Players from './lib/Players.svelte';
-    import RestartGame from './lib/RestartGame.svelte';
-    import SetSelector from './lib/SetSelector.svelte';
     import Suggestions from './lib/Suggestions.svelte';
-    import Preferences from './lib/Preferences.svelte';
 
     import {
         startingKnowns,
@@ -27,13 +22,11 @@
 
     import type { Suggestion } from './types';
     import { untrack } from 'svelte';
+    import Configuration from './lib/Configuration';
 
     let amendedSuggestions: Suggestion[] = $state(
         structuredClone($state.snapshot($suggestions) as Suggestion[]),
     );
-
-    const tabs = ['Set Selector', 'Players', 'Add Cards', 'Preferences', 'Restart'] as const;
-    let activeTab: string = $state('Set Selector');
 
     // Update viewport based on device size
     window.addEventListener(
@@ -110,10 +103,6 @@
         $suggestions.splice(index, 1);
         $suggestions = $suggestions;
     }
-
-    function setTab(tab: string) {
-        activeTab = tab;
-    }
 </script>
 
 <main>
@@ -128,33 +117,7 @@
     </h1>
     <div class="mt-4 grid">
         <div>
-            <div role="tablist" class="group tabs tabs-bordered">
-                {#each tabs as tab}
-                    <input
-                        bind:group={activeTab}
-                        type="radio"
-                        role="tab"
-                        class="tab pb-8 text-lg checked:[--fallback-bc:theme(colors.primary)]"
-                        name="app_tabs"
-                        value={tab}
-                        aria-label={tab}
-                    />
-                {/each}
-            </div>
-
-            <div class="card rounded-t-none bg-base-100 shadow-xl">
-                {#if activeTab === 'Set Selector'}
-                    <SetSelector />
-                {:else if activeTab === 'Players'}
-                    <Players />
-                {:else if activeTab === 'Add Cards'}
-                    <AddCards />
-                {:else if activeTab === 'Preferences'}
-                    <Preferences />
-                {:else if activeTab === 'Restart'}
-                    <RestartGame {setTab} />
-                {/if}
-            </div>
+            <Configuration />
         </div>
         <div class="mt-8">
             <GameTools {amendedSuggestions} />

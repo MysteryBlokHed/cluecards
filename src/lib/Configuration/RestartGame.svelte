@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { players, suggestions, startingKnowns, playerCardCounts } from '../stores';
+    import { players, suggestions, startingKnowns, playerCardCounts } from '../../stores';
 
     export interface Props {
         setTab: (tab: string) => void;

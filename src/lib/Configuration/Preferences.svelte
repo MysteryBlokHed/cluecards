@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { preferences } from '../stores';
+    import { preferences } from '../../stores';
 </script>
 
 <div class="card-body">

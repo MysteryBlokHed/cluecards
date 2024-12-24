@@ -1,8 +1,9 @@
 <script lang="ts">
     import { untrack } from 'svelte';
-    import { set as activeSet, sets } from '../stores';
-    import type { GameSet } from '../types';
+    import { set as activeSet, sets } from '../../../stores';
+    import type { GameSet } from '../../../types';
     import { decompressFromBase64 } from 'lz-string';
+    import SetManagerItem from './SetManagerItem.svelte';
 
     let creator: HTMLDialogElement;
 
@@ -154,70 +155,19 @@
                     <td>
                         <br />
                         {#each set.suspects, i}
-                            <div class="flex">
-                                <input
-                                    type="text"
-                                    class="input input-bordered"
-                                    bind:value={set.suspects[i]}
-                                    placeholder="Suspect"
-                                />
-                                <button
-                                    class="btn btn-circle"
-                                    onclick={() => {
-                                        set.suspects.splice(i, 1);
-                                        set.suspects = set.suspects;
-                                    }}
-                                >
-                                    <span class="material-icons">delete</span>
-                                </button>
-                                <br />
-                            </div>
+                            <SetManagerItem {i} set={set.suspects} placeholder="Suspect" />
                         {/each}
                     </td>
                     <td>
                         <br />
                         {#each set.weapons, i}
-                            <div class="flex">
-                                <input
-                                    type="text"
-                                    class="input input-bordered"
-                                    bind:value={set.weapons[i]}
-                                    placeholder="Weapon"
-                                />
-                                <button
-                                    class="btn btn-circle"
-                                    onclick={() => {
-                                        set.weapons.splice(i, 1);
-                                        set.weapons = set.weapons;
-                                    }}
-                                >
-                                    <span class="material-icons">delete</span>
-                                </button>
-                                <br />
-                            </div>
+                            <SetManagerItem {i} set={set.weapons} placeholder="Weapon" />
                         {/each}
                     </td>
                     <td>
                         <br />
                         {#each set.rooms, i}
-                            <div class="flex">
-                                <input
-                                    type="text"
-                                    class="input input-bordered"
-                                    bind:value={set.rooms[i]}
-                                    placeholder="Room"
-                                />
-                                <button
-                                    class="btn btn-circle"
-                                    onclick={() => {
-                                        set.rooms.splice(i, 1);
-                                        set.rooms = set.rooms;
-                                    }}
-                                >
-                                    <span class="material-icons">delete</span>
-                                </button>
-                                <br />
-                            </div>
+                            <SetManagerItem {i} set={set.rooms} placeholder="Room" />
                         {/each}
                     </td>
                 </tr>

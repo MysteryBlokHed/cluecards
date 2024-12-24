@@ -1,10 +1,10 @@
 <script lang="ts">
     import { compressToBase64 } from 'lz-string';
 
-    import SetManager from './SetManager.svelte';
+    import SetManager from './SetManager/';
 
-    import SETS from '../sets';
-    import { set, sets } from '../stores';
+    import SETS from '../../sets';
+    import { set, sets } from '../../stores';
     import { untrack } from 'svelte';
 
     let setName = $state($set[0]);

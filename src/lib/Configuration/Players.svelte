@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { cardsPerHand, cardsPerHandFrac } from '../cards';
+    import { cardsPerHand, cardsPerHandFrac } from '../../cards';
     import {
         players,
         playerHands,
@@ -7,7 +7,7 @@
         set,
         suggestions,
         preferences,
-    } from '../stores';
+    } from '../../stores';
 
     let uneditable = $derived(!!$suggestions[0]);
 
