@@ -67,7 +67,13 @@
                         {/each}
                     </select>
                 {/if}
-                <button class="btn btn-circle" onclick={() => cards.splice(i, 1)}>
+                <button
+                    class="btn btn-circle"
+                    onclick={() => {
+                        cards.splice(i, 1);
+                        cards = cards;
+                    }}
+                >
                     <span class="material-icons">delete</span>
                 </button>
                 <br />
