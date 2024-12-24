@@ -11,12 +11,14 @@
 
     // Update the active set if setName changes
     $effect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         setName;
         untrack(() => ($set = [setName, $sets.get(setName)!]));
     });
 
     // Update setName if the active set changes
     $effect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         $set;
         untrack(() => (setName = $set[0]));
     });
