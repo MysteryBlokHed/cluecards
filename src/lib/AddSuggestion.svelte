@@ -108,7 +108,7 @@
         <h2 class="card-title">Add Suggestion</h2>
 
         <div>
-            <select class="select select-bordered" bind:value={player} style="width: 150px;">
+            <select class="select select-bordered" bind:value={player}>
                 <!-- Pseudo-placeholder -->
                 <option value={null} disabled hidden selected>Player</option>
                 {#each $players as playerName, i}
@@ -116,7 +116,7 @@
                 {/each}
             </select>
             suggests
-            <select class="select select-bordered" bind:value={suspect} style="width: 150px;">
+            <select class="select select-bordered" bind:value={suspect}>
                 <!-- Pseudo-placeholder -->
                 <option value={null} disabled hidden selected>Suspect</option>
                 {#each setContents.suspects as suspect, i}
@@ -124,7 +124,7 @@
                 {/each}
             </select>
             used
-            <select class="select select-bordered" bind:value={weapon} style="width: 150px;">
+            <select class="select select-bordered" bind:value={weapon}>
                 <!-- Pseudo-placeholder -->
                 <option value={null} disabled hidden selected>Weapon</option>
                 {#each setContents.weapons as weapon, i}
@@ -158,12 +158,8 @@
             You must specify a response (including no cards shown).
         {/if}
         {#each responses as response, i}
-            <div class="flex items-center justify-center">
-                <select
-                    class="select select-bordered"
-                    bind:value={response.player}
-                    style="width: 150px;"
-                >
+            <div class="flex items-center justify-center gap-2">
+                <select class="select select-bordered" bind:value={response.player}>
                     {#each $players as playerName, i}
                         <option value={i}>{playerName}</option>
                     {/each}
@@ -171,11 +167,7 @@
 
                 shows card
 
-                <select
-                    class="select select-bordered"
-                    bind:value={response.packed}
-                    style="width: 150px;"
-                >
+                <select class="select select-bordered" bind:value={response.packed}>
                     <!-- Unknown card -->
                     <option value={-1}>Unknown</option>
                     <!-- Suggested suspect card -->

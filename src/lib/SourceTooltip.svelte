@@ -1,10 +1,10 @@
 <script lang="ts">
     export interface Props {
         text: string;
-        style?: string | undefined;
+        classes?: string | undefined;
     }
 
-    let { text, style = '' }: Props = $props();
+    let { text, classes = '' }: Props = $props();
 </script>
 
 <div class="tooltip" data-tip={text}>
@@ -12,6 +12,5 @@
     <span
     tabindex="0"
     role="button"
-    style="font-size: 1em; user-select: none; {style}"
-    class="material-icons">help</span>
+    class="material-icons cursor-default text-[1em] select-none {classes}">help</span>
 </div>

@@ -5,7 +5,7 @@
     import ClueList from './ClueList.svelte';
 </script>
 
-<div class="card bg-base-100 shadow-xl" style="display: table;">
+<div class="card w-fit bg-base-100 shadow-xl">
     <div class="card-body p-5">
         <h2 class="card-title justify-center text-2xl">Clues</h2>
 

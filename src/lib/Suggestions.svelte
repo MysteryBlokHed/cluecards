@@ -80,10 +80,8 @@
                         No cards here...did something go wrong?
                     {/if}
                     {#each responses as response}
-                        {@const style =
-                            response.source === RevealMethod.InferSuggestion
-                                ? 'color: lightseagreen;'
-                                : ''}
+                        {@const classes =
+                            response.source === RevealMethod.InferSuggestion ? 'text-teal-500' : ''}
                         <div>
                             <b>{$players[response.player]}</b>
                             showed
@@ -103,17 +101,17 @@
                                     />
                                 {/if}
                             {:else if response.cardType < 0}
-                                <b {style}>{cardTypeToString(response.cardType)}</b>
+                                <b class={classes}>{cardTypeToString(response.cardType)}</b>
                             {/if}
                             <!-- Show card name if available -->
                             {#if response.cardType >= 0}
-                                <b {style}>
+                                <b class={classes}>
                                     {setContents[cardTypeToKey(response.cardType)][response.card]}
                                 </b>
                             {/if}
                             <!-- If the data was inferred, show a tooltip -->
                             {#if response.source === RevealMethod.InferSuggestion}
-                                <SourceTooltip {style} text="This card was inferred." />
+                                <SourceTooltip {classes} text="This card was inferred." />
                             {:else if response.source === RevealMethod.Direct}
                                 <SourceTooltip text="This card was directly shown." />
                             {:else if response.source === RevealMethod.Self}

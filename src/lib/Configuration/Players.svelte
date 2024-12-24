@@ -47,7 +47,7 @@
 
 <div class="card-body">
     <h2 class="card-title">Players</h2>
-    <span style="font-weight: bold;">
+    <span class="font-bold">
         Cards Per Hand:
         {#if cards === cardsFrac}
             <!-- Show exact -->

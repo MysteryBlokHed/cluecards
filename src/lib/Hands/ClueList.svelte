@@ -30,15 +30,15 @@
     );
 </script>
 
-<div style="display: table-row;">
+<div class="table-row">
     <table class="table" aria-label="{cardTypeToString(type)} clue list">
         <thead>
-            <tr style="height: 2.5em;">
-                <th>{cardTypeToString(type)}</th>
+            <tr>
+                <th class="m-0">{cardTypeToString(type)}</th>
                 {#each hideFirst ? $players.slice(1) : $players as player, _i}
                     <!-- `i` would be off by one if we're ignoring the first player -->
                     {@const i = hideFirst ? _i + 1 : _i}
-                    <th style="text-align: center;">
+                    <th class="text-center">
                         <!-- Name -->
                         {player}
                         {#if type === CardType.Suspect}
@@ -53,13 +53,13 @@
         <tbody>
             {#each $set[1][cardTypeToKey(type)] as card, index}
                 {@const packed = packCard(type, index)}
-                <tr style="height: 2.5em;">
-                    <td style="width: 170px;">
+                <tr>
+                    <td class="w-40">
                         <!-- Strikethrough if any player has this -->
                         {#if $innocents.has(packed)}
-                            <s class="red">{card}</s>
+                            <s class="text-red-500">{card}</s>
                         {:else if $playerHands.every(hand => hand.missing.has(packed))}
-                            <span class="green">{card}</span>
+                            <span class="text-green-400">{card}</span>
                         {:else}
                             <span>{card}</span>
                         {/if}
@@ -70,11 +70,11 @@
                         {@const has = hand.has.has(packed)}
                         {@const missing = hand.missing.has(packed)}
                         {@const maybe = hand.maybe.has(packed)}
-                        <td style="text-align: center;">
+                        <td class="text-center">
                             {#if has}
-                                <span class="green">&check;</span>
+                                <span class="text-green-400">&check;</span>
                             {:else if missing}
-                                <span class="red">&cross;</span>
+                                <span class="text-red-500">&cross;</span>
                             {:else if maybe}
                                 <span>?</span>
                             {/if}
@@ -82,7 +82,7 @@
                             {#if has || maybe}
                                 {#each sortedMaybeGroups[i] as maybe, j}
                                     {#if maybe[1].has(packed)}
-                                        <sub style="font-size: 0.625rem;">{j + 1}</sub>
+                                        <sub class="text-[0.625rem]">{j + 1}</sub>
                                     {/if}
                                 {/each}
                             {/if}
@@ -93,13 +93,3 @@
         </tbody>
     </table>
 </div>
-
-<style scoped>
-    .red {
-        color: red;
-    }
-
-    .green {
-        color: lightgreen;
-    }
-</style>
