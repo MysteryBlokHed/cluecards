@@ -40,15 +40,42 @@ jobs:
               uses: actions/cache@v4
               id: yarn-cache
               with:
-                  path: /home/runner/.yarn
+                  path: ~/.yarn/
                   key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
                   restore-keys: |
                       ${{ runner.os }}-yarn-
+
+            - name: Rust cache
+              uses: actions/cache@v4
+              id: rust-cache
+              with:
+                  path: |
+                      ~/.cargo/bin/
+                      ~/.cargo/registry/index/
+                      ~/.cargo/registry/cache/
+                      ~/.cargo/git/db/
+                      ~/.rustup/
+                      inference/target/
+                  key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
             - name: Set up Node
               uses: actions/setup-node@v4
               with:
                   node-version: lts/*
+
+            - name: Set up Rust and wasm-pack
+              run: |
+                  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+                  . ~/.cargo/env
+                  rustup update
+                  curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+            - name: Lint and Build Rust
+              run: |
+                  cd inference
+                  cargo check
+                  wasm-pack build --release --target bundler
+                  cd ..
 
             - name: Set up Yarn
               run: |
@@ -57,12 +84,15 @@ jobs:
                   yarn --version
                   YARN_CHECKSUM_BEHAVIOR=update yarn install
 
-            - name: Lint project
+            - name: Lint TypeScript
               run: |
                   yarn run lint
                   yarn run check
+                  cd inference
+                  cargo check
+                  cd ..
 
-            - name: Build project
+            - name: Build TypeScipt
               run: yarn run build
 
             - name: Test project
