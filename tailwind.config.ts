@@ -21,6 +21,7 @@ export default {
     },
 
     daisyui: {
+        logs: false,
         themes: [
             {
                 light: {
