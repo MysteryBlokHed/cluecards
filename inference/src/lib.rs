@@ -678,6 +678,12 @@ fn infer_internal(
     // Run iterative inference
     let hands = infer_iterative(player_card_counts, set, starting_hands, &packed_set)?;
 
+    // Note: it may seem wasteful that innocents are generated in this function
+    // even though [probabilities] throws them away,
+    // but my testing has shown that separating the innocents logic
+    // into its own function actually _slows down_ the probabilities function!
+    // Figure that one out!
+
     // All innocent cards, derived from knowns
     let all_known_innocents = knowns
         .iter()
@@ -763,7 +769,7 @@ pub fn infer(
 
 /// Used by [probabilities] to keep track of which hand configurations have already been seen.
 fn hands_has_to_string(hands: &[PlayerHand]) -> String {
-    hands.iter().map(|hand| hand.has.iter().join("|")).join("|")
+    hands.iter().map(|hand| hand.has.iter().join(",")).join("|")
 }
 
 /// This is the internal function used by [probabilities].
