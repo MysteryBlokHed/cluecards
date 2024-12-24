@@ -785,7 +785,7 @@ fn probabilities_recursive(
     limit: f64,
     occurrences: &mut BTreeMap<(u8, u8, u8), usize>,
     start: f64,
-) {
+) -> Result<(), ()> {
     let player_count = hands.len();
 
     let all_hands_full = hands
@@ -803,12 +803,12 @@ fn probabilities_recursive(
             // Do not count if this particular arrangement of cards has already been seen
             let as_string = hands_has_to_string(hands);
             if seen.contains(&as_string) {
-                return;
+                return Ok(());
             }
             seen.insert(as_string);
 
             *occurrences.entry((suspect, weapon, room)).or_default() += 1;
-            return;
+            return Ok(());
         }
     }
 
@@ -847,7 +847,7 @@ fn probabilities_recursive(
 
             if let Ok((new_hands, _)) = new_hands {
                 // Recurse
-                probabilities_recursive(
+                let recurse_result = probabilities_recursive(
                     suggestions,
                     set,
                     &new_hands,
@@ -861,11 +861,23 @@ fn probabilities_recursive(
                     occurrences,
                     start,
                 );
+
+                // Timeout
+                if recurse_result.is_err() {
+                    return recurse_result;
+                }
             } else if let Err(e) = new_hands {
                 js_warn(&format!("Error during probabilities infer: {e}"));
             }
+
+            // Timeout
+            if js_now() - start >= limit {
+                return Err(());
+            }
         }
     }
+
+    Ok(())
 }
 
 /// Determine the odds of each suspect/weapon/room being the murder cards
@@ -918,7 +930,8 @@ pub fn probabilities(
         limit.unwrap_or(10_000.0),
         &mut occurrences,
         js_now(),
-    );
+    )
+    .map_err(|_| JsError::new("Run too long, stopping..."))?;
 
     // Convert result to JS
     let occurrences_js = js_sys::Object::default();
