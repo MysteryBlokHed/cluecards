@@ -70,6 +70,13 @@ jobs:
                   rustup update
                   curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
+            - name: Lint and Build Rust
+              run: |
+                  cd inference
+                  cargo check
+                  wasm-pack build --release --target bundler
+                  cd ..
+
             - name: Set up Yarn
               run: |
                   corepack enable
@@ -77,7 +84,7 @@ jobs:
                   yarn --version
                   YARN_CHECKSUM_BEHAVIOR=update yarn install
 
-            - name: Lint project
+            - name: Lint TypeScript
               run: |
                   yarn run lint
                   yarn run check
@@ -85,12 +92,8 @@ jobs:
                   cargo check
                   cd ..
 
-            - name: Build project
-              run: |
-                  cd inference
-                  wasm-pack build --release --target bundler
-                  cd ..
-                  yarn run build
+            - name: Build TypeScipt
+              run: yarn run build
 
             - name: Test project
               run: yarn test -- --run
