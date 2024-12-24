@@ -28,7 +28,9 @@
     import type { Suggestion } from './types';
     import { untrack } from 'svelte';
 
-    let amendedSuggestions: Suggestion[] = $state(structuredClone($suggestions));
+    let amendedSuggestions: Suggestion[] = $state(
+        structuredClone($state.snapshot($suggestions) as Suggestion[]),
+    );
 
     const tabs = ['Set Selector', 'Players', 'Add Cards', 'Preferences', 'Restart'] as const;
     let activeTab: string = $state('Set Selector');

@@ -3,26 +3,22 @@
     import type { GameSet } from '../types';
     import { decompressFromBase64 } from 'lz-string';
 
-    export interface Props {
-        updating: string | null;
-    }
-
     let creator: HTMLDialogElement;
 
-    export function openCreator() {
+    let updating: string | null = $state(null);
+
+    export function openCreator(setUpdating: string | null) {
+        updating = setUpdating;
         creator.showModal();
     }
 
-    let { updating = $bindable() }: Props = $props();
-
     let setName: string = $state('');
-    // @ts-expect-error This null is resolved before anything actually tries to use it
-    let set: GameSet = $state(null);
+    let set: GameSet = $state(null) as unknown as GameSet;
 
     function updateActiveSet(updating: string | null) {
         if (updating != null) {
             setName = updating;
-            set = structuredClone($sets[setName]);
+            set = structuredClone($state.snapshot($sets[setName]));
         }
     }
 
@@ -55,6 +51,8 @@
     });
 
     function resetSet() {
+        updating = null;
+        setName = '';
         set = {
             suspects: ['', '', '', '', '', ''],
             weapons: ['', '', '', '', '', ''],
@@ -69,8 +67,6 @@
         if ($activeSet[0] === updating) {
             $activeSet = [updating, $sets[updating]];
         }
-        setName = '';
-        updating = null;
         resetSet();
     }
 
@@ -80,6 +76,7 @@
 <!-- Set Creator Dialog -->
 <dialog
     class="modal"
+    oncancel={e => e.preventDefault()}
     aria-labelledby="creator-title"
     aria-describedby="creator-content"
     bind:this={creator}
@@ -216,11 +213,24 @@
         </table>
         <div class="modal-action">
             <form method="dialog">
-                <button class="btn">
+                <button
+                    class="btn"
+                    onclick={() => {
+                        creator.close();
+                        resetSet();
+                    }}
+                >
                     Cancel
                     <span class="material-icons">delete_forever</span>
                 </button>
-                <button class="btn btn-primary" onclick={saveSet} disabled={!setIsValid}>
+                <button
+                    class="btn btn-primary"
+                    onclick={() => {
+                        creator.close();
+                        saveSet();
+                    }}
+                    disabled={!setIsValid}
+                >
                     Save
                     <span class="material-icons">save</span>
                 </button>

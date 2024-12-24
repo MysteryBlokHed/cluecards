@@ -32,7 +32,7 @@
     }
 </script>
 
-<SetManager bind:this={creator} bind:updating />
+<SetManager bind:this={creator} />
 <div class="card-body">
     <h2 class="card-title">Set Selector</h2>
     <span>The version of the game being used.</span>
@@ -45,13 +45,7 @@
             {/each}
         </select>
 
-        <button
-            class="btn btn-circle"
-            onclick={() => {
-                updating = setName;
-                creator.openCreator();
-            }}
-        >
+        <button class="btn btn-circle" onclick={() => creator.openCreator(setName)}>
             <span class="material-icons">edit</span>
         </button>
         <div class="tooltip" data-tip="Export this set to a shareable string.">
@@ -70,13 +64,7 @@
     </div>
 
     <div>
-        <button
-            class="btn btn-ghost text-primary"
-            onclick={() => {
-                updating = null;
-                creator.openCreator();
-            }}
-        >
+        <button class="btn btn-ghost text-primary" onclick={() => creator.openCreator(null)}>
             Create New Set
             <span class="material-icons">add</span>
         </button>
