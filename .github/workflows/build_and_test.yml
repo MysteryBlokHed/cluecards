@@ -65,7 +65,8 @@ jobs:
 
             - name: Set up Rust and wasm-pack
               run: |
-                  apt-get update && apt-get install -y rustup
+                  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+                  . ~/.cargo/env
                   rustup update
                   curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
