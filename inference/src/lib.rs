@@ -9,9 +9,9 @@ use wasm_bindgen::prelude::*;
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct GameSet {
-    suspects: Vec<String>,
-    weapons: Vec<String>,
-    rooms: Vec<String>,
+    suspects: Box<[String]>,
+    weapons: Box<[String]>,
+    rooms: Box<[String]>,
 }
 
 /// One of potentially multiple responses to a [Suggestion].
@@ -38,7 +38,7 @@ struct Suggestion {
     /// Ordered so that it may be indexed by [CardType] (or at least in the TypeScript code).
     cards: [u8; 3],
     /// Responses given by other players.
-    responses: Vec<SuggestionResponse>,
+    responses: Box<[SuggestionResponse]>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Default, Deserialize, Serialize)]
