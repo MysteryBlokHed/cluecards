@@ -1,8 +1,10 @@
 <script lang="ts">
+    import { decompressFromBase64 } from 'lz-string';
     import { untrack } from 'svelte';
+
     import { set as activeSet, sets } from '../../../stores';
     import type { GameSet } from '../../../types';
-    import { decompressFromBase64 } from 'lz-string';
+
     import SetManagerItem from './SetManagerItem.svelte';
 
     let creator: HTMLDialogElement;

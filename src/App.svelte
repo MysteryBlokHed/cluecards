@@ -1,11 +1,10 @@
 <script lang="ts">
     import './app.css';
 
-    import AddSuggestion from './lib/AddSuggestion.svelte';
-    import GameTools from './lib/GameTools/';
-    import Hands from './lib/Hands';
-    import Suggestions from './lib/Suggestions.svelte';
+    import { untrack } from 'svelte';
 
+    import { stripSuggestions, updateSuggestions } from './inference';
+    import { infer } from '../inference/pkg/inference';
     import {
         startingKnowns,
         set,
@@ -17,12 +16,13 @@
         innocents,
         playerPov,
     } from './stores';
-    import { stripSuggestions, updateSuggestions } from './inference';
-    import { infer } from '../inference/pkg/inference';
-
     import type { Suggestion } from './types';
-    import { untrack } from 'svelte';
-    import Configuration from './lib/Configuration';
+
+    import AddSuggestion from './lib/AddSuggestion.svelte';
+    import Configuration from './lib/Configuration/';
+    import GameTools from './lib/GameTools/';
+    import Hands from './lib/Hands';
+    import Suggestions from './lib/Suggestions.svelte';
 
     let amendedSuggestions: Suggestion[] = $state(
         structuredClone($state.snapshot($suggestions) as Suggestion[]),

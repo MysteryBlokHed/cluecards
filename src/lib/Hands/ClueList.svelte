@@ -1,7 +1,6 @@
 <script lang="ts">
-    import { CardType } from '../../types';
     import { cardTypeToKey, cardTypeToString, packCard } from '../../cards';
-
+    import { CardType } from '../../types';
     import {
         players,
         playerHands,
