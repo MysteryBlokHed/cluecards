@@ -5,15 +5,23 @@
 
     import SETS from '../sets';
     import { set, sets } from '../stores';
+    import { untrack } from 'svelte';
 
     let setName = $state($set[0]);
+
+    // Update the active set if setName changes
     $effect(() => {
-        $set = [setName, $sets[setName]];
+        setName;
+        untrack(() => ($set = [setName, $sets[setName]]));
+    });
+
+    // Update setName if the active set changes
+    $effect(() => {
+        $set;
+        untrack(() => (setName = $set[0]));
     });
 
     let creator: SetManager;
-
-    let updating: string | null = $state(null);
 
     function deleteSet() {
         delete $sets[setName];

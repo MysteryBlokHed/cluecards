@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { untrack } from 'svelte';
     import { set as activeSet, sets } from '../stores';
     import type { GameSet } from '../types';
     import { decompressFromBase64 } from 'lz-string';
@@ -15,14 +16,14 @@
     let setName: string = $state('');
     let set: GameSet = $state(null) as unknown as GameSet;
 
-    function updateActiveSet(updating: string | null) {
+    $effect(() => {
         if (updating != null) {
-            setName = updating;
-            set = structuredClone($state.snapshot($sets[setName]));
+            untrack(() => {
+                setName = updating!;
+                set = $state.snapshot($sets[updating!]);
+            });
         }
-    }
-
-    $effect(() => updateActiveSet(updating));
+    });
 
     let setIsValid = $derived.by(() => {
         if (!set) return false;
@@ -61,12 +62,17 @@
     }
 
     function saveSet() {
+        // If the user renamed an existing set, delete the old version of it
+        if (updating != null && setName !== updating) {
+            delete $sets[updating];
+        }
         $sets[setName] = set;
-        $sets = $sets;
+
         // Reload set if we are updating the active one
         if ($activeSet[0] === updating) {
-            $activeSet = [updating, $sets[updating]];
+            $activeSet = [setName, $sets[setName]];
         }
+
         resetSet();
     }
 
@@ -107,7 +113,6 @@
             type="text"
             class="input input-bordered"
             placeholder="Set Name"
-            disabled={updating != null}
             bind:value={setName}
         />
         <table>
