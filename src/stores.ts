@@ -8,30 +8,53 @@ import type { Known, GameSet, Suggestion, PlayerHand, Preferences } from './type
  * @param defaultValue The starting value if the key is not found
  * @param storage The storage medium to use
  */
-function persistent<T>(key: string, defaultValue: T, storage = sessionStorage) {
-    const storedValue: T = storage[key] ? JSON.parse(storage[key]) : defaultValue;
+function persistent<T>(
+    key: string,
+    defaultValue: T,
+    storage = sessionStorage,
+    replacer?: (this: unknown, key: string, value: unknown) => unknown,
+    reviver?: (this: unknown, key: string, value: unknown) => unknown,
+) {
+    const storedValue: T = storage[key] ? JSON.parse(storage[key], reviver) : defaultValue;
     const store = writable(storedValue);
-    store.subscribe(newValue => (storage[key] = JSON.stringify(newValue)));
+    store.subscribe(newValue => (storage[key] = JSON.stringify(newValue, replacer)));
     return store;
 }
 
-export const sets = persistent<Record<string, GameSet>>(
+/** For storing {@link Map Maps} as JSON. */
+function mapReplacer(_key: string, value: unknown) {
+    if (value instanceof Map) {
+        return [...value.entries()];
+    } else {
+        return value;
+    }
+}
+
+/** For parsing JSON into a {@link Map}. */
+function mapReviver(key: string, value: unknown) {
+    if (key) return value;
+    else return new Map(value as [unknown, unknown][]);
+}
+
+export const sets = persistent<Map<string, GameSet>>(
     'customSets',
-    structuredClone(SETS),
+    new Map(Object.entries(structuredClone(SETS))),
     localStorage,
+    mapReplacer,
+    mapReviver,
 );
-let $sets: Record<string, GameSet> = get(sets);
+let $sets = get(sets);
 sets.subscribe(newValue => {
     $sets = newValue;
     // Re-add default sets if the list is empty
-    if (Object.keys($sets).length === 0) {
-        sets.set(structuredClone(SETS));
+    if (!$sets.size) {
+        sets.set(new Map(Object.entries(structuredClone(SETS))));
     }
 });
 
 // This is stored slightly differently and cannot use persistentStore()
 const storedSet: string = sessionStorage.setName ?? 'Clue';
-export const set = writable<[string, GameSet]>([storedSet, $sets[storedSet]]);
+export const set = writable<[string, GameSet]>([storedSet, $sets.get(storedSet)!]);
 set.subscribe(newSet => (sessionStorage.setName = newSet[0]));
 
 export const players = persistent('players', ['', '', '']);

@@ -12,7 +12,7 @@
     // Update the active set if setName changes
     $effect(() => {
         setName;
-        untrack(() => ($set = [setName, $sets[setName]]));
+        untrack(() => ($set = [setName, $sets.get(setName)!]));
     });
 
     // Update setName if the active set changes
@@ -24,19 +24,19 @@
     let creator: SetManager;
 
     function deleteSet() {
-        delete $sets[setName];
-        setName = Object.keys($sets)[0];
-        $set = [setName, $sets[setName]];
+        $sets.delete(setName);
+        setName = $sets.keys().next().value!;
+        $set = [setName, $sets.get(setName)!];
         $sets = $sets;
     }
 
     function restore() {
         for (const builtin of Object.keys(SETS) as Array<keyof typeof SETS>) {
-            $sets[builtin] = structuredClone(SETS[builtin]);
+            $sets.set(builtin, structuredClone(SETS[builtin]));
         }
 
         $sets = $sets;
-        $set = [$set[0], $sets[$set[0]]];
+        $set = [$set[0], $sets.get($set[0])!];
     }
 </script>
 
@@ -48,7 +48,7 @@
 
     <div class="flex items-center justify-center gap-2">
         <select class="select select-bordered" bind:value={setName}>
-            {#each Object.keys($sets) as name}
+            {#each $sets.keys() as name}
                 <option value={name}>{name}</option>
             {/each}
         </select>

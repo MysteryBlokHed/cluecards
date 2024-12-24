@@ -20,7 +20,7 @@
         if (updating != null) {
             untrack(() => {
                 setName = updating!;
-                set = $state.snapshot($sets[updating!]);
+                set = $state.snapshot($sets.get(updating!)!);
             });
         }
     });
@@ -62,15 +62,22 @@
     }
 
     function saveSet() {
-        // If the user renamed an existing set, delete the old version of it
+        // If the user renamed an existing set, delete the old version of it and reinsert this set in its place
         if (updating != null && setName !== updating) {
-            delete $sets[updating];
+            // Sets to array
+            const setsEntries = [...$sets.entries()];
+            // Find the set we're updating
+            const updatingIndex = setsEntries.findIndex(([name]) => name === updating);
+            // Swap it with the new version
+            setsEntries[updatingIndex] = [setName, set];
+            $sets = new Map(setsEntries);
+        } else {
+            $sets.set(setName, set);
         }
-        $sets[setName] = set;
 
         // Reload set if we are updating the active one
         if ($activeSet[0] === updating) {
-            $activeSet = [setName, $sets[setName]];
+            $activeSet = [setName, set];
         }
 
         resetSet();
