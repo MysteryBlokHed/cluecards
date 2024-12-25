@@ -535,10 +535,13 @@ fn infer_iterative(
             };
             if cards.len() == cards_of_type - 1 {
                 // Find the card not held by any player
-                let possible = BTreeSet::from_iter(0..(cards_of_type as u8));
-                let card = possible.difference(cards).next().unwrap();
+                let card = unsafe {
+                    (0..(cards_of_type as u8))
+                        .find(|card| !cards.contains(card))
+                        .unwrap_unchecked()
+                };
                 // Mark this card as missing for all players
-                let packed = pack_card(card_type as u8, *card as u8);
+                let packed = pack_card(card_type as u8, card as u8);
                 for hand in hands.iter_mut() {
                     hand.missing.insert(packed);
                 }
@@ -648,7 +651,7 @@ fn infer_internal(
                 // A player specifically _did not_ show a card
                 CardType::NOTHING => starting_hands[response.player]
                     .missing
-                    .extend(suggestion_cards.iter()),
+                    .extend(suggestion_cards),
 
                 // A player showed a card, but we do not know which
                 CardType::UNKNOWN => {
@@ -659,8 +662,8 @@ fn infer_internal(
 
                     starting_hands[response.player]
                         .maybe
-                        .extend(suggestion_cards.iter());
-                    maybe_group.extend(suggestion_cards.iter());
+                        .extend(suggestion_cards);
+                    maybe_group.extend(suggestion_cards);
                 }
 
                 // A player showed a card we know exactly
