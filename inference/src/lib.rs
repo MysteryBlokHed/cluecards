@@ -167,11 +167,9 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
     let mut disjoint_sets = Vec::new();
 
     while !sets.is_empty() {
-        // Current set with the most intersections
-        let mut max_intersection_set: Option<&BTreeSet<T>> = None;
-        // Number of intersections associated with max_intersection_set
+        // Number of intersections associated with the set with the most intersections
         let mut max_intersections = 0usize;
-        // The index of max_intersection_set in overall sets
+        // The index of the set with the most intersections in overall sets
         let mut max_index: Option<usize> = None;
         // Sets that each set intersects with
         let mut all_intersecting_sets: BTreeMap<usize, Box<[&BTreeSet<T>]>> = BTreeMap::new();
@@ -190,15 +188,14 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
             // Update highest-intersection set if required
             if intersections > max_intersections {
                 max_intersections = intersections;
-                max_intersection_set = Some(set);
                 max_index = Some(i);
             }
         }
 
-        // No eligible set
-        if max_intersection_set.is_none() {
+        let Some(max_index) = max_index else {
+            // No eligible set
             break;
-        }
+        };
 
         // Current set with the fewest intersections
         let mut min_intersection_set: Option<&BTreeSet<T>> = None;
@@ -207,11 +204,7 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
         // The index of min_intersection_set in overall sets
         let mut min_index: Option<usize> = None;
 
-        for candidate in all_intersecting_sets
-            .get(&max_index.unwrap())
-            .unwrap()
-            .iter()
-        {
+        for candidate in all_intersecting_sets.get(&max_index).unwrap().iter() {
             let i = sets.iter().position(|x| x == candidate).unwrap();
             let intersections = all_intersecting_sets.get(&i).unwrap().len();
             // Update lowest-intersection set if required
@@ -227,16 +220,14 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
             break;
         };
 
+        let min_index = unsafe { min_index.unwrap_unchecked() };
+
         // Save this set and remove it from the original list
         disjoint_sets.push(min_intersection_set);
-        sets.remove(min_index.unwrap());
+        sets.remove(min_index);
 
         // Remove all sets that minIntersectionSet intersected with
-        for set in all_intersecting_sets
-            .get(&min_index.unwrap())
-            .unwrap()
-            .into_iter()
-        {
+        for set in all_intersecting_sets.get(&min_index).unwrap().into_iter() {
             let index_to_remove = sets.iter().position(|x| x == set);
             if let Some(index) = index_to_remove {
                 sets.remove(index);
@@ -302,17 +293,19 @@ fn guilty_from_hands(hands: &[PlayerHand]) -> [Option<u8>; 3] {
     let mut guilty = [None, None, None];
 
     // Get cards all players are missing
-    let all_missing = hands
-        .iter()
-        .map(|hand| &hand.missing)
-        .cloned()
-        .reduce(|intersection, current| &intersection & &current);
+    let all_missing: Option<BTreeSet<u8>> = hands.iter().map(|hand| &hand.missing).fold(
+        None,
+        |intersection, current| match intersection {
+            Some(intersection) => Some(&intersection & current),
+            None => Some(current.clone()),
+        },
+    );
 
-    if all_missing.is_none() {
+    let Some(all_missing) = all_missing else {
         return guilty;
-    }
+    };
 
-    for packed in all_missing.unwrap().into_iter() {
+    for packed in all_missing.into_iter() {
         let (card_type, card) = unpack_card(packed);
         guilty[card_type as usize] = Some(card);
     }
@@ -415,28 +408,32 @@ fn infer_iterative(
             }
 
             // Remove any held or missing cards from the maybe set
-            let has_and_maybe = &hand.has & &hand.maybe;
-            let missing_and_maybe = &hand.missing & &hand.maybe;
-            let to_remove = &has_and_maybe | &missing_and_maybe;
+            let to_remove = hand
+                .maybe
+                .iter()
+                .filter(|card| hand.missing.contains(card) || hand.has.contains(card))
+                .copied()
+                .collect::<BTreeSet<_>>();
+
             hand.maybe.retain(|card| !to_remove.contains(card));
 
             // =========================
             // Update maybe groups
             // =========================
-            let mut to_delete = Vec::<usize>::new();
+            let mut to_delete = BTreeSet::new();
             for (key, maybe_group) in hand.maybe_groups.iter_mut() {
                 // Remove any cards from maybe groups that are marked missing
-                *maybe_group = &*maybe_group - &hand.missing;
+                maybe_group.retain(|card| !hand.missing.contains(card));
 
                 // If the group has one card, mark it as held
                 if maybe_group.len() == 1 {
-                    let last = maybe_group.pop_last().unwrap();
+                    let last = unsafe { maybe_group.pop_last().unwrap_unchecked() };
                     hand.has.insert(last);
                 }
 
                 // If the group is empty or no longer contains any possible cards, mark it for deletion
                 if maybe_group.is_empty() || maybe_group.is_disjoint(&hand.maybe) {
-                    to_delete.push(*key);
+                    to_delete.insert(*key);
                 }
             }
             hand.maybe_groups.retain(|key, _| !to_delete.contains(key));
@@ -493,8 +490,8 @@ fn infer_iterative(
                     for set2 in size_two_groups[j].iter() {
                         if set1 == set2 {
                             // Get the two cards from the set
-                            let card1 = *set1.first().unwrap();
-                            let card2 = *set1.last().unwrap();
+                            let card1 = unsafe { *set1.first().unwrap_unchecked() };
+                            let card2 = unsafe { *set1.last().unwrap_unchecked() };
                             all_has_packed.insert(card1);
                             all_has_packed.insert(card2);
 
@@ -553,10 +550,10 @@ fn infer_iterative(
             || guilty_is_known[2].is_some()
         {
             // A mapping of packed cards to players who do _not_ have it
-            let mut missing_map = BTreeMap::<u8, Vec<usize>>::new();
+            let mut missing_map = BTreeMap::<u8, BTreeSet<usize>>::new();
             for (player, hand) in hands.iter().enumerate() {
                 for packed in hand.missing.iter() {
-                    missing_map.entry(*packed).or_default().push(player);
+                    missing_map.entry(*packed).or_default().insert(player);
                 }
             }
 
