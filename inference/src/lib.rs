@@ -342,11 +342,11 @@ fn infer_iterative(
                     .find(|group| group.is_disjoint(&hand.has));
 
                 if let Some(group) = group {
-                    for card in packed_set.iter() {
-                        if !group.contains(card) && !hand.has.contains(card) {
-                            hand.missing.insert(*card);
-                        }
-                    }
+                    hand.missing.extend(
+                        packed_set
+                            .iter()
+                            .filter(|card| !group.contains(card) && !hand.has.contains(card)),
+                    );
                 }
             }
             // =========================
@@ -374,9 +374,9 @@ fn infer_iterative(
                             },
                         );
 
-                        let missing_cards = &BTreeSet::from_iter(packed_set.iter().cloned())
-                            - &(&hand.has | &cards_in_hand);
-
+                        let missing_cards = packed_set.iter().filter(|card| {
+                            !hand.has.contains(card) && !cards_in_hand.contains(card)
+                        });
                         hand.missing.extend(missing_cards);
                     }
                 }
