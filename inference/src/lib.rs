@@ -443,9 +443,12 @@ fn infer_iterative(
         // If a player is confirmed to have a card, mark it as missing for everyone else
         // =========================
         for i in 0..hands.len() {
-            let has = hands[i].has.clone();
-            for (_, hand) in hands.iter_mut().enumerate().filter(|(j, _)| i != *j) {
-                hand.missing.extend(has.iter());
+            let has = &hands[i].has;
+            for j in 0..hands.len() {
+                if i == j {
+                    continue;
+                };
+                hands[j].missing.extend(has.iter());
             }
         }
 
