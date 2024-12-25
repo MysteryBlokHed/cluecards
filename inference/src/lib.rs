@@ -204,7 +204,12 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
         // The index of min_intersection_set in overall sets
         let mut min_index: Option<usize> = None;
 
-        for candidate in all_intersecting_sets.get(&max_index).unwrap().iter() {
+        for candidate in unsafe {
+            all_intersecting_sets
+                .get(&max_index)
+                .unwrap_unchecked()
+                .iter()
+        } {
             let i = sets.iter().position(|x| x == candidate).unwrap();
             let intersections = all_intersecting_sets.get(&i).unwrap().len();
             // Update lowest-intersection set if required
@@ -224,13 +229,13 @@ pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'
 
         // Save this set and remove it from the original list
         disjoint_sets.push(min_intersection_set);
-        sets.remove(min_index);
+        sets.swap_remove(min_index);
 
         // Remove all sets that minIntersectionSet intersected with
         for set in all_intersecting_sets.get(&min_index).unwrap().into_iter() {
             let index_to_remove = sets.iter().position(|x| x == set);
             if let Some(index) = index_to_remove {
-                sets.remove(index);
+                sets.swap_remove(index);
             }
         }
     }
