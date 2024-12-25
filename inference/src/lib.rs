@@ -295,8 +295,11 @@ fn guilty_from_hands(hands: &[PlayerHand]) -> [Option<u8>; 3] {
     // Get cards all players are missing
     let all_missing: Option<BTreeSet<u8>> = hands.iter().map(|hand| &hand.missing).fold(
         None,
-        |intersection, current| match intersection {
-            Some(intersection) => Some(&intersection & current),
+        |intersection: Option<BTreeSet<u8>>, current| match intersection {
+            Some(mut intersection) => {
+                intersection.retain(|card| current.contains(&card));
+                Some(intersection)
+            }
             None => Some(current.clone()),
         },
     );
