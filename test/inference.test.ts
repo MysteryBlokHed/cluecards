@@ -268,4 +268,12 @@ describe('iterative inference methods', () => {
 
     it('if the guilty card in a category is known, other cards are innocent', () =>
         deepTest(inference.oneWithGuilty as unknown as TestData));
+
+    describe('multiple cards for which only one player not ruled out', () => {
+        it('works on a single category', () =>
+            deepTest(inference.soloMultiMissingSingleCat as unknown as TestData));
+
+        it('works for multiple categories', () =>
+            deepTest(inference.soloMultiMissingMultiCat as unknown as TestData));
+    });
 });

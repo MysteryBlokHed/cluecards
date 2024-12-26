@@ -14,3 +14,7 @@ export { default as sizeTwoMaybeGroups } from './sizeTwoMaybeGroups.js';
 export { default as allButOneInnocent } from './allButOneInnocent.js';
 // A game in which the guilty suspect is known, and there is only one player who doesn't have another suspect marked missing
 export { default as oneWithGuilty } from './oneWithGuilty.js';
+// A game in which one player is the only person not ruled out for multiple suspects
+export { default as soloMultiMissingSingleCat } from './soloMultiMissingSingleCat.js';
+// A game in which one player is the only person not ruled out for multiple suspects and weapons
+export { default as soloMultiMissingMultiCat } from './soloMultiMissingMultiCat.js';
