@@ -298,14 +298,14 @@ fn guilty_from_hands(hands: &[PlayerHand]) -> [Option<u8>; 3] {
     let mut guilty = [None, None, None];
 
     // Get cards all players are missing
-    let all_missing: Option<BTreeSet<u8>> = hands.iter().map(|hand| &hand.missing).fold(
+    let all_missing: Option<Vec<u8>> = hands.iter().map(|hand| &hand.missing).fold(
         None,
-        |intersection: Option<BTreeSet<u8>>, current| match intersection {
+        |intersection: Option<Vec<u8>>, current| match intersection {
             Some(mut intersection) => {
                 intersection.retain(|card| current.contains(&card));
                 Some(intersection)
             }
-            None => Some(current.clone()),
+            None => Some(Vec::from_iter(current.iter().copied())),
         },
     );
 
@@ -647,10 +647,12 @@ fn infer_iterative(
                     .copied()
                     .collect::<Box<_>>();
 
-                let mut new_missing = packed_set.to_vec();
-                new_missing.retain(|card| {
-                    !hands[player].has.contains(card) && !only_possible_cards.contains(card)
-                });
+                let new_missing = packed_set
+                    .iter()
+                    .filter(|card| {
+                        !hands[player].has.contains(card) && !only_possible_cards.contains(card)
+                    })
+                    .collect::<Box<_>>();
 
                 hands[player].missing.extend(new_missing);
             }
