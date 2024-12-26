@@ -394,6 +394,132 @@ Even without knowing which of the cards belongs to who, we can make the followin
 This technique can also be expanded for some $`S : |S| = 3`$ which is common across _three_ players,
 but this is exceedingly unlikely to happen in a real game.
 
+## Sole player missing multiple cards
+
+This is a similar idea to the [knowing a murder card](#knowing-a-murder-card) technique.
+However, it only applies to a category if that category's murder card **is _not_ known**.
+
+For a player $`n`$, let us define the set $`X^p_n = \{c \in (D \setminus H^p_n) : c \in N^p_m \forall m \neq n \}`$.
+That is, $`X^p_n`$ will be the set of all cards that are confirmed _missing_
+from all players' hands, _except for_ $`n`$, and which are _not_ confirmed to be in $`n`$'s hand
+(note that $`H^p_n`$ is subtracted from $`D`$).
+
+For example, given a (partial) clue sheet like this:
+
+| Suspect |  Player 1  | Player 2 | Player 3 |
+| ------: | :--------: | :------: | :------: |
+|   Green |  &cross;   | &cross;  |          |
+|    Plum |  &cross;   | &cross;  |          |
+| Mustard |  &cross;   | &cross;  | &check;  |
+|         | $`\vdots`$ |          |          |
+
+$`X^p_3 = \{ \mathrm{Green}, \mathrm{Plum} \}`$.
+It does _not_ include Mustard, because $`\mathrm{Mustard} \in H^p_3`$.
+
+Now, let us consider the set as it intersects with $`D_s, D_w, D_l`$.
+In this case, the only non-empty intersection is $`X^p_3 \cap D_s = \{ \mathrm{Green}, \mathrm{Plum} \}`$.
+
+If a player $`n`$ has two or more cards in the intersection between $`X^p_n`$,
+there are special implications when they have certain amounts of unknown cards missing.
+
+To start, let's consider the case where the only intersection with two or more cards
+is with _one_ of $`D_s, D_w, D_l`$ (we'll use suspects $`D_s`$ to match the active example).
+
+In our example, the size of the intersection is 2.
+If player 3 has only _one_ unknown card left (i.e. $`|H_3| - |H^p_3| = 1`$),
+what would this imply for our game?
+
+Imagine that player 3's last card is something other than Green or Plum.
+This means that we can rule out every other card, so our sheet would look like this:
+
+| Suspect |  Player 1  | Player 2 | Player 3 |
+| ------: | :--------: | :------: | :------: |
+|   Green |  &cross;   | &cross;  | &cross;  |
+|    Plum |  &cross;   | &cross;  | &cross;  |
+| Mustard |  &cross;   | &cross;  | &check;  |
+|         | $`\vdots`$ |          |          |
+
+But wait! This would imply that we have _two_ guilty suspects, so this can't be true.
+Therefore, the only possible last card for player 3 is either Green or Plum.
+
+So, if the intersection between $`X^p_n`$ and one of $`D_s, D_w, D_l`$ has two or more cards,
+and player $`n`$ has _the size of the intersection, minus one_ cards remaining,
+we can rule out all cards other than the intersection from being the last cards in $`n`$'s hand.
+
+This can be expressed as:
+
+```math
+|X^p_n \cap D_x| \geq 2 \land |H_n| - |H^p_n| = |X^p_n \cap D_x| - 1 \implies N^p_n = (D \setminus H^p_n) \setminus (X^p_n \cap D_x)
+```
+
+Where $`D_x`$ is one of $`D_s, D_w, D_l`$.
+
+In this particular example, $`X^p_3 \cap D_s = \{ \mathrm{Green}, \mathrm{Plum} \} \implies |X^p_3 \cap D_s| = 2`$.
+We also have $`|H_3| - |H^p_3| = 1 = |X^p_3 \cap D_s| - 1`$.
+So we can deduce that $`N^p_3 = (D \setminus H^p_n) \setminus \{ \mathrm{Green}, \mathrm{Plum} \}`$.
+
+### Across categories
+
+But it's not impossible to see this kind of thing happen across multiple categories (eg. suspects and weapons).
+For example:
+
+| Suspect |  Player 1  | Player 2 | Player 3 |
+| ------: | :--------: | :------: | :------: |
+|   Green |  &cross;   | &cross;  |          |
+|    Plum |  &cross;   | &cross;  |          |
+| Mustard |  &cross;   | &cross;  | &check;  |
+|         | $`\vdots`$ |          |          |
+
+|     Weapons |  Player 1  | Player 2 | Player 3 |
+| ----------: | :--------: | :------: | :------: |
+| Candlestick |  &cross;   | &cross;  |          |
+|      Dagger |  &cross;   | &cross;  |          |
+|   Lead Pipe |  &cross;   | &cross;  | &check;  |
+|             | $`\vdots`$ |          |          |
+
+In this case, $`X^p_3 = \{ \textrm{Green}, \textrm{Plum}, \textrm{Candlestick}, \textrm{Dagger} \}`$.
+What do we do here?
+
+The general idea hasn't changed—we still want to consider intersections
+between $`X^p_n`$ and each of $`D_s, D_w, D_l`$, and we still want those intersections to be of size two or greater.
+
+Essentially, we just want to consider each of these intersections on their own,
+and then figure out how many cards a player would need to be missing
+before it is guaranteed that they have something in the collection.
+
+The updated process is:
+
+1. Look at each of $`X^p_n \cap D_s, X^p_n \cap D_w, X^p_n \cap D_l`$.
+2. Ignore any intersections whose size is _not_ two or greater.
+3. For each intersection that remains, subtract one from its size. Sum these numbers (let's call this sum $`k`$).
+4. If the player has $`k`$ cards that are not known (i.e. $`|H_n| - |H^p_n| = k`$), we can say $`N^p_n = (D \setminus H^p_n) \setminus \textrm{(the included intersections)}`$.
+
+For the example above, $`X^p_3 \cap D_s = \{ \textrm{Green}, \textrm{Plum} \}, X^p_3 \cap D_w = \{ \textrm{Candlestick}, \textrm{Dagger} \}, X^p_3 \cap D_l = \emptyset`$.
+So, we only consider the intersections with $`D_s, D_w`$.
+
+We'll now subtract one from each of the intersections and sum their sizes:
+
+```math
+\begin{equation*}
+\begin{split}
+        |\{ \textrm{Green}, \textrm{Plum} \}| - 1 &= 1\\
+|\{ \textrm{Candlestick}, \textrm{Dagger} \}| - 1 &= 1\\
+                                        k = 1 + 1 &= 2
+\end{split}
+\end{equation*}
+```
+
+So, if player 3 has 2 unknown cards left, we're allowed to eliminate cards outside of the eligible intersections (i.e. any cards outside of $`X^p_3 \cap (D_s \cup D_w)`$).
+
+```math
+\begin{equation*}
+\begin{split}
+N^p_3 &= (D \setminus H^p_3) \setminus (X^p_3 \cap (D_s \cup D_w))\\
+N^p_3 &= (D \setminus H^p_3) \setminus \{ \textrm{Green}, \textrm{Plum}, \textrm{Candlestick}, \textrm{Dagger} \}
+\end{split}
+\end{equation*}
+```
+
 ## License
 
 This project is licensed under the GNU Affero General Public License, Version 3.0

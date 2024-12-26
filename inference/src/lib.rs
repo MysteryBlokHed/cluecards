@@ -553,43 +553,106 @@ fn infer_iterative(
             }
         }
 
+        // A mapping of packed cards to players who do _not_ have it
+        let mut missing_map = BTreeMap::<u8, BTreeSet<usize>>::new();
+        for (player, hand) in hands.iter().enumerate() {
+            for packed in hand.missing.iter() {
+                missing_map.entry(*packed).or_default().insert(player);
+            }
+        }
+
+        let guilty_is_known = guilty_from_hands(&hands);
+        let hand_count = hands.len();
+
         // =========================
         // If all but one player has a card marked missing,
         // and the guilty card for that category is known,
         // that one player must have the card
         // =========================
-        let guilty_is_known = guilty_from_hands(&hands);
         if guilty_is_known[0].is_some()
             || guilty_is_known[1].is_some()
             || guilty_is_known[2].is_some()
         {
-            // A mapping of packed cards to players who do _not_ have it
-            let mut missing_map = BTreeMap::<u8, BTreeSet<usize>>::new();
-            for (player, hand) in hands.iter().enumerate() {
-                for packed in hand.missing.iter() {
-                    missing_map.entry(*packed).or_default().insert(player);
-                }
-            }
-
-            let hand_count = hands.len();
-
-            for (packed, missing_players) in missing_map
-                .into_iter()
+            // Iterate over cards that only one player is missing
+            for (&packed, missing_players) in missing_map
+                .iter()
                 .filter(|(_, players)| players.len() == hand_count - 1)
             {
-                // Ignore if the guilty card is not known for this category
+                // Ignore if the guilty card is _not_ known for this category
                 let (card_type, _) = unpack_card(packed);
                 if guilty_is_known[card_type as usize].is_none() {
                     continue;
                 }
 
-                // Find the player that does not have the card
+                // Find the player that does not have the card marked missing
                 let player = (0..hand_count)
                     .into_iter()
                     .find(|player| !missing_players.contains(player));
 
                 // Mark them as having the card
                 hands[player.unwrap()].has.insert(packed);
+            }
+        }
+        if guilty_is_known[0].is_none()
+            || guilty_is_known[1].is_none()
+            || guilty_is_known[2].is_none()
+        {
+            // A map of players to the cards that only they can possibly have
+            // (i.e. cards in everybody else's missing set), separated by category.
+            // Note that cards in the list _ARE_ packed.
+            let mut only_possible_by_type = BTreeMap::<usize, [Vec<u8>; 3]>::new();
+
+            // Iterate over cards that only one player is missing
+            for (&packed, missing_players) in missing_map
+                .iter()
+                .filter(|(_, players)| players.len() == hand_count - 1)
+            {
+                // Ignore if the guilty card _is_ known for this category
+                let (card_type, _) = unpack_card(packed);
+                if guilty_is_known[card_type as usize].is_some() {
+                    continue;
+                }
+
+                // Find the player that does not have the card marked missing
+                let player = (0..hand_count)
+                    .into_iter()
+                    .find(|player| !missing_players.contains(player))
+                    .unwrap();
+
+                // If the player doesn't already have the card in their hand, count it
+                if !hands[player].has.contains(&packed) {
+                    only_possible_by_type.entry(player).or_default()[card_type as usize]
+                        .push(packed);
+                }
+            }
+
+            // The lengths of each hand's "has" set
+            let hand_has_lengths = hands.iter().map(|hand| hand.has.len()).collect::<Box<_>>();
+
+            for (player, cards_by_cat) in
+                // Only include players who have few enough unknown cards for the inference to work
+                only_possible_by_type.into_iter().filter(|(player, cards)| {
+                        let required_missing = cards[0].len().saturating_sub(1)
+                            + cards[1].len().saturating_sub(1)
+                            + cards[2].len().saturating_sub(1);
+
+                        hand_has_lengths[*player] >= player_card_counts[*player] - required_missing
+                    })
+            {
+                // Determine all cards that may only be held by this player
+                let only_possible_cards = cards_by_cat
+                    .iter()
+                    .filter(|cards| cards.len() > 1)
+                    .flatten()
+                    .copied()
+                    .collect::<Box<_>>();
+
+                let mut new_missing = packed_set.to_vec();
+                new_missing.retain(|card| {
+                    !hands[player].has.contains(card) && !only_possible_cards.contains(card)
+                });
+
+                hands[player].missing.extend(new_missing);
             }
         }
 
