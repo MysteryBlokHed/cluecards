@@ -129,6 +129,9 @@ extern "C" {
     #[wasm_bindgen(js_namespace = console, js_name = log)]
     fn js_log(s: &str);
 
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn js_log_obj(s: &JsValue);
+
     #[wasm_bindgen(js_namespace = console, js_name = warn)]
     fn js_warn(s: &str);
 
@@ -160,88 +163,51 @@ extern "C" {
 const TYPESCRIPT: &'static str = r#"import type { Suggestion, Known, PlayerHand, GameSet } from "../../src/types.js";
 import type { updateSuggestions } from "../../src/inference.js";"#;
 
-/// Finds the largest list of disjoint sets.
-/// Implemented based on <https://en.wikipedia.org/wiki/Maximum_disjoint_set#Greedy_algorithms>.
-/// Note that `sets` _will be modified_.
-pub fn approximate_mds<'a, T: Ord>(sets: &'a mut Vec<&'a BTreeSet<T>>) -> Vec<&'a BTreeSet<T>> {
-    let mut disjoint_sets = Vec::new();
+/// Finds _all_ the minimum hitting sets for a given collection of sets.
+/// A hitting set is a subset of elements such that each set in the collection
+/// contains at least one element from the hitting set. A minimum hitting set
+/// is one of the smallest such subsets.
+///
+/// Since there may be multiple minimum hitting sets, this function returns a list of them all.
+///
+/// If the return type is [Some], the first element is the size of the minimum hitting set
+/// (i.e. the size that all of the contained sets have), and the [Vec] is the list of minimum sets.
+fn find_minimum_hitting_sets(sets: &[&BTreeSet<u8>]) -> Option<(usize, Vec<BTreeSet<u8>>)> {
+    // Get all unique elements from the collection
+    let mut universe = BTreeSet::<u8>::new();
+    for set in sets.iter() {
+        universe.extend(*set);
+    }
+    let universe = universe.into_iter().collect::<Box<_>>();
 
-    while !sets.is_empty() {
-        // Number of intersections associated with the set with the most intersections
-        let mut max_intersections = 0usize;
-        // The index of the set with the most intersections in overall sets
-        let mut max_index: Option<usize> = None;
-        // Sets that each set intersects with
-        let mut all_intersecting_sets: BTreeMap<usize, Box<[&BTreeSet<T>]>> = BTreeMap::new();
-
-        for (i, set) in sets.iter().enumerate() {
-            // Find sets that this set intersects with
-            let intersecting_sets = sets
-                .iter()
-                .filter(|candidate| !candidate.is_disjoint(set))
-                .cloned()
-                .collect::<Box<_>>();
-
-            let intersections = intersecting_sets.len();
-            all_intersecting_sets.insert(i, intersecting_sets);
-
-            // Update highest-intersection set if required
-            if intersections > max_intersections {
-                max_intersections = intersections;
-                max_index = Some(i);
+    // All hitting subsets, organized by their size
+    let mut hitting_sets: BTreeMap<usize, Vec<BTreeSet<u8>>> = BTreeMap::new();
+    let n = universe.len();
+    // Generate candidate subsets using bitmasking
+    for mask in 0..(1 << n) {
+        let mut subset = BTreeSet::new();
+        for i in 0..n {
+            if mask & (1 << i) != 0 {
+                subset.insert(universe[i]);
             }
         }
 
-        let Some(max_index) = max_index else {
-            // No eligible set
-            break;
-        };
+        // The size of the current smallest hitting set (or just the largest possible uint if there is none yet)
+        let current_smallest = hitting_sets
+            .first_key_value()
+            .map(|(len, _)| *len)
+            .unwrap_or(usize::MAX);
 
-        // Current set with the fewest intersections
-        let mut min_intersection_set: Option<&BTreeSet<T>> = None;
-        // Number of intersections associated with min_intersection_set
-        let mut min_intersections = usize::MAX;
-        // The index of min_intersection_set in overall sets
-        let mut min_index: Option<usize> = None;
-
-        for candidate in unsafe {
-            all_intersecting_sets
-                .get(&max_index)
-                .unwrap_unchecked()
-                .iter()
-        } {
-            let i = sets.iter().position(|x| x == candidate).unwrap();
-            let intersections = all_intersecting_sets.get(&i).unwrap().len();
-            // Update lowest-intersection set if required
-            if intersections < min_intersections {
-                min_intersections = intersections;
-                min_intersection_set = Some(candidate);
-                min_index = Some(i);
-            }
-        }
-
-        let Some(min_intersection_set) = min_intersection_set else {
-            // No eligible set
-            break;
-        };
-
-        let min_index = unsafe { min_index.unwrap_unchecked() };
-
-        // Save this set and remove it from the original list
-        disjoint_sets.push(min_intersection_set);
-        sets.swap_remove(min_index);
-
-        // Remove all sets that minIntersectionSet intersected with
-        for set in all_intersecting_sets.get(&min_index).unwrap().into_iter() {
-            let index_to_remove = sets.iter().position(|x| x == set);
-            if let Some(index) = index_to_remove {
-                sets.swap_remove(index);
-            }
+        // If the set is a hitting set, and is at most as large as the current smallest sets, save it
+        let subset_len = subset.len();
+        if subset_len <= current_smallest && sets.iter().all(|set| !set.is_disjoint(&subset)) {
+            hitting_sets.entry(subset_len).or_default().push(subset);
         }
     }
 
-    // Return the final list
-    disjoint_sets
+    // Return the list of minimum hitting sets. BTreeMaps are sorted in ascending order,
+    // so this will always just be the first (in this case smallest) element
+    hitting_sets.pop_first()
 }
 
 /// Packs a card into a single integer for easier storage + comparison.
@@ -358,34 +324,40 @@ fn infer_iterative(
                 }
             }
             // =========================
-            // If the amount of disjoint maybeGroups in the player's hand
+            // If the size of the minimum hitting set for a player's maybe groups
             // equals the number of unknown cards in their hand,
-            // all cards outside of those maybeGroups can be eliminated from the possibilities.
+            // all cards that are not in any possible minimum hitting set can be eliminated.
             // This is a generalization of the previous case, but it is harder to compute so we try the former first
             // =========================
             else if hand.maybe_groups.len() >= player_card_counts[i] - hand.has.len() {
-                let mut eligible_groups = hand
+                let eligible_groups = hand
                     .maybe_groups
                     .values()
                     .filter(|group| group.is_disjoint(&hand.has))
                     .collect::<Vec<_>>();
 
                 if !eligible_groups.is_empty() {
-                    let disjoint_groups = approximate_mds(&mut eligible_groups);
+                    'min_hitting_sets: {
+                        let Some((min_size, min_hitting_sets)) =
+                            find_minimum_hitting_sets(&eligible_groups)
+                        else {
+                            break 'min_hitting_sets;
+                        };
 
-                    if disjoint_groups.len() >= player_card_counts[i] - hand.has.len() {
-                        let cards_in_hand = disjoint_groups.iter().fold(
-                            BTreeSet::<u8>::new(),
-                            |mut union, current| {
-                                union.extend(*current);
-                                union
-                            },
-                        );
+                        if min_size >= player_card_counts[i] - hand.has.len() {
+                            let cards_in_hand = min_hitting_sets.into_iter().fold(
+                                BTreeSet::<u8>::new(),
+                                |mut union, current| {
+                                    union.extend(current);
+                                    union
+                                },
+                            );
 
-                        let missing_cards = packed_set.iter().filter(|card| {
-                            !hand.has.contains(card) && !cards_in_hand.contains(card)
-                        });
-                        hand.missing.extend(missing_cards);
+                            let missing_cards = packed_set.iter().filter(|card| {
+                                !hand.has.contains(card) && !cards_in_hand.contains(card)
+                            });
+                            hand.missing.extend(missing_cards);
+                        }
                     }
                 }
             }

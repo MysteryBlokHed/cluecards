@@ -2,8 +2,8 @@
 export { default as singleMaybeGroup } from './singleMaybeGroup.js';
 // A game in which two maybe groups are left and the player only has two unknown cards
 export { default as multiMaybeGroup } from './multiMaybeGroup.js';
-// A game in which the player only has two unknown cards, the maybe group size is three, but the MDS size is two
-export { default as maybeGroupMDS } from './maybeGroupMDS.js';
+// A game in which the player only has two unknown cards, and the maybe group size is three
+export { default as maybeGroupMHS } from './maybeGroupMHS.js';
 // A game in which we know all cards in a player's hand
 export { default as maxCardCount } from './maxCardCount.js';
 // A game in which we have ruled out all but three cards for a player who has a three-card hand
@@ -18,3 +18,5 @@ export { default as oneWithGuilty } from './oneWithGuilty.js';
 export { default as soloMultiMissingSingleCat } from './soloMultiMissingSingleCat.js';
 // A game in which one player is the only person not ruled out for multiple suspects and weapons
 export { default as soloMultiMissingMultiCat } from './soloMultiMissingMultiCat.js';
+// A game in which there's a maybe group configuration that can only be narrowed with MHS
+export { default as minimumHittingSet } from './minimumHittingSet.js';
