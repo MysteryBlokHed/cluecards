@@ -388,20 +388,26 @@ fn infer_iterative(
             }
 
             // Remove any held or missing cards from the maybe set
-            let to_remove = hand
+            let maybes_to_delete = hand
                 .maybe
                 .iter()
                 .filter(|card| hand.missing.contains(card) || hand.has.contains(card))
                 .copied()
                 .collect::<BTreeSet<_>>();
 
-            hand.maybe.retain(|card| !to_remove.contains(card));
+            hand.maybe.retain(|card| !maybes_to_delete.contains(card));
 
             // =========================
             // Update maybe groups
             // =========================
-            let mut to_delete = BTreeSet::new();
+            let mut maybe_groups_to_delete = BTreeSet::new();
             for (key, maybe_group) in hand.maybe_groups.iter_mut() {
+                // Remove any groups that share a card with the has set (since these groups are useless for inference)
+                if !maybe_group.is_disjoint(&hand.has) {
+                    maybe_groups_to_delete.insert(*key);
+                    continue;
+                }
+
                 // Remove any cards from maybe groups that are marked missing
                 maybe_group.retain(|card| !hand.missing.contains(card));
 
@@ -413,10 +419,15 @@ fn infer_iterative(
 
                 // If the group is empty or no longer contains any possible cards, mark it for deletion
                 if maybe_group.is_empty() || maybe_group.is_disjoint(&hand.maybe) {
-                    to_delete.insert(*key);
+                    maybe_groups_to_delete.insert(*key);
                 }
             }
-            hand.maybe_groups.retain(|key, _| !to_delete.contains(key));
+            hand.maybe_groups
+                .retain(|key, _| !maybe_groups_to_delete.contains(key));
+
+            // Remove any maybe cards that are not associated with any maybe group
+            hand.maybe
+                .retain(|card| hand.maybe_groups.values().any(|group| group.contains(card)));
         }
 
         // =========================

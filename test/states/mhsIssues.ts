@@ -638,10 +638,7 @@ export default {
                     has: new Set([12, 13]),
                     missing: new Set([16, 9, 30, 20, 6, 10, 0, 8, 1, 5, 17, 14, 18, 22, 26, 34]),
                     maybe: new Set([4, 21, 2]),
-                    maybeGroups: new Map([
-                        [2, new Set([4, 21, 2])],
-                        [8, new Set([13, 2])],
-                    ]),
+                    maybeGroups: new Map([[2, new Set([4, 21, 2])]]),
                 },
                 {
                     has: new Set([]),
@@ -690,10 +687,7 @@ export default {
                     has: new Set([12, 13]),
                     missing: new Set([16, 9, 30, 20, 6, 10, 0, 8, 1, 5, 17, 14, 18, 22, 26, 34]),
                     maybe: new Set([4, 21, 2]),
-                    maybeGroups: new Map([
-                        [2, new Set([4, 21, 2])],
-                        [8, new Set([13, 2])],
-                    ]),
+                    maybeGroups: new Map([[2, new Set([4, 21, 2])]]),
                 },
                 {
                     has: new Set([]),
@@ -748,8 +742,8 @@ export default {
                 {
                     has: new Set([5, 16]),
                     missing: new Set([20, 17, 10, 9, 6, 12, 13, 2, 1]),
-                    maybe: new Set([30]),
-                    maybeGroups: new Map([[11, new Set([16, 30])]]),
+                    maybe: new Set([]),
+                    maybeGroups: new Map([]),
                 },
                 {
                     has: new Set([1, 2]),
@@ -791,8 +785,8 @@ export default {
                 {
                     has: new Set([5, 16]),
                     missing: new Set([20, 17, 10, 9, 6, 12, 13, 2, 1, 14, 0]),
-                    maybe: new Set([30]),
-                    maybeGroups: new Map([[11, new Set([16, 30])]]),
+                    maybe: new Set([]),
+                    maybeGroups: new Map([]),
                 },
                 {
                     has: new Set([1, 2]),
@@ -836,8 +830,8 @@ export default {
                 {
                     has: new Set([5, 16]),
                     missing: new Set([20, 17, 10, 9, 6, 12, 13, 2, 1, 14, 26, 0]),
-                    maybe: new Set([30]),
-                    maybeGroups: new Map([[11, new Set([16, 30])]]),
+                    maybe: new Set([]),
+                    maybeGroups: new Map([]),
                 },
                 {
                     has: new Set([1, 2]),
