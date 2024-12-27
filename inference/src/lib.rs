@@ -1,3 +1,11 @@
+#![warn(clippy::pedantic)]
+#![allow(
+    clippy::cast_sign_loss,
+    clippy::cast_possible_truncation,
+    clippy::missing_errors_doc,
+    clippy::struct_field_names,
+    clippy::too_many_lines
+)]
 use std::collections::{BTreeMap, BTreeSet};
 
 use itertools::Itertools;
@@ -14,7 +22,7 @@ struct GameSet {
     rooms: Box<[String]>,
 }
 
-/// One of potentially multiple responses to a [Suggestion].
+/// One of potentially multiple responses to a [`Suggestion`].
 /// Note that this version (i.e. the Rust struct vs the TS interface)
 /// does not include the `source` key, as it is not used.
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
@@ -35,7 +43,7 @@ struct Suggestion {
     /// The index of the player suggesting.
     player: usize,
     /// The indices of the cards in question.
-    /// Ordered so that it may be indexed by [CardType] (or at least in the TypeScript code).
+    /// Ordered so that it may be indexed by [`CardType`] (or at least in the TypeScript code).
     cards: [u8; 3],
     /// Responses given by other players.
     responses: Box<[SuggestionResponse]>,
@@ -44,9 +52,9 @@ struct Suggestion {
 #[derive(Clone, Debug, Eq, PartialEq, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlayerHand {
-    /// A set of [packed][pack_card] cards that the player has.
+    /// A set of [packed][`pack_card`] cards that the player has.
     has: BTreeSet<u8>,
-    /// A set of [packed][pack_card] cards that the player does not have.
+    /// A set of [packed][`pack_card`] cards that the player does not have.
     missing: BTreeSet<u8>,
     /// Groups potential cards for the player by suggestion.
     maybe_groups: BTreeMap<usize, BTreeSet<u8>>,
@@ -57,11 +65,11 @@ impl PlayerHand {
     fn to_js(&self) -> Result<js_sys::Object, JsValue> {
         // Convert sets
         let has_js = js_sys::Set::default();
-        for value in self.has.iter() {
+        for value in &self.has {
             has_js.add(&JsValue::from(*value));
         }
         let missing_js = js_sys::Set::default();
-        for value in self.missing.iter() {
+        for value in &self.missing {
             missing_js.add(&JsValue::from(*value));
         }
         let maybe_js = js_sys::Set::default();
@@ -77,13 +85,13 @@ impl PlayerHand {
         }
 
         // Convert maybe groups
-        let maybe_groups_js = js_sys::Map::default();
-        for (i, maybe_group) in self.maybe_groups.iter() {
+        let all_maybe_groups_js = js_sys::Map::default();
+        for (i, maybe_group) in &self.maybe_groups {
             let maybe_group_js = js_sys::Set::default();
-            for value in maybe_group.iter() {
+            for value in maybe_group {
                 maybe_group_js.add(&JsValue::from(*value));
             }
-            maybe_groups_js.set(&JsValue::from(*i), &maybe_group_js);
+            all_maybe_groups_js.set(&JsValue::from(*i), &maybe_group_js);
         }
 
         // Create PlayerHand object
@@ -94,7 +102,7 @@ impl PlayerHand {
         js_sys::Reflect::set(
             &player_hand_js,
             &JsValue::from_str("maybeGroups"),
-            &maybe_groups_js,
+            &all_maybe_groups_js,
         )?;
 
         Ok(player_hand_js)
@@ -108,7 +116,7 @@ struct Known {
     /// Either `"innocent"` or `"guilty"`.
     #[serde(rename = "type")]
     known_type: String,
-    /// The [CardType].
+    /// The [`CardType`].
     card_type: u8,
     /// The card ID with respect to its type (i.e. _not_ packed).
     card: u8,
@@ -175,12 +183,12 @@ import type { updateSuggestions } from "../../src/inference.js";"#;
 ///
 /// Since there may be multiple minimum hitting sets, this function returns a list of them all.
 ///
-/// If the return type is [Some], the first element is the size of the minimum hitting set
-/// (i.e. the size that all of the contained sets have), and the [Vec] is the list of minimum sets.
+/// If the return type is [`Some`], the first element is the size of the minimum hitting set
+/// (i.e. the size that all of the contained sets have), and the [`Vec`] is the list of minimum sets.
 fn find_minimum_hitting_sets(sets: &[&BTreeSet<u8>]) -> Option<(usize, Vec<BTreeSet<u8>>)> {
     // Get all unique elements from the collection
     let mut universe = BTreeSet::<u8>::new();
-    for set in sets.iter() {
+    for set in sets {
         universe.extend(*set);
     }
     let universe = universe.into_iter().collect::<Box<_>>();
@@ -200,8 +208,7 @@ fn find_minimum_hitting_sets(sets: &[&BTreeSet<u8>]) -> Option<(usize, Vec<BTree
         // The size of the current smallest hitting set (or just the largest possible uint if there is none yet)
         let current_smallest = hitting_sets
             .first_key_value()
-            .map(|(len, _)| *len)
-            .unwrap_or(usize::MAX);
+            .map_or(usize::MAX, |(len, _)| *len);
 
         // If the set is a hitting set, and is at most as large as the current smallest sets, save it
         let subset_len = subset.len();
@@ -221,27 +228,21 @@ fn pack_card(card_type: u8, card: u8) -> u8 {
     (card << 2) | card_type
 }
 
-/// Unpacks a [packed][pack_card] card.
+/// Unpacks a [packed][`pack_card`] card.
 #[inline]
 fn unpack_card(packed: u8) -> (u8, u8) {
     (packed & 3, packed >> 2)
 }
 
-/// Produces all cards in a game set, [packed][pack_card].
+/// Produces all cards in a game set, [packed][`pack_card`].
 /// This will return identical lists for sets with the same amount of cards
 /// (i.e. all standard Clue sets have the same packed form).
 fn pack_set(set: &GameSet) -> Box<[u8]> {
-    let suspects = (0..set.suspects.len())
-        .into_iter()
-        .map(|suspect| pack_card(0, suspect as u8));
+    let suspects = (0..set.suspects.len()).map(|suspect| pack_card(0, suspect as u8));
 
-    let weapons = (0..set.weapons.len())
-        .into_iter()
-        .map(|weapon| pack_card(1, weapon as u8));
+    let weapons = (0..set.weapons.len()).map(|weapon| pack_card(1, weapon as u8));
 
-    let rooms = (0..set.rooms.len())
-        .into_iter()
-        .map(|room| pack_card(2, room as u8));
+    let rooms = (0..set.rooms.len()).map(|room| pack_card(2, room as u8));
 
     suspects.chain(weapons).chain(rooms).collect()
 }
@@ -257,14 +258,11 @@ fn pack_suggestions(cards: [u8; 3]) -> [u8; 3] {
 
 /// Get a list of empty hands for `players` players.
 fn empty_hands(players: usize) -> Box<[PlayerHand]> {
-    (0..players)
-        .into_iter()
-        .map(|_| PlayerHand::default())
-        .collect()
+    (0..players).map(|_| PlayerHand::default()).collect()
 }
 
 /// Tries to determine guilty cards from hands by finding cards that all players are missing.
-/// Cards are returned in a form similar to [Suggestion::cards], like `[suspect, weapon, room]`.
+/// Cards are returned in a form similar to [`Suggestion::cards`], like `[suspect, weapon, room]`.
 fn guilty_from_hands(hands: &[PlayerHand]) -> [Option<u8>; 3] {
     let mut guilty = [None, None, None];
 
@@ -273,10 +271,10 @@ fn guilty_from_hands(hands: &[PlayerHand]) -> [Option<u8>; 3] {
         None,
         |intersection: Option<Vec<u8>>, current| match intersection {
             Some(mut intersection) => {
-                intersection.retain(|card| current.contains(&card));
+                intersection.retain(|card| current.contains(card));
                 Some(intersection)
             }
-            None => Some(Vec::from_iter(current.iter().copied())),
+            None => Some(current.iter().copied().collect()),
         },
     );
 
@@ -284,7 +282,7 @@ fn guilty_from_hands(hands: &[PlayerHand]) -> [Option<u8>; 3] {
         return guilty;
     };
 
-    for packed in all_missing.into_iter() {
+    for packed in all_missing {
         let (card_type, card) = unpack_card(packed);
         guilty[card_type as usize] = Some(card);
     }
@@ -292,13 +290,13 @@ fn guilty_from_hands(hands: &[PlayerHand]) -> [Option<u8>; 3] {
     guilty
 }
 
-/// Iterative function to do repeated inference for [infer].
+/// Iterative function to do repeated inference for [`infer`].
 /// Originally recursive, now just separated into its own function for readability.
 fn infer_iterative(
     player_card_counts: &[usize],
     set: &GameSet,
     mut hands: Box<[PlayerHand]>,
-    packed_set: &Box<[u8]>,
+    packed_set: &[u8],
 ) -> Result<Box<[PlayerHand]>, String> {
     let mut last_hands: Box<[PlayerHand]>;
     let total_cards = packed_set.len();
@@ -396,7 +394,7 @@ fn infer_iterative(
             // Update maybe groups
             // =========================
             let mut maybe_groups_to_delete = BTreeSet::new();
-            for (key, maybe_group) in hand.maybe_groups.iter_mut() {
+            for (key, maybe_group) in &mut hand.maybe_groups {
                 // Remove any groups that share a card with the has set (since these groups are useless for inference)
                 if !maybe_group.is_disjoint(&hand.has) {
                     maybe_groups_to_delete.insert(*key);
@@ -454,8 +452,8 @@ fn infer_iterative(
             .map(|hand| {
                 hand.maybe_groups
                     .values()
-                    .cloned() // I don't love this clone, but can't think of a better way atm
                     .filter(|group| group.len() == 2)
+                    .cloned() // I don't love this clone, but can't think of a better way atm
                     .collect::<Box<_>>()
             })
             .collect::<Box<_>>();
@@ -471,8 +469,8 @@ fn infer_iterative(
                 }
 
                 // See if any sets are the same
-                for set1 in size_two_groups[i].iter() {
-                    for set2 in size_two_groups[j].iter() {
+                for set1 in &size_two_groups[i] {
+                    for set2 in &size_two_groups[j] {
                         if set1 == set2 {
                             // Get the two cards from the set
                             let card1 = unsafe { *set1.first().unwrap_unchecked() };
@@ -500,7 +498,7 @@ fn infer_iterative(
         // the remaining card must be guilty
         // =========================
         let mut all_has: [BTreeSet<u8>; 3] = [BTreeSet::new(), BTreeSet::new(), BTreeSet::new()];
-        for card in all_has_packed.iter() {
+        for card in &all_has_packed {
             let (card_type, card) = unpack_card(*card);
             all_has[card_type as usize].insert(card);
         }
@@ -521,7 +519,7 @@ fn infer_iterative(
                 };
                 // Mark this card as missing for all players
                 let packed = pack_card(card_type as u8, card as u8);
-                for hand in hands.iter_mut() {
+                for hand in &mut hands {
                     hand.missing.insert(packed);
                 }
             }
@@ -530,7 +528,7 @@ fn infer_iterative(
         // A mapping of packed cards to players who do _not_ have it
         let mut missing_map = BTreeMap::<u8, BTreeSet<usize>>::new();
         for (player, hand) in hands.iter().enumerate() {
-            for packed in hand.missing.iter() {
+            for packed in &hand.missing {
                 missing_map.entry(*packed).or_default().insert(player);
             }
         }
@@ -559,9 +557,7 @@ fn infer_iterative(
                 }
 
                 // Find the player that does not have the card marked missing
-                let player = (0..hand_count)
-                    .into_iter()
-                    .find(|player| !missing_players.contains(player));
+                let player = (0..hand_count).find(|player| !missing_players.contains(player));
 
                 // Mark them as having the card
                 hands[player.unwrap()].has.insert(packed);
@@ -589,7 +585,6 @@ fn infer_iterative(
 
                 // Find the player that does not have the card marked missing
                 let player = (0..hand_count)
-                    .into_iter()
                     .find(|player| !missing_players.contains(player))
                     .unwrap();
 
@@ -641,8 +636,8 @@ fn infer_iterative(
     Ok(hands)
 }
 
-/// This is the internal function used by [infer].
-/// [infer] is just a wrapper around this function, converting its return type into JavaScript types.
+/// This is the internal function used by [`infer`].
+/// [`infer`] is just a wrapper around this function, converting its return type into JavaScript types.
 fn infer_internal(
     suggestions: &[Suggestion],
     knowns: &[Known],
@@ -651,14 +646,14 @@ fn infer_internal(
     set: &GameSet,
     first_is_self: bool,
 ) -> std::result::Result<(Box<[PlayerHand]>, BTreeSet<u8>), String> {
-    let packed_set = pack_set(&set);
+    let packed_set = pack_set(set);
     let mut starting_hands = empty_hands(players);
 
     // =======================
     // Non-iterative inference
     // =======================
     // Handle custom knowns
-    for known in knowns.iter() {
+    for known in knowns {
         match known.known_type.as_str() {
             "innocent" => {
                 starting_hands[known.player]
@@ -667,7 +662,7 @@ fn infer_internal(
             }
             "guilty" => {
                 let packed = pack_card(known.card_type, known.card);
-                for hand in starting_hands.iter_mut() {
+                for hand in &mut starting_hands {
                     hand.missing.insert(packed);
                 }
             }
@@ -678,7 +673,7 @@ fn infer_internal(
     // For the user themself, if any card is not explicitly known as innocent, they must not have it
     if first_is_self {
         // Mark as missing if they are not contained in the hand
-        for card in packed_set.iter() {
+        for card in &packed_set {
             if !starting_hands[0].has.contains(card) {
                 starting_hands[0].missing.insert(*card);
             }
@@ -690,7 +685,7 @@ fn infer_internal(
         // Find (packed) cards used for suggestion
         let suggestion_cards = pack_suggestions(suggestion.cards);
 
-        for response in suggestion.responses.iter() {
+        for response in &suggestion.responses {
             match response.card_type {
                 // A player specifically _did not_ show a card
                 CardType::NOTHING => starting_hands[response.player]
@@ -798,12 +793,13 @@ pub fn infer(
     let hands_js = JsValue::from(
         hands
             .iter()
-            .map(|hand| hand.to_js().unwrap())
-            .collect::<Box<_>>(),
+            .map(PlayerHand::to_js)
+            .collect::<Result<Box<[_]>, _>>()
+            .map_err(|_| JsError::new("Failed to convert hands into JS object."))?,
     );
 
     let innocents_js = js_sys::Set::default();
-    for value in innocents.into_iter() {
+    for value in innocents {
         innocents_js.add(&JsValue::from(value));
     }
 
@@ -814,13 +810,14 @@ pub fn infer(
     Ok(return_js)
 }
 
-/// Used by [probabilities] to keep track of which hand configurations have already been seen.
+/// Used by [`probabilities`] to keep track of which hand configurations have already been seen.
 fn hands_has_to_string(hands: &[PlayerHand]) -> String {
     hands.iter().map(|hand| hand.has.iter().join(",")).join("|")
 }
 
-/// This is the internal function used by [probabilities].
-/// [probabilities] is just a wrapper around this function, converting its return type into JavaScript types.
+/// This is the internal function used by [`probabilities`].
+/// [`probabilities`] is just a wrapper around this function, converting its return type into JavaScript types.
+#[allow(clippy::too_many_arguments)]
 fn probabilities_recursive(
     suggestions: &[Suggestion],
     set: &GameSet,
@@ -870,8 +867,8 @@ fn probabilities_recursive(
     for packed_index in pack_offset..packed_set.len() {
         let packed = packed_set[packed_index];
 
-        for player in 0..player_count {
-            if hands[player].has.contains(&packed) || hands[player].missing.contains(&packed) {
+        for (player, hand) in hands.iter().enumerate() {
+            if hand.has.contains(&packed) || hand.missing.contains(&packed) {
                 continue;
             }
 
@@ -902,7 +899,7 @@ fn probabilities_recursive(
 
             if let Ok((new_hands, _)) = new_hands {
                 // Recurse
-                let recurse_result = probabilities_recursive(
+                probabilities_recursive(
                     suggestions,
                     set,
                     &new_hands,
@@ -915,12 +912,7 @@ fn probabilities_recursive(
                     limit,
                     occurrences,
                     start,
-                );
-
-                // Timeout
-                if recurse_result.is_err() {
-                    return recurse_result;
-                }
+                )?;
             } else if let Err(e) = new_hands {
                 js_warn(&format!("Error during probabilities infer: {e}"));
             }
@@ -986,11 +978,11 @@ pub fn probabilities(
         &mut occurrences,
         js_now(),
     )
-    .map_err(|_| JsError::new("Run too long, stopping..."))?;
+    .map_err(|()| JsError::new("Run too long, stopping..."))?;
 
     // Convert result to JS
     let occurrences_js = js_sys::Object::default();
-    for ((suspect, weapon, room), count) in occurrences.into_iter() {
+    for ((suspect, weapon, room), count) in occurrences {
         let js_key = JsValue::from_str(&format!("{suspect}|{weapon}|{room}"));
         let js_count = JsValue::from(count);
         js_sys::Reflect::set(&occurrences_js, &js_key, &js_count)

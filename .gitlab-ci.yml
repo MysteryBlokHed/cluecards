@@ -42,6 +42,7 @@ build:
         - curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
         - cd inference
         - cargo check
+        - cargo clippy
         - wasm-pack build --release --target bundler
         - cd ..
         # TypeScript configuration + build
