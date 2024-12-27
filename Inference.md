@@ -308,18 +308,25 @@ It is rather unlikely in regular gameplay to end up with a set $`C^p_n`$ such th
 which means that the above deduction could rarely be applied.
 
 What we need to be able to do is, given some non-disjoint set $`C^p_n`$,
-determine the _largest subset_ for which all elements are disjoint.
-Luckily, this is a solved problem: finding the [maximum disjoint set](https://en.wikipedia.org/wiki/Maximum_disjoint_set) (MDS).
+determine the _smallest possible set of cards_ such that each element in $`C^p_n`$ shares at least one card with this set.
 
-The MDS of a set $`V`$ will be referred to as $`\mathrm{MDS}(V)`$.
-If a set $`V`$ is already disjoint $`\implies \mathrm{MDS}(V) = V`$.
-We know that $`\forall V \exists \mathrm{MDS}(V) \subseteq V`$.
+Luckily, this is a solved problem: finding the minimum hitting set (MHS).
+
+_Some_ MHS of a set $`V`$ will be referred to as $`\mathrm{MHS}(V)`$.
+There may be multiple possible minimum hitting sets, but they will all naturally have the same size.
+
+The set of all cards that are in a potential MHS will be referred to as $`\bigcup \mathrm{MHS}(V)`$.
+An important distinction: $`|\mathrm{MHS}(V)|`$ is being used to refer to the size of _the minimum hitting set_,
+**not** the amount of possible minimum hitting sets.
+
+We know that $`\forall V \exists |\mathrm{MHS}(V)| \leq |V|`$.
+If a set $`V`$ is already disjoint $`\implies |\mathrm{MHS}(V)| = |V|`$.
 
 This allows us to further generalize the condition from the last section. Recall:\
 $`|H_n| - |H^p_n| = |C^p_n| \iff N^p_n = D \setminus H^p_n \setminus \bigcup C^p_n$
 
-Since $`\mathrm{MDS}(C^p_n) \subseteq C^p_n`$, we can rewrite the above condition as:\
-$`|H_n| - |H^p_n| = |\mathrm{MDS}(C^p_n)| \iff N^p_n = D \setminus H^p_n \setminus \bigcup \mathrm{MDS}(C^p_n)`$
+Since $`|\mathrm{MHS}(C^p_n)| \leq |C^p_n|`$ and $`\bigcup \mathrm{MHS}(C^p_n) \subseteq \bigcup C^p_n`$, we can rewrite the above condition as:\
+$`|H_n| - |H^p_n| = |\mathrm{MHS}(C^p_n)| \iff N^p_n = D \setminus H^p_n \setminus \bigcup \mathrm{MHS}(C^p_n)`$
 
 This version of the condition is much more likely to be applicable in a game,
 and can rule out possibilities that may be harder to notice than the other inference methods.
@@ -338,36 +345,18 @@ We can see that the set $`C^p_n`$ is not disjoint: the two contained sets share 
 So despite the fact that $`|H_n| - |H^p_n| = 2 = |C^p_n|`$,
 we cannot eliminate all cards outside of $`|C^p_n|`$.
 
-Now, let us consider $`\mathrm{MDS}(C^p_n)`$.
-For this set, there are two possible MDS:
-$`\{\{b, c\}\}`$ or $`\{\{c, d\}\}`$, both of size 1.
-Since these are both valid MDS it does not matter which one is used.
-For this example, we will take $`\mathrm{MDS}(C^p_n) = \{\{b, c\}\}`$.
+Now, let us consider $`\mathrm{MHS}(C^p_n)`$. Sometimes this can be more complex to find by hand,
+but here we can clearly see that the only card common to both sets is $`c`$,
+so the only MHS is simply $`\{c\}`$.
 
-We now have a disjoint set, but we still have two unknown cards and our disjoint set is only of size 1.
+We now have a MHS, but we still have _two_ unknown cards, while $`|\mathrm{MHS}(C^p_n)|`$ is only _one_.
 But what if we discover by other means that player $`n`$ has some unrelated card $`f`$?
 
 We can now say that $`f \in H^p_n \implies H^p_n = \{a, f\}`$.
-This means that $`|H_n| - |H^p_n| = 1 = |\mathrm{MDS}(C^p_n)|`$,
-so we can now rule out all cards outside of $`\mathrm{MDS}(C^p_n)`$.
-
-Recall that we took $`\mathrm{MDS}(C^p_n)`$ to be $`\{\{b, c\}\}`$.
-This means that every card _**other than**_ the existing cards we know about ($`a`$ and $`f`$)
-and the cards in the MDS ($`b`$ and $`c`$) _cannot_ be in $`H_n`$.
-
-Importantly, note that this implies $`d \in N^p_n`$. Let's now take a look at $`S_2`$.
-Recall: $`S_2 = \{a, c, d\}`$.
-By [one of the very first inference methods](#card-shown), we know that:\
-where $`v \in H_n, v \in S_k`$ is the card shown by player $`n`$ for a suggestion $`k`$:\
-$`|S_k \setminus N^p_n| = 1 \iff S_k \setminus N^p_n = \{v\} \implies`$ we now know the identity of $`v`$.
-
-We know that $`a, d \in N^p_n`$ and $`c \not\in N^p_n`$.
-We also have $`a, c, d \not\in H^p_n`$.\
-$`S_2 \setminus N^p_n = \{a, c, d\} \setminus \{a, d\} = \{c\}`$.
-
-We have narrowed the possible cards for player $`n`$ in this suggestion down to a single card, $`c`$.
-Had we taken the MDS to be $`\{\{c, d\}\}`$ instead, we would have arrived at the same conclusion,
-just using $`S_1`$ to narrow the suggestion down to $`\{c\}`$ rather than $`S_2`$.
+This means that $`|H_n| - |H^p_n| = 1 = |\mathrm{MHS}(C^p_n)|`$,
+so we can now rule out all cards outside of $`\bigcup \mathrm{MHS}(C^p_n)`$, which in our case is $`\{c\}`$.
+Since we're ruling out every card in the deck except $`c`$,
+that means that our last card must _be_ $`c`$!
 
 This inference method allowed us to deduce the final card of a player
 by discovering another piece of information that may at first seem entirely unrelated.
