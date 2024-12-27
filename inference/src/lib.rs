@@ -48,9 +48,7 @@ pub struct PlayerHand {
     has: BTreeSet<u8>,
     /// A set of [packed][pack_card] cards that the player does not have.
     missing: BTreeSet<u8>,
-    /// A set of [packed][pack_card] cards that the player might have.
-    maybe: BTreeSet<u8>,
-    /// Associates [maybes][PlayerHand::maybe] to the suggestion(s) they come from.
+    /// Groups potential cards for the player by suggestion.
     maybe_groups: BTreeMap<usize, BTreeSet<u8>>,
 }
 
@@ -67,8 +65,15 @@ impl PlayerHand {
             missing_js.add(&JsValue::from(*value));
         }
         let maybe_js = js_sys::Set::default();
-        for value in self.maybe.iter() {
-            maybe_js.add(&JsValue::from(*value));
+        for value in self
+            .maybe_groups
+            .values()
+            .fold(BTreeSet::<u8>::new(), |mut union, current| {
+                union.extend(current);
+                union
+            })
+        {
+            maybe_js.add(&JsValue::from(value));
         }
 
         // Convert maybe groups
@@ -387,16 +392,6 @@ fn infer_iterative(
                 ));
             }
 
-            // Remove any held or missing cards from the maybe set
-            let maybes_to_delete = hand
-                .maybe
-                .iter()
-                .filter(|card| hand.missing.contains(card) || hand.has.contains(card))
-                .copied()
-                .collect::<BTreeSet<_>>();
-
-            hand.maybe.retain(|card| !maybes_to_delete.contains(card));
-
             // =========================
             // Update maybe groups
             // =========================
@@ -417,17 +412,13 @@ fn infer_iterative(
                     hand.has.insert(last);
                 }
 
-                // If the group is empty or no longer contains any possible cards, mark it for deletion
-                if maybe_group.is_empty() || maybe_group.is_disjoint(&hand.maybe) {
+                // If the group is empty, mark it for deletion
+                if maybe_group.is_empty() {
                     maybe_groups_to_delete.insert(*key);
                 }
             }
             hand.maybe_groups
                 .retain(|key, _| !maybe_groups_to_delete.contains(key));
-
-            // Remove any maybe cards that are not associated with any maybe group
-            hand.maybe
-                .retain(|card| hand.maybe_groups.values().any(|group| group.contains(card)));
         }
 
         // =========================
@@ -713,9 +704,6 @@ fn infer_internal(
                         .entry(i)
                         .or_default();
 
-                    starting_hands[response.player]
-                        .maybe
-                        .extend(suggestion_cards);
                     maybe_group.extend(suggestion_cards);
                 }
 
