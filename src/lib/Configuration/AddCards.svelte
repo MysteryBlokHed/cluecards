@@ -68,7 +68,7 @@
                     </select>
                 {/if}
                 <button
-                    class="btn btn-circle"
+                    class="btn btn-circle btn-ghost"
                     onclick={() => {
                         cards.splice(i, 1);
                         cards = cards;

@@ -192,7 +192,7 @@
                     <option value={-2}>None</option>
                 </select>
                 <button
-                    class="btn btn-circle"
+                    class="btn btn-circle btn-ghost"
                     onclick={() => {
                         responses.splice(i, 1);
                         responses = responses;

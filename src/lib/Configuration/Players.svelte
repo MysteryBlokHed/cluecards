@@ -95,7 +95,7 @@
                     </label>
 
                     <button
-                        class="btn btn-circle relative top-2"
+                        class="btn btn-circle btn-ghost relative top-2"
                         disabled={uneditable || $players.length === 1}
                         onclick={() => removePlayer(i)}
                     >
