@@ -248,8 +248,11 @@ describe('iterative inference methods', () => {
         it('handles multi-element case for maybe group', () =>
             deepTest(inference.multiMaybeGroup as unknown as TestData));
 
-        it('properly uses MDS to narrow down maybe groups', () =>
-            deepTest(inference.maybeGroupMDS as unknown as TestData));
+        it('properly uses MHS to narrow down maybe groups', () =>
+            deepTest(inference.maybeGroupMHS as unknown as TestData));
+
+        it("MHS catches cases that MDS didn't", () =>
+            deepTest(inference.minimumHittingSet as unknown as TestData));
     });
 
     describe('card count inferences', () => {
