@@ -193,8 +193,11 @@ fn find_minimum_hitting_sets(sets: &[&BTreeSet<u8>]) -> Option<(usize, Vec<BTree
     }
     let universe = universe.into_iter().collect::<Box<_>>();
 
-    // All hitting subsets, organized by their size
-    let mut hitting_sets: BTreeMap<usize, Vec<BTreeSet<u8>>> = BTreeMap::new();
+    // The current list of smallest hitting sets
+    let mut hitting_sets: Vec<BTreeSet<u8>> = Vec::new();
+    // The size of the current smallest hitting set
+    let mut current_smallest = usize::MAX;
+
     let n = universe.len();
     // Generate candidate subsets using bitmasking
     for mask in 0..(1 << n) {
@@ -205,21 +208,24 @@ fn find_minimum_hitting_sets(sets: &[&BTreeSet<u8>]) -> Option<(usize, Vec<BTree
             }
         }
 
-        // The size of the current smallest hitting set (or just the largest possible uint if there is none yet)
-        let current_smallest = hitting_sets
-            .first_key_value()
-            .map_or(usize::MAX, |(len, _)| *len);
-
         // If the set is a hitting set, and is at most as large as the current smallest sets, save it
         let subset_len = subset.len();
         if subset_len <= current_smallest && sets.iter().all(|set| !set.is_disjoint(&subset)) {
-            hitting_sets.entry(subset_len).or_default().push(subset);
+            // Reset list of minimum hitting sets if we found a new smallest set
+            if subset_len < current_smallest {
+                current_smallest = subset_len;
+                hitting_sets.clear();
+            }
+
+            hitting_sets.push(subset);
         }
     }
 
-    // Return the list of minimum hitting sets. BTreeMaps are sorted in ascending order,
-    // so this will always just be the first (in this case smallest) element
-    hitting_sets.pop_first()
+    if hitting_sets.is_empty() {
+        None
+    } else {
+        Some((current_smallest, hitting_sets))
+    }
 }
 
 /// Packs a card into a single integer for easier storage + comparison.
