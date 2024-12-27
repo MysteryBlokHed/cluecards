@@ -76,12 +76,11 @@
             $sets = new Map(setsEntries);
         } else {
             $sets.set(setName, set);
+            $sets = $sets;
         }
 
-        // Reload set if we are updating the active one
-        if ($activeSet[0] === updating) {
-            $activeSet = [setName, set];
-        }
+        // Reload active set
+        $activeSet = [setName, set];
 
         resetSet();
     }
