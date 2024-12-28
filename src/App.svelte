@@ -53,6 +53,21 @@
 
         // Figuring out dependencies was too much of a disaster so let's just untrack the whole thing
         untrack(() => {
+            if ($preferences.disableInference) {
+                amendedSuggestions = $state.snapshot($suggestions) as Suggestion[];
+                const [newHands, newInnocents] = infer(
+                    [],
+                    [],
+                    $players.length,
+                    $playerCardCounts,
+                    $set[1],
+                    false,
+                );
+                $playerHands = newHands;
+                $innocents = newInnocents;
+                return;
+            }
+
             // Run inferences
             const [newHands, newInnocents] = infer(
                 $suggestions,

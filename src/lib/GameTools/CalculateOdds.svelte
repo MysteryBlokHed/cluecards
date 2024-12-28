@@ -17,6 +17,12 @@
     let totalOccurences = $state(0);
 
     function calculateOdds() {
+        if ($preferences.disableInference) {
+            overrideBody = 'Inference is disabled; probabilities calculations cannot be run.';
+            oddsDialog.showModal();
+            return;
+        }
+
         oddsTable = {};
         totalOccurences = 0;
 

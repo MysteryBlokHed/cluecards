@@ -8,7 +8,24 @@
     <hr />
     <div class="form-control">
         <label class="label justify-center">
-            <input type="checkbox" class="toggle mx-1" bind:checked={$preferences.firstIsSelf} />
+            <input
+                type="checkbox"
+                class="toggle mx-1"
+                bind:checked={$preferences.disableInference}
+            />
+            <span class="label-text mx-1"
+                >Disable inference (can be used to keep a log for game audits)</span
+            >
+        </label>
+    </div>
+    <div class="form-control">
+        <label class="label justify-center">
+            <input
+                type="checkbox"
+                class="toggle mx-1"
+                bind:checked={$preferences.firstIsSelf}
+                disabled={$preferences.disableInference}
+            />
             <span class="label-text mx-1">You are the first player (disable to spectate)</span>
         </label>
     </div>
@@ -18,7 +35,7 @@
                 type="checkbox"
                 class="toggle"
                 bind:checked={$preferences.hideFirstColumn}
-                disabled={!$preferences.firstIsSelf}
+                disabled={!$preferences.firstIsSelf || $preferences.disableInference}
             />
             <span class="label-text mx-1">Hide the first player's column from the clues</span>
         </label>

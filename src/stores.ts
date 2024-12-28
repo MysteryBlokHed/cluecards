@@ -82,11 +82,12 @@ export const startingKnowns = persistent<Known[]>('startingKnowns', []);
 export const preferences = persistent<Preferences>(
     'preferences',
     {
+        firstIsSelf: true,
+        disableInference: false,
+        hideFirstColumn: false,
         autoSelectNone: true,
         autoHideImpossible: true,
         selectNextPlayers: true,
-        firstIsSelf: true,
-        hideFirstColumn: false,
     },
     localStorage,
 );

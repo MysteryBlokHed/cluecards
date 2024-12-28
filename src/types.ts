@@ -81,6 +81,7 @@ export interface PlayerHand {
 
 export interface Preferences {
     firstIsSelf: boolean;
+    disableInference: boolean;
     hideFirstColumn: boolean;
     autoSelectNone: boolean;
     autoHideImpossible: boolean;
