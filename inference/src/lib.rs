@@ -57,7 +57,7 @@ pub struct PlayerHand {
     /// A set of [packed][`pack_card`] cards that the player does not have.
     missing: BTreeSet<u8>,
     /// Groups potential cards for the player by suggestion.
-    maybe_groups: BTreeMap<usize, BTreeSet<u8>>,
+    maybe_groups: Vec<BTreeSet<u8>>,
 }
 
 impl TryFrom<&PlayerHand> for JsValue {
@@ -74,26 +74,25 @@ impl TryFrom<&PlayerHand> for JsValue {
             missing_js.add(&JsValue::from(*value));
         }
         let maybe_js = js_sys::Set::default();
-        for value in
-            value
-                .maybe_groups
-                .values()
-                .fold(BTreeSet::<u8>::new(), |mut union, current| {
-                    union.extend(current);
-                    union
-                })
+        for value in value
+            .maybe_groups
+            .iter()
+            .fold(BTreeSet::<u8>::new(), |mut union, current| {
+                union.extend(current);
+                union
+            })
         {
             maybe_js.add(&JsValue::from(value));
         }
 
         // Convert maybe groups
-        let all_maybe_groups_js = js_sys::Map::default();
-        for (i, maybe_group) in &value.maybe_groups {
+        let all_maybe_groups_js = js_sys::Array::default();
+        for maybe_group in &value.maybe_groups {
             let maybe_group_js = js_sys::Set::default();
             for value in maybe_group {
                 maybe_group_js.add(&JsValue::from(*value));
             }
-            all_maybe_groups_js.set(&JsValue::from(*i), &maybe_group_js);
+            all_maybe_groups_js.push(&maybe_group_js);
         }
 
         // Create PlayerHand object
@@ -323,7 +322,7 @@ fn infer_iterative(
             if hand.has.len() == player_card_counts[i] - 1 {
                 let group = hand
                     .maybe_groups
-                    .values()
+                    .iter()
                     .find(|group| group.is_disjoint(&hand.has));
 
                 if let Some(group) = group {
@@ -343,7 +342,7 @@ fn infer_iterative(
             else if hand.maybe_groups.len() >= player_card_counts[i] - hand.has.len() {
                 let eligible_groups = hand
                     .maybe_groups
-                    .values()
+                    .iter()
                     .filter(|group| group.is_disjoint(&hand.has))
                     .collect::<Vec<_>>();
 
@@ -402,10 +401,10 @@ fn infer_iterative(
             // Update maybe groups
             // =========================
             let mut maybe_groups_to_delete = BTreeSet::new();
-            for (key, maybe_group) in &mut hand.maybe_groups {
+            for (key, maybe_group) in hand.maybe_groups.iter_mut().enumerate() {
                 // Remove any groups that share a card with the has set (since these groups are useless for inference)
                 if !maybe_group.is_disjoint(&hand.has) {
-                    maybe_groups_to_delete.insert(*key);
+                    maybe_groups_to_delete.insert(key);
                     continue;
                 }
 
@@ -420,11 +419,16 @@ fn infer_iterative(
 
                 // If the group is empty, mark it for deletion
                 if maybe_group.is_empty() {
-                    maybe_groups_to_delete.insert(*key);
+                    maybe_groups_to_delete.insert(key);
                 }
             }
-            hand.maybe_groups
-                .retain(|key, _| !maybe_groups_to_delete.contains(key));
+
+            let mut index = 0;
+            hand.maybe_groups.retain(|_| {
+                let retain = !maybe_groups_to_delete.contains(&index);
+                index += 1;
+                retain
+            });
         }
 
         // =========================
@@ -459,7 +463,7 @@ fn infer_iterative(
             .iter()
             .map(|hand| {
                 hand.maybe_groups
-                    .values()
+                    .iter()
                     .filter(|group| group.len() == 2)
                     .cloned() // I don't love this clone, but can't think of a better way atm
                     .collect::<Box<_>>()
@@ -689,7 +693,7 @@ fn infer_internal(
     }
 
     // Handle suggestions
-    for (i, suggestion) in suggestions.iter().enumerate() {
+    for suggestion in suggestions {
         // Find (packed) cards used for suggestion
         let suggestion_cards = pack_suggestions(suggestion.cards);
 
@@ -702,12 +706,9 @@ fn infer_internal(
 
                 // A player showed a card, but we do not know which
                 CardType::UNKNOWN => {
-                    let maybe_group = starting_hands[response.player]
+                    starting_hands[response.player]
                         .maybe_groups
-                        .entry(i)
-                        .or_default();
-
-                    maybe_group.extend(suggestion_cards);
+                        .push(BTreeSet::from_iter(suggestion_cards));
                 }
 
                 // A player showed a card we know exactly

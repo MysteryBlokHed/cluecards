@@ -21,7 +21,7 @@
         $players = [...$players, ''];
         $playerHands = [
             ...$playerHands,
-            { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: new Map() },
+            { has: new Set(), missing: new Set(), maybe: new Set(), maybeGroups: [] },
         ];
         $playerCardCounts = defaultCardCounts();
     }

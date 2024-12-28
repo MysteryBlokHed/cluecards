@@ -9,7 +9,6 @@ import { inference } from './states/';
 import { deepTest, TestData } from './utils.js';
 
 const EMPTY_SET: Set<unknown> = new Set();
-const EMPTY_MAP: Map<unknown, unknown> = new Map();
 
 describe('non-iterative inference methods', () => {
     it('handles custom knowns', () => {
@@ -19,7 +18,7 @@ describe('non-iterative inference methods', () => {
             expect(hands[0].has).toEqual(EMPTY_SET);
             expect(hands[0].missing).toEqual(EMPTY_SET);
             expect(hands[0].maybe).toEqual(EMPTY_SET);
-            expect(hands[0].maybeGroups).toEqual(EMPTY_MAP);
+            expect(hands[0].maybeGroups).toEqual([]);
         }
 
         // After
@@ -39,7 +38,7 @@ describe('non-iterative inference methods', () => {
             expect(hands[0].has).toEqual(new Set([4]));
             expect(hands[0].missing).toEqual(EMPTY_SET);
             expect(hands[0].maybe).toEqual(EMPTY_SET);
-            expect(hands[0].maybeGroups).toEqual(EMPTY_MAP);
+            expect(hands[0].maybeGroups).toEqual([]);
         }
     });
 
@@ -61,7 +60,7 @@ describe('non-iterative inference methods', () => {
         expect(hands[0].has).toEqual(new Set([4]));
         expect(hands[0].missing).toEqual(restOfSet);
         expect(hands[0].maybe).toEqual(EMPTY_SET);
-        expect(hands[0].maybeGroups).toEqual(EMPTY_MAP);
+        expect(hands[0].maybeGroups).toEqual([]);
     });
 
     describe('handles suggestions', () => {
@@ -85,17 +84,17 @@ describe('non-iterative inference methods', () => {
             expect(hands[0].has).toEqual(EMPTY_SET);
             expect(hands[0].missing).toEqual(EMPTY_SET);
             expect(hands[0].maybe).toEqual(EMPTY_SET);
-            expect(hands[0].maybeGroups).toEqual(EMPTY_MAP);
+            expect(hands[0].maybeGroups).toEqual([]);
             // We know nothing about this player
             expect(hands[1].has).toEqual(EMPTY_SET);
             expect(hands[1].missing).toEqual(EMPTY_SET);
             expect(hands[1].maybe).toEqual(EMPTY_SET);
-            expect(hands[1].maybeGroups).toEqual(EMPTY_MAP);
+            expect(hands[1].maybeGroups).toEqual([]);
             // Player can't have suggested cards
             expect(hands[2].has).toEqual(EMPTY_SET);
             expect(hands[2].missing).toEqual(new Set([4, 5, 6]));
             expect(hands[2].maybe).toEqual(EMPTY_SET);
-            expect(hands[2].maybeGroups).toEqual(EMPTY_MAP);
+            expect(hands[2].maybeGroups).toEqual([]);
         });
 
         it('player shows unknown', () => {
@@ -118,17 +117,17 @@ describe('non-iterative inference methods', () => {
             expect(hands[0].has).toEqual(EMPTY_SET);
             expect(hands[0].missing).toEqual(EMPTY_SET);
             expect(hands[0].maybe).toEqual(EMPTY_SET);
-            expect(hands[0].maybeGroups).toEqual(EMPTY_MAP);
+            expect(hands[0].maybeGroups).toEqual([]);
             // We know nothing about this player
             expect(hands[1].has).toEqual(EMPTY_SET);
             expect(hands[1].missing).toEqual(EMPTY_SET);
             expect(hands[1].maybe).toEqual(EMPTY_SET);
-            expect(hands[1].maybeGroups).toEqual(EMPTY_MAP);
+            expect(hands[1].maybeGroups).toEqual([]);
             // Player has one of the suggested cards
             expect(hands[2].has).toEqual(EMPTY_SET);
             expect(hands[2].missing).toEqual(EMPTY_SET);
             expect(hands[2].maybe).toEqual(new Set([4, 5, 6]));
-            expect(hands[2].maybeGroups).toEqual(new Map([[0, new Set([4, 5, 6])]]));
+            expect(hands[2].maybeGroups).toEqual([new Set([4, 5, 6])]);
         });
 
         it('player shows specific card', () => {
@@ -152,17 +151,17 @@ describe('non-iterative inference methods', () => {
             expect(hands[0].has).toEqual(EMPTY_SET);
             expect(hands[0].missing).toEqual(new Set([4]));
             expect(hands[0].maybe).toEqual(EMPTY_SET);
-            expect(hands[0].maybeGroups).toEqual(EMPTY_MAP);
+            expect(hands[0].maybeGroups).toEqual([]);
             // This player cannot have the shown card
             expect(hands[1].has).toEqual(EMPTY_SET);
             expect(hands[1].missing).toEqual(new Set([4]));
             expect(hands[1].maybe).toEqual(EMPTY_SET);
-            expect(hands[1].maybeGroups).toEqual(EMPTY_MAP);
+            expect(hands[1].maybeGroups).toEqual([]);
             // This player must have the shown card
             expect(hands[2].has).toEqual(new Set([4]));
             expect(hands[2].missing).toEqual(EMPTY_SET);
             expect(hands[2].maybe).toEqual(EMPTY_SET);
-            expect(hands[2].maybeGroups).toEqual(EMPTY_MAP);
+            expect(hands[2].maybeGroups).toEqual([]);
         });
 
         it('combination of all', () => {
@@ -196,17 +195,17 @@ describe('non-iterative inference methods', () => {
             expect(hands[0].has).toEqual(new Set([12]));
             expect(hands[0].missing).toEqual(EMPTY_SET);
             expect(hands[0].maybe).toEqual(EMPTY_SET);
-            expect(hands[0].maybeGroups).toEqual(EMPTY_MAP);
+            expect(hands[0].maybeGroups).toEqual([]);
             // This player should be missing the cards with nothing shown _AND_ the card in the first player's hand
             expect(hands[1].has).toEqual(EMPTY_SET);
             expect(hands[1].missing).toEqual(new Set([12, 4, 5, 6]));
             expect(hands[1].maybe).toEqual(EMPTY_SET);
-            expect(hands[1].maybeGroups).toEqual(EMPTY_MAP);
+            expect(hands[1].maybeGroups).toEqual([]);
             // Same as above, but also the player might have shown one of {8, 9, 10} (packed)
             expect(hands[2].has).toEqual(EMPTY_SET);
             expect(hands[2].missing).toEqual(new Set([12, 4, 5, 6]));
             expect(hands[2].maybe).toEqual(new Set([8, 9, 10]));
-            expect(hands[2].maybeGroups).toEqual(new Map([[1, new Set([8, 9, 10])]]));
+            expect(hands[2].maybeGroups).toEqual([new Set([8, 9, 10])]);
         });
     });
 });
@@ -228,17 +227,17 @@ describe('iterative inference methods', () => {
         expect(hands[0].has).toEqual(new Set([4]));
         expect(hands[0].missing).toEqual(EMPTY_SET);
         expect(hands[0].maybe).toEqual(EMPTY_SET);
-        expect(hands[0].maybeGroups).toEqual(EMPTY_MAP);
+        expect(hands[0].maybeGroups).toEqual([]);
         // This player should have the known card ruled out
         expect(hands[1].has).toEqual(EMPTY_SET);
         expect(hands[1].missing).toEqual(new Set([4]));
         expect(hands[1].maybe).toEqual(EMPTY_SET);
-        expect(hands[1].maybeGroups).toEqual(EMPTY_MAP);
+        expect(hands[1].maybeGroups).toEqual([]);
         // This player should have the known card ruled out
         expect(hands[2].has).toEqual(EMPTY_SET);
         expect(hands[2].missing).toEqual(new Set([4]));
         expect(hands[2].maybe).toEqual(EMPTY_SET);
-        expect(hands[2].maybeGroups).toEqual(EMPTY_MAP);
+        expect(hands[2].maybeGroups).toEqual([]);
     });
 
     describe('maybe group inferences', () => {

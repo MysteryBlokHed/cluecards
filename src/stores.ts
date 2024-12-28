@@ -67,7 +67,7 @@ for (let i = 0; i < get(playerCardCounts).length; i++) {
         has: new Set(),
         missing: new Set(),
         maybe: new Set(),
-        maybeGroups: new Map(),
+        maybeGroups: [],
     });
 }
 

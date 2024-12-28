@@ -17,13 +17,7 @@
 
     let { type }: Props = $props();
 
-    let sortedMaybeGroups = $derived(
-        $playerHands
-            // Get maybeGroups
-            .map(hand => hand.maybeGroups)
-            // Sort by key
-            .map(group => [...group.entries()].sort(([a], [b]) => a - b)),
-    );
+    let sortedMaybeGroups = $derived($playerHands.map(hand => hand.maybeGroups));
 
     let hideFirst = $derived(
         $preferences.hideFirstColumn && $preferences.firstIsSelf && $playerPov === 0,
@@ -81,7 +75,7 @@
                             <!-- Subscript for potentially-shown groups -->
                             {#if has || maybe}
                                 {#each sortedMaybeGroups[i] as maybe, j}
-                                    {#if maybe[1].has(packed)}
+                                    {#if maybe.has(packed)}
                                         <sub class="text-[0.625rem]">{j + 1}</sub>
                                     {/if}
                                 {/each}

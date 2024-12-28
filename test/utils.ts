@@ -36,6 +36,10 @@ export function deepTest({ input, output }: TestData) {
             firstIsSelf,
         );
 
+        for (const hand of output[i][0]) {
+            hand.maybeGroups = [...hand.maybeGroups.values()];
+        }
+
         expect(hands).toEqual(output[i][0]);
         expect(innocents).toEqual(output[i][1]);
     }

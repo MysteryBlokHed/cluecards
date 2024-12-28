@@ -76,7 +76,7 @@ export interface PlayerHand {
     /** A set of {@link packCard packed} cards that the player might have. */
     maybe: Set<number>;
     /** Associates {@link maybe maybes} to the suggestion(s) they come from. */
-    maybeGroups: Map<number, Set<number>>;
+    maybeGroups: Array<Set<number>>;
 }
 
 export interface Preferences {
