@@ -5,7 +5,7 @@
     import SETS from '../../sets';
     import { set, sets } from '../../stores';
 
-    import SetManager from './SetManager/';
+    import SetManager from './SetManager.svelte';
 
     let setName = $state($set[0]);
 

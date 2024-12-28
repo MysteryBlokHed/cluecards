@@ -2,10 +2,8 @@
     import { decompressFromBase64 } from 'lz-string';
     import { untrack } from 'svelte';
 
-    import { set as activeSet, sets } from '../../../stores';
-    import type { GameSet } from '../../../types';
-
-    import SetManagerItem from './SetManagerItem.svelte';
+    import { set as activeSet, sets } from '../../stores';
+    import type { GameSet } from '../../types';
 
     let creator: HTMLDialogElement;
 
@@ -88,6 +86,16 @@
     resetSet();
 </script>
 
+{#snippet creatorItem(i: number, set: string[], placeholder: string)}
+    <div class="flex">
+        <input type="text" class="input input-bordered" bind:value={set[i]} {placeholder} />
+        <button class="btn btn-circle btn-ghost" onclick={() => set.splice(i, 1)}>
+            <span class="material-icons">delete</span>
+        </button>
+        <br />
+    </div>
+{/snippet}
+
 <!-- Set Creator Dialog -->
 <dialog
     class="modal"
@@ -156,19 +164,19 @@
                     <td>
                         <br />
                         {#each set.suspects, i}
-                            <SetManagerItem {i} set={set.suspects} placeholder="Suspect" />
+                            {@render creatorItem(i, set.suspects, 'Suspect')}
                         {/each}
                     </td>
                     <td>
                         <br />
                         {#each set.weapons, i}
-                            <SetManagerItem {i} set={set.weapons} placeholder="Weapon" />
+                            {@render creatorItem(i, set.weapons, 'Weapon')}
                         {/each}
                     </td>
                     <td>
                         <br />
                         {#each set.rooms, i}
-                            <SetManagerItem {i} set={set.rooms} placeholder="Room" />
+                            {@render creatorItem(i, set.rooms, 'Room')}
                         {/each}
                     </td>
                 </tr>
