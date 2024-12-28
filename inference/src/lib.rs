@@ -60,33 +60,35 @@ pub struct PlayerHand {
     maybe_groups: BTreeMap<usize, BTreeSet<u8>>,
 }
 
-impl PlayerHand {
-    /// Convert this hand into a JavaScript object, usable by the frontend.
-    fn to_js(&self) -> Result<js_sys::Object, JsValue> {
+impl TryFrom<&PlayerHand> for JsValue {
+    type Error = JsValue;
+
+    fn try_from(value: &PlayerHand) -> Result<Self, Self::Error> {
         // Convert sets
         let has_js = js_sys::Set::default();
-        for value in &self.has {
+        for value in &value.has {
             has_js.add(&JsValue::from(*value));
         }
         let missing_js = js_sys::Set::default();
-        for value in &self.missing {
+        for value in &value.missing {
             missing_js.add(&JsValue::from(*value));
         }
         let maybe_js = js_sys::Set::default();
-        for value in self
-            .maybe_groups
-            .values()
-            .fold(BTreeSet::<u8>::new(), |mut union, current| {
-                union.extend(current);
-                union
-            })
+        for value in
+            value
+                .maybe_groups
+                .values()
+                .fold(BTreeSet::<u8>::new(), |mut union, current| {
+                    union.extend(current);
+                    union
+                })
         {
             maybe_js.add(&JsValue::from(value));
         }
 
         // Convert maybe groups
         let all_maybe_groups_js = js_sys::Map::default();
-        for (i, maybe_group) in &self.maybe_groups {
+        for (i, maybe_group) in &value.maybe_groups {
             let maybe_group_js = js_sys::Set::default();
             for value in maybe_group {
                 maybe_group_js.add(&JsValue::from(*value));
@@ -105,7 +107,7 @@ impl PlayerHand {
             &all_maybe_groups_js,
         )?;
 
-        Ok(player_hand_js)
+        Ok(player_hand_js.into())
     }
 }
 
@@ -799,7 +801,7 @@ pub fn infer(
     let hands_js = JsValue::from(
         hands
             .iter()
-            .map(PlayerHand::to_js)
+            .map(JsValue::try_from)
             .collect::<Result<Box<[_]>, _>>()
             .map_err(|_| JsError::new("Failed to convert hands into JS object."))?,
     );
