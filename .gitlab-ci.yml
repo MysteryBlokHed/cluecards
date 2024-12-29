@@ -31,7 +31,6 @@ build:
           paths:
               - $CARGO_HOME
               - $RUSTUP_HOME
-              - node_modules/
               - .pnpm/v3/
               - inference/target/
     script:
