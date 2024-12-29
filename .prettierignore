@@ -6,6 +6,7 @@ smui/
 pnpm-lock.yaml
 vite.config.*.timestamp*
 .cargo/
+.pnpm/
 .rustup/
 
 # For some reason Prettier messes with LaTeX here

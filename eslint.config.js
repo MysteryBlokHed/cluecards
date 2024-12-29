@@ -30,6 +30,7 @@ export default [
     {
         ignores: [
             '.cargo',
+            '.pnpm',
             '.rustup',
             '.svelte-kit/',
             'dist/',
