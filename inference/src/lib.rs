@@ -530,7 +530,7 @@ fn infer_iterative(
                         .unwrap_unchecked()
                 };
                 // Mark this card as missing for all players
-                let packed = pack_card(card_type as u8, card as u8);
+                let packed = pack_card(card_type as u8, card);
                 for hand in &mut hands {
                     hand.missing.insert(packed);
                 }
