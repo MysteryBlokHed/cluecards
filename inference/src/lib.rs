@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use serde_wasm_bindgen::from_value;
+use serde_wasm_bindgen::{from_value, to_value};
 use wasm_bindgen::prelude::*;
 
 /// A way to represent the data that comes with a variant of Clue.
@@ -955,7 +955,7 @@ pub fn probabilities(
     first_is_self: bool,
     knowns: JsReadonlyKnowns,
     limit: Option<f64>,
-) -> Result<js_sys::Object, JsError> {
+) -> Result<JsValue, JsError> {
     // Convert passed values to Rust versions
     let suggestions: Box<[Suggestion]> =
         from_value(suggestions.into()).map_err(|_| JsError::new("Failed to parse suggestions."))?;
@@ -990,13 +990,5 @@ pub fn probabilities(
     .map_err(|()| JsError::new("Run too long, stopping..."))?;
 
     // Convert result to JS
-    let occurrences_js = js_sys::Object::default();
-    for ((suspect, weapon, room), count) in occurrences {
-        let js_key = JsValue::from_str(&format!("{suspect}|{weapon}|{room}"));
-        let js_count = JsValue::from(count);
-        js_sys::Reflect::set(&occurrences_js, &js_key, &js_count)
-            .map_err(|_| JsError::new("Failed to create occurrences map."))?;
-    }
-
-    Ok(occurrences_js)
+    to_value(&occurrences).map_err(|_| JsError::new("Failed to convert occurrences map."))
 }

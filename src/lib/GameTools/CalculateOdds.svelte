@@ -26,7 +26,7 @@
         oddsTable = {};
         totalOccurences = 0;
 
-        let probs: ReturnType<typeof probabilities>;
+        let probs: Map<[number, number, number], number>;
 
         console.time('Calculating and displaying probabilities');
 
@@ -49,13 +49,10 @@
             return;
         }
 
-        for (const [triplet, count] of Object.entries(probs)) {
+        for (const [triplet, count] of probs.entries()) {
             totalOccurences += count;
 
-            const cards = triplet
-                .split('|')
-                .map(num => parseInt(num))
-                .map((card, type) => $set[1][cardTypeToKey(type)][card]);
+            const cards = triplet.map((card, type) => $set[1][cardTypeToKey(type)][card]);
             oddsTable[cards.join(', ')] = count;
         }
         console.table($state.snapshot(oddsTable));
