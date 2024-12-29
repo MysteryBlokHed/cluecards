@@ -310,14 +310,16 @@ which means that the above deduction could rarely be applied.
 What we need to be able to do is, given some non-disjoint set $`C^p_n`$,
 determine the _smallest possible set of cards_ such that each element in $`C^p_n`$ shares at least one card with this set.
 
-Luckily, this is a solved problem: finding the minimum hitting set (MHS).
+What we need to do is find the minimal hitting set (MHS).
+Although this problem is NP-hard, because of how small the $`C^p_n`$ set is,
+the time to compute it exactly is actually relatively small.
 
 _Some_ MHS of a set $`V`$ will be referred to as $`\mathrm{MHS}(V)`$.
-There may be multiple possible minimum hitting sets, but they will all naturally have the same size.
+There may be multiple possible minimal hitting sets, but they will all have the same size.
 
 The set of all cards that are in a potential MHS will be referred to as $`\bigcup \mathrm{MHS}(V)`$.
-An important distinction: $`|\mathrm{MHS}(V)|`$ is being used to refer to the size of _the minimum hitting set_,
-**not** the amount of possible minimum hitting sets.
+An important distinction: $`|\mathrm{MHS}(V)|`$ is being used to refer to the size of _the minimal hitting set_,
+**not** the amount of possible minimal hitting sets.
 
 We know that $`\forall V \exists |\mathrm{MHS}(V)| \leq |V|`$.
 If a set $`V`$ is already disjoint $`\implies |\mathrm{MHS}(V)| = |V|`$.
