@@ -13,7 +13,7 @@ stages:
     - index.html
     - package.json
     - tsconfig*.json
-    - yarn.lock
+    - pnpm-lock.yaml
     - .gitlab-ci.yml
     - .prettier*
 
@@ -27,12 +27,12 @@ build:
               prefix: $CI_MERGE_REQUEST_IID
               files:
                   - inference/Cargo.lock
-                  - yarn.lock
+                  - pnpm-lock.yaml
           paths:
               - $CARGO_HOME
               - $RUSTUP_HOME
               - node_modules/
-              - .yarn/install-state.gz
+              - .pnpm/v3/
               - inference/target/
     script:
         # Rust configuration + build
@@ -47,12 +47,13 @@ build:
         - cd ..
         # TypeScript configuration + build
         - corepack enable
-        - corepack install --global yarn@stable
-        - YARN_CHECKSUM_BEHAVIOR=update yarn install
-        - yarn run lint
-        - yarn run check
-        - yarn run build
-        - yarn run test -- --run
+        - corepack install
+        - pnpm config set store-dir .pnpm
+        - pnpm install
+        - pnpm run lint
+        - pnpm run check
+        - pnpm run build
+        - pnpm run test -- --run
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
           changes: *changes
