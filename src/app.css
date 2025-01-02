@@ -17,6 +17,10 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+    touch-action: manipulation;
+}
+
 .card-title {
     @apply justify-center text-2xl;
 }
