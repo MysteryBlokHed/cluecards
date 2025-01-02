@@ -104,7 +104,7 @@
     aria-describedby="creator-content"
     bind:this={creator}
 >
-    <div class="modal-box w-fit min-w-fit" id="creator-content">
+    <div class="modal-box max-w-fit" id="creator-content">
         <h2 class="text-xl" id="creator-title">Set Creator</h2>
         <p>Create a custom game set.</p>
         <button
@@ -132,50 +132,47 @@
             placeholder="Set Name"
             bind:value={setName}
         />
-        <table>
-            <tbody>
-                <tr>
-                    <td>
-                        <button class="btn w-full" onclick={() => set.suspects.push('')}>
-                            Add Suspect
-                            <span class="material-icons">add</span>
-                        </button>
-                    </td>
-                    <td>
-                        <button class="btn w-full" onclick={() => set.weapons.push('')}>
-                            Add Weapon
-                            <span class="material-icons">add</span>
-                        </button>
-                    </td>
-                    <td>
-                        <button class="btn w-full" onclick={() => set.rooms.push('')}>
-                            Add Room
-                            <span class="material-icons">add</span>
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <br />
-                        {#each set.suspects, i}
-                            {@render creatorItem(i, set.suspects, 'Suspect')}
-                        {/each}
-                    </td>
-                    <td>
-                        <br />
-                        {#each set.weapons, i}
-                            {@render creatorItem(i, set.weapons, 'Weapon')}
-                        {/each}
-                    </td>
-                    <td>
-                        <br />
-                        {#each set.rooms, i}
-                            {@render creatorItem(i, set.rooms, 'Room')}
-                        {/each}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+
+        <div class="creator-fields">
+            <div>
+                <button class="btn w-full" onclick={() => set.suspects.push('')}>
+                    Add Suspect
+                    <span class="material-icons">add</span>
+                </button>
+            </div>
+            <div>
+                <button class="btn w-full" onclick={() => set.weapons.push('')}>
+                    Add Weapon
+                    <span class="material-icons">add</span>
+                </button>
+            </div>
+            <div>
+                <button class="btn w-full" onclick={() => set.rooms.push('')}>
+                    Add Room
+                    <span class="material-icons">add</span>
+                </button>
+            </div>
+
+            <div>
+                <br />
+                {#each set.suspects, i}
+                    {@render creatorItem(i, set.suspects, 'Suspect')}
+                {/each}
+            </div>
+            <div>
+                <br />
+                {#each set.weapons, i}
+                    {@render creatorItem(i, set.weapons, 'Weapon')}
+                {/each}
+            </div>
+            <div>
+                <br />
+                {#each set.rooms, i}
+                    {@render creatorItem(i, set.rooms, 'Room')}
+                {/each}
+            </div>
+        </div>
+
         <div class="modal-action">
             <form method="dialog">
                 <button
@@ -203,3 +200,17 @@
         </div>
     </div>
 </dialog>
+
+<style scoped>
+    .creator-fields {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    @media only screen and (max-width: 900px) {
+        .creator-fields {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
