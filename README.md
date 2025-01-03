@@ -28,7 +28,7 @@ so it will not display properly unless you're looking at this repository [on Git
 The inference logic must be built _before_ the rest of the website.
 Instructions are available [here](./inference/README.md).
 
-After that, this project requires Yarn v4.
+After that, this project requires pnpm v9.
 After installing [Node.js](https://nodejs.org/en/download/package-manager), run the following in the project directory:
 
 ```sh
@@ -39,7 +39,7 @@ corepack install
 Then, to build for release:
 
 ```sh
-yarn run build
+pnpm run build
 ```
 
 ## License
