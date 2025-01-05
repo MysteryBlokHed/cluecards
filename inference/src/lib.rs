@@ -466,7 +466,6 @@ fn infer_iterative(
                 hand.maybe_groups
                     .iter()
                     .filter(|group| group.len() == 2)
-                    .cloned() // I don't love this clone, but can't think of a better way atm
                     .collect::<Box<_>>()
             })
             .collect::<Box<_>>();
@@ -492,13 +491,14 @@ fn infer_iterative(
                             all_has_packed.insert(card2);
 
                             // Rule the cards out for other players
-                            for (_, hand) in hands
-                                .iter_mut()
-                                .enumerate()
-                                .filter(|(k, _)| *k != i && *k != j)
-                            {
-                                hand.missing.insert(card1);
-                                hand.missing.insert(card2);
+                            for k in 0..player_count {
+                                if i == k || j == k {
+                                    continue;
+                                };
+                                // This needs to be unsafe because there is an active borrow on `hands`
+                                let missing = unsafe { &mut (*hands_ptr.add(k)).missing };
+                                missing.insert(card1);
+                                missing.insert(card2);
                             }
                         }
                     }
