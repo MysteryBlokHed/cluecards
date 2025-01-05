@@ -18,7 +18,8 @@
 }
 
 input,
-button {
+button,
+select {
     touch-action: manipulation;
 }
 
