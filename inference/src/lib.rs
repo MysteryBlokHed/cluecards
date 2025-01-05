@@ -307,6 +307,9 @@ fn infer_iterative(
 ) -> Result<Box<[PlayerHand]>, String> {
     let mut last_hands: Box<[PlayerHand]>;
     let total_cards = packed_set.len();
+    let player_count = hands.len();
+
+    let hands_ptr = hands.as_mut_ptr();
 
     loop {
         // Tracked to see if anything changes after inference
@@ -429,18 +432,16 @@ fn infer_iterative(
                 index += 1;
                 retain
             });
-        }
 
-        // =========================
-        // If a player is confirmed to have a card, mark it as missing for everyone else
-        // =========================
-        for i in 0..hands.len() {
-            let has = &hands[i].has;
-            for j in 0..hands.len() {
+            // =========================
+            // If a player is confirmed to have a card, mark it as missing for everyone else
+            // =========================
+            for j in 0..player_count {
                 if i == j {
                     continue;
-                };
-                hands[j].missing.extend(has.iter());
+                }
+                // This needs to be unsafe because there is an active mutable borrow on `hands`
+                unsafe { (*hands_ptr.add(j)).missing.extend(&hand.has) };
             }
         }
 
@@ -470,12 +471,12 @@ fn infer_iterative(
             })
             .collect::<Box<_>>();
 
-        for i in 0..hands.len() - 1 {
+        for i in 0..player_count - 1 {
             if size_two_groups[i].is_empty() {
                 continue;
             }
 
-            for j in (i + 1)..hands.len() {
+            for j in (i + 1)..player_count {
                 if size_two_groups[j].is_empty() {
                     continue;
                 }
@@ -546,7 +547,6 @@ fn infer_iterative(
         }
 
         let guilty_is_known = guilty_from_hands(&hands);
-        let hand_count = hands.len();
 
         // =========================
         // If all but one player has a card marked missing,
@@ -560,7 +560,7 @@ fn infer_iterative(
             // Iterate over cards that only one player is missing
             for (&packed, missing_players) in missing_map
                 .iter()
-                .filter(|(_, players)| players.len() == hand_count - 1)
+                .filter(|(_, players)| players.len() == player_count - 1)
             {
                 // Ignore if the guilty card is _not_ known for this category
                 let (card_type, _) = unpack_card(packed);
@@ -569,7 +569,7 @@ fn infer_iterative(
                 }
 
                 // Find the player that does not have the card marked missing
-                let player = (0..hand_count).find(|player| !missing_players.contains(player));
+                let player = (0..player_count).find(|player| !missing_players.contains(player));
 
                 // Mark them as having the card
                 hands[player.unwrap()].has.insert(packed);
@@ -587,7 +587,7 @@ fn infer_iterative(
             // Iterate over cards that only one player is missing
             for (&packed, missing_players) in missing_map
                 .iter()
-                .filter(|(_, players)| players.len() == hand_count - 1)
+                .filter(|(_, players)| players.len() == player_count - 1)
             {
                 // Ignore if the guilty card _is_ known for this category
                 let (card_type, _) = unpack_card(packed);
@@ -596,7 +596,7 @@ fn infer_iterative(
                 }
 
                 // Find the player that does not have the card marked missing
-                let player = (0..hand_count)
+                let player = (0..player_count)
                     .find(|player| !missing_players.contains(player))
                     .unwrap();
 
