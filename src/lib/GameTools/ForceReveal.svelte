@@ -142,9 +142,7 @@
 
         <p class="font-bold">
             Note: Forcing a reveal like this can also reveal information to other players if they
-            know one or both of the cards besides the target card. If there are multiple ways to
-            make the reveal happen, you can preview other players' clue sheets to see what cards
-            they know about.
+            know one or both of the cards besides the target card.
         </p>
 
         <div class="modal-action">
