@@ -833,7 +833,7 @@ fn probabilities_recursive(
     hands: &[PlayerHand],
     player_card_counts: &[usize],
     first_is_self: bool,
-    knowns: &[Known],
+    knowns: &mut Vec<Known>,
     packed_set: &[u8],
     pack_offset: usize,
     seen: &mut BTreeSet<String>,
@@ -891,15 +891,13 @@ fn probabilities_recursive(
                 player,
                 source: 2,
             };
+            knowns.push(known);
 
             // Run inference
-            let mut merged_knowns = Vec::with_capacity(knowns.len() + 1);
-            merged_knowns.extend_from_slice(knowns);
-            merged_knowns.push(known);
 
             let new_hands = infer_internal(
                 suggestions,
-                &merged_knowns,
+                knowns,
                 player_count,
                 player_card_counts,
                 set,
@@ -914,7 +912,7 @@ fn probabilities_recursive(
                     &new_hands,
                     player_card_counts,
                     first_is_self,
-                    &merged_knowns,
+                    knowns,
                     packed_set,
                     packed_index,
                     seen,
@@ -922,6 +920,8 @@ fn probabilities_recursive(
                     occurrences,
                     start,
                 )?;
+                // Remove added known
+                knowns.pop();
             } else if let Err(e) = new_hands {
                 js_warn(&format!("Error during probabilities infer: {e}"));
             }
@@ -966,7 +966,7 @@ pub fn probabilities(
         from_value(hands.into()).map_err(|_| JsError::new("Failed to parse hands."))?;
     let player_card_counts: Box<[usize]> = from_value(player_card_counts.into())
         .map_err(|_| JsError::new("Failed to parse player card counts."))?;
-    let knowns: Box<[Known]> =
+    let mut knowns: Vec<Known> =
         from_value(knowns.into()).map_err(|_| JsError::new("Failed to parse knowns."))?;
 
     let packed_set = pack_set(&set);
@@ -979,7 +979,7 @@ pub fn probabilities(
         &hands,
         &player_card_counts,
         first_is_self,
-        &knowns,
+        &mut knowns,
         &packed_set,
         0,
         &mut BTreeSet::new(),
