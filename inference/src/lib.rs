@@ -9,7 +9,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use itertools::Itertools;
-use serde::{Deserialize, Serialize};
+use serde::{de::Visitor, Deserialize, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
 use wasm_bindgen::prelude::*;
 
@@ -49,15 +49,161 @@ struct Suggestion {
     responses: Box<[SuggestionResponse]>,
 }
 
+/// Bitmask to efficiently represent a set of bytes.
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize)]
+pub struct BitmaskSet(u64);
+
+impl BitmaskSet {
+    #[inline]
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Wrapper around `.count_ones()` that also casts to usize for convenience.
+    #[inline]
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.0.count_ones() as usize
+    }
+
+    /// Whether the set has no elements.
+    #[inline]
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.0 == 0
+    }
+
+    /// Adds an item to the set.
+    pub fn add(&mut self, card: u8) {
+        self.0 |= 1 << u64::from(card);
+    }
+
+    /// Removes an item from the set.
+    pub fn remove(&mut self, card: u8) {
+        self.0 &= !(1 << u64::from(card));
+    }
+
+    /// Determines whether the set contains an item.
+    #[must_use]
+    pub fn contains(&self, card: u8) -> bool {
+        (self.0 & (1 << u64::from(card))) != 0
+    }
+
+    /// Sets this set to the union of itself and another.
+    pub fn set_union(&mut self, other: &Self) {
+        self.0 |= other.0;
+    }
+
+    /// Sets this set to the intersection of itself and another.
+    pub fn set_intersection(&mut self, other: &Self) {
+        self.0 &= other.0;
+    }
+
+    /// Removes all items in this set that are in `other`.
+    pub fn set_difference(&mut self, other: &Self) {
+        self.0 &= !other.0;
+    }
+
+    /// Determines whether this set has _no_ overlap with another.
+    #[must_use]
+    pub fn is_disjoint(&self, other: &Self) -> bool {
+        self.0 & other.0 == 0
+    }
+
+    /// Iterates over the contained items.
+    #[must_use]
+    pub fn iter(&self) -> BitmaskSetIterator {
+        BitmaskSetIterator {
+            set: self.0,
+            current: 0,
+        }
+    }
+}
+
+impl FromIterator<u8> for BitmaskSet {
+    fn from_iter<T: IntoIterator<Item = u8>>(iter: T) -> Self {
+        Self(
+            iter.into_iter()
+                .fold(0u64, |set, current| set | (1 << u64::from(current))),
+        )
+    }
+}
+
+impl<'de> Deserialize<'de> for BitmaskSet {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct BitmaskSetVisitor;
+
+        impl<'de> Visitor<'de> for BitmaskSetVisitor {
+            type Value = BitmaskSet;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("A list of bytes")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut card_set = BitmaskSet::new();
+                while let Some(packed) = seq.next_element::<u8>()? {
+                    card_set.add(packed);
+                }
+                Ok(card_set)
+            }
+        }
+
+        deserializer.deserialize_seq(BitmaskSetVisitor)
+    }
+}
+
+pub struct BitmaskSetIterator {
+    set: u64,
+    current: u8,
+}
+
+impl Iterator for BitmaskSetIterator {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        while self.current < 64 {
+            let mut next_val = None;
+            if (self.set & (1 << u64::from(self.current))) != 0 {
+                next_val = Some(self.current);
+            }
+            self.current += 1;
+            if next_val.is_some() {
+                return next_val;
+            }
+        }
+        None
+    }
+}
+
+impl IntoIterator for &BitmaskSet {
+    type Item = u8;
+    type IntoIter = BitmaskSetIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        BitmaskSetIterator {
+            set: self.0,
+            current: 0,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlayerHand {
     /// A set of [packed][`pack_card`] cards that the player has.
-    has: BTreeSet<u8>,
+    has: BitmaskSet,
     /// A set of [packed][`pack_card`] cards that the player does not have.
-    missing: BTreeSet<u8>,
+    missing: BitmaskSet,
     /// Groups potential cards for the player by suggestion.
-    maybe_groups: Vec<BTreeSet<u8>>,
+    maybe_groups: Vec<BitmaskSet>,
 }
 
 impl TryFrom<&PlayerHand> for JsValue {
@@ -67,18 +213,18 @@ impl TryFrom<&PlayerHand> for JsValue {
         // Convert sets
         let has_js = js_sys::Set::default();
         for value in &value.has {
-            has_js.add(&JsValue::from(*value));
+            has_js.add(&JsValue::from(value));
         }
         let missing_js = js_sys::Set::default();
         for value in &value.missing {
-            missing_js.add(&JsValue::from(*value));
+            missing_js.add(&JsValue::from(value));
         }
         let maybe_js = js_sys::Set::default();
-        for value in value
+        for value in &value
             .maybe_groups
             .iter()
-            .fold(BTreeSet::<u8>::new(), |mut union, current| {
-                union.extend(current);
+            .fold(BitmaskSet::new(), |mut union, current| {
+                union.set_union(current);
                 union
             })
         {
@@ -90,7 +236,7 @@ impl TryFrom<&PlayerHand> for JsValue {
         for maybe_group in &value.maybe_groups {
             let maybe_group_js = js_sys::Set::default();
             for value in maybe_group {
-                maybe_group_js.add(&JsValue::from(*value));
+                maybe_group_js.add(&JsValue::from(value));
             }
             all_maybe_groups_js.push(&maybe_group_js);
         }
@@ -186,26 +332,26 @@ import type { updateSuggestions } from "../../src/inference.js";"#;
 ///
 /// If the return type is [`Some`], the first element is the size of the minimum hitting set
 /// (i.e. the size that all of the contained sets have), and the [`Vec`] is the list of minimum sets.
-fn find_minimum_hitting_sets(sets: &[&BTreeSet<u8>]) -> Option<(usize, Vec<BTreeSet<u8>>)> {
+fn find_minimum_hitting_sets(sets: &[&BitmaskSet]) -> Option<(usize, Vec<BitmaskSet>)> {
     // Get all unique elements from the collection
-    let mut universe = BTreeSet::<u8>::new();
+    let mut universe = BitmaskSet::new();
     for set in sets {
-        universe.extend(*set);
+        universe.set_union(set);
     }
     let universe = universe.into_iter().collect::<Box<_>>();
 
     // The current list of smallest hitting sets
-    let mut hitting_sets: Vec<BTreeSet<u8>> = Vec::new();
+    let mut hitting_sets: Vec<BitmaskSet> = Vec::new();
     // The size of the current smallest hitting set
     let mut current_smallest = usize::MAX;
 
     let n = universe.len();
     // Generate candidate subsets using bitmasking
     for mask in 0..(1 << n) {
-        let mut subset = BTreeSet::new();
+        let mut subset = BitmaskSet::new();
         for i in 0..n {
             if mask & (1 << i) != 0 {
-                subset.insert(universe[i]);
+                subset.add(universe[i]);
             }
         }
 
@@ -274,14 +420,14 @@ fn guilty_from_hands(hands: &[PlayerHand]) -> [Option<u8>; 3] {
     let mut guilty = [None, None, None];
 
     // Get cards all players are missing
-    let all_missing: Option<Vec<u8>> = hands.iter().map(|hand| &hand.missing).fold(
+    let all_missing: Option<BitmaskSet> = hands.iter().map(|hand| &hand.missing).fold(
         None,
-        |intersection: Option<Vec<u8>>, current| match intersection {
+        |intersection: Option<BitmaskSet>, current: &BitmaskSet| match intersection {
             Some(mut intersection) => {
-                intersection.retain(|card| current.contains(card));
+                intersection.set_intersection(current);
                 Some(intersection)
             }
-            None => Some(current.iter().copied().collect()),
+            None => Some(*current),
         },
     );
 
@@ -289,7 +435,7 @@ fn guilty_from_hands(hands: &[PlayerHand]) -> [Option<u8>; 3] {
         return guilty;
     };
 
-    for packed in all_missing {
+    for packed in &all_missing {
         let (card_type, card) = unpack_card(packed);
         guilty[card_type as usize] = Some(card);
     }
@@ -329,10 +475,12 @@ fn infer_iterative(
                     .find(|group| group.is_disjoint(&hand.has));
 
                 if let Some(group) = group {
-                    hand.missing.extend(
-                        packed_set
+                    hand.missing.set_union(
+                        &packed_set
                             .iter()
-                            .filter(|card| !group.contains(card) && !hand.has.contains(card)),
+                            .filter(|&&card| !group.contains(card) && !hand.has.contains(card))
+                            .copied()
+                            .collect(),
                     );
                 }
             }
@@ -359,17 +507,20 @@ fn infer_iterative(
 
                         if min_size >= player_card_counts[i] - hand.has.len() {
                             let cards_in_hand = min_hitting_sets.into_iter().fold(
-                                BTreeSet::<u8>::new(),
+                                BitmaskSet::new(),
                                 |mut union, current| {
-                                    union.extend(current);
+                                    union.set_union(&current);
                                     union
                                 },
                             );
 
-                            let missing_cards = packed_set.iter().filter(|card| {
-                                !hand.has.contains(card) && !cards_in_hand.contains(card)
-                            });
-                            hand.missing.extend(missing_cards);
+                            let missing_cards = packed_set
+                                .iter()
+                                .filter(|&&card| {
+                                    !hand.has.contains(card) && !cards_in_hand.contains(card)
+                                })
+                                .copied();
+                            hand.missing.set_union(&missing_cards.collect());
                         }
                     }
                 }
@@ -380,14 +531,21 @@ fn infer_iterative(
             // =========================
             if hand.has.len() >= player_card_counts[i] {
                 // If a player has all the cards allowed in their hand, check everything else off
-                hand.missing
-                    .extend(packed_set.iter().filter(|card| !hand.has.contains(card)));
+                hand.missing.set_union(
+                    &packed_set
+                        .iter()
+                        .filter(|&&card| !hand.has.contains(card))
+                        .copied()
+                        .collect(),
+                );
             } else if hand.missing.len() >= total_cards - player_card_counts[i] {
                 // If a player has every card crossed off except for the # of cards in their hand, they must have those cards
-                hand.has.extend(
-                    packed_set
+                hand.has.set_union(
+                    &packed_set
                         .iter()
-                        .filter(|card| !hand.missing.contains(card)),
+                        .filter(|&&card| !hand.missing.contains(card))
+                        .copied()
+                        .collect(),
                 );
             }
 
@@ -403,32 +561,32 @@ fn infer_iterative(
             // =========================
             // Update maybe groups
             // =========================
-            let mut maybe_groups_to_delete = BTreeSet::new();
+            let mut maybe_groups_to_delete = BitmaskSet::new();
             for (key, maybe_group) in hand.maybe_groups.iter_mut().enumerate() {
                 // Remove any groups that share a card with the has set (since these groups are useless for inference)
                 if !maybe_group.is_disjoint(&hand.has) {
-                    maybe_groups_to_delete.insert(key);
+                    maybe_groups_to_delete.add(key as u8);
                     continue;
                 }
 
                 // Remove any cards from maybe groups that are marked missing
-                maybe_group.retain(|card| !hand.missing.contains(card));
+                maybe_group.set_difference(&hand.missing);
 
                 // If the group has one card, mark it as held
                 if maybe_group.len() == 1 {
-                    let last = unsafe { maybe_group.pop_last().unwrap_unchecked() };
-                    hand.has.insert(last);
+                    let last = unsafe { maybe_group.iter().next().unwrap_unchecked() };
+                    hand.has.add(last);
                 }
 
                 // If the group is empty, mark it for deletion
                 if maybe_group.is_empty() {
-                    maybe_groups_to_delete.insert(key);
+                    maybe_groups_to_delete.add(key as u8);
                 }
             }
 
             let mut index = 0;
             hand.maybe_groups.retain(|_| {
-                let retain = !maybe_groups_to_delete.contains(&index);
+                let retain = !maybe_groups_to_delete.contains(index);
                 index += 1;
                 retain
             });
@@ -441,7 +599,7 @@ fn infer_iterative(
                     continue;
                 }
                 // This needs to be unsafe because there is an active mutable borrow on `hands`
-                unsafe { (*hands_ptr.add(j)).missing.extend(&hand.has) };
+                unsafe { (*hands_ptr.add(j)).missing.set_union(&hand.has) };
             }
         }
 
@@ -451,8 +609,8 @@ fn infer_iterative(
             hands
                 .iter()
                 .map(|hand| &hand.has)
-                .fold(BTreeSet::<u8>::new(), |mut union, current| {
-                    union.extend(current);
+                .fold(BitmaskSet::new(), |mut union, current| {
+                    union.set_union(current);
                     union
                 });
 
@@ -485,10 +643,11 @@ fn infer_iterative(
                     for set2 in &size_two_groups[j] {
                         if set1 == set2 {
                             // Get the two cards from the set
-                            let card1 = unsafe { *set1.first().unwrap_unchecked() };
-                            let card2 = unsafe { *set1.last().unwrap_unchecked() };
-                            all_has_packed.insert(card1);
-                            all_has_packed.insert(card2);
+                            let mut set_iter = set1.iter();
+                            let card1 = unsafe { set_iter.next().unwrap_unchecked() };
+                            let card2 = unsafe { set_iter.next().unwrap_unchecked() };
+                            all_has_packed.add(card1);
+                            all_has_packed.add(card2);
 
                             // Rule the cards out for other players
                             for k in 0..player_count {
@@ -497,8 +656,8 @@ fn infer_iterative(
                                 };
                                 // This needs to be unsafe because there is an active borrow on `hands`
                                 let missing = unsafe { &mut (*hands_ptr.add(k)).missing };
-                                missing.insert(card1);
-                                missing.insert(card2);
+                                missing.add(card1);
+                                missing.add(card2);
                             }
                         }
                     }
@@ -510,10 +669,11 @@ fn infer_iterative(
         // If all but one card in a category is marked off,
         // the remaining card must be guilty
         // =========================
-        let mut all_has: [BTreeSet<u8>; 3] = [BTreeSet::new(), BTreeSet::new(), BTreeSet::new()];
+        let mut all_has: [BitmaskSet; 3] =
+            [BitmaskSet::new(), BitmaskSet::new(), BitmaskSet::new()];
         for card in &all_has_packed {
-            let (card_type, card) = unpack_card(*card);
-            all_has[card_type as usize].insert(card);
+            let (card_type, card) = unpack_card(card);
+            all_has[card_type as usize].add(card);
         }
 
         for (card_type, cards) in all_has.iter().enumerate() {
@@ -527,22 +687,22 @@ fn infer_iterative(
                 // Find the card not held by any player
                 let card = unsafe {
                     (0..(cards_of_type as u8))
-                        .find(|card| !cards.contains(card))
+                        .find(|card| !cards.contains(*card))
                         .unwrap_unchecked()
                 };
                 // Mark this card as missing for all players
                 let packed = pack_card(card_type as u8, card);
                 for hand in &mut hands {
-                    hand.missing.insert(packed);
+                    hand.missing.add(packed);
                 }
             }
         }
 
         // A mapping of packed cards to players who do _not_ have it
-        let mut missing_map = BTreeMap::<u8, BTreeSet<usize>>::new();
+        let mut missing_map = BTreeMap::<u8, BitmaskSet>::new();
         for (player, hand) in hands.iter().enumerate() {
             for packed in &hand.missing {
-                missing_map.entry(*packed).or_default().insert(player);
+                missing_map.entry(packed).or_default().add(player as u8);
             }
         }
 
@@ -569,10 +729,11 @@ fn infer_iterative(
                 }
 
                 // Find the player that does not have the card marked missing
-                let player = (0..player_count).find(|player| !missing_players.contains(player));
+                let player =
+                    (0..player_count).find(|player| !missing_players.contains(*player as u8));
 
                 // Mark them as having the card
-                hands[player.unwrap()].has.insert(packed);
+                hands[player.unwrap()].has.add(packed);
             }
         }
         if guilty_is_known[0].is_none()
@@ -597,11 +758,11 @@ fn infer_iterative(
 
                 // Find the player that does not have the card marked missing
                 let player = (0..player_count)
-                    .find(|player| !missing_players.contains(player))
+                    .find(|player| !missing_players.contains(*player as u8))
                     .unwrap();
 
                 // If the player doesn't already have the card in their hand, count it
-                if !hands[player].has.contains(&packed) {
+                if !hands[player].has.contains(packed) {
                     only_possible_by_type.entry(player).or_default()[card_type as usize]
                         .push(packed);
                 }
@@ -630,12 +791,12 @@ fn infer_iterative(
 
                 let new_missing = packed_set
                     .iter()
-                    .filter(|card| {
-                        !hands[player].has.contains(card) && !only_possible_cards.contains(card)
+                    .filter(|&&card| {
+                        !hands[player].has.contains(card) && !only_possible_cards.contains(&card)
                     })
-                    .collect::<Box<_>>();
+                    .copied();
 
-                hands[player].missing.extend(new_missing);
+                hands[player].missing.set_union(&new_missing.collect());
             }
         }
 
@@ -657,7 +818,7 @@ fn infer_internal(
     player_card_counts: &[usize],
     set: &GameSet,
     first_is_self: bool,
-) -> std::result::Result<(Box<[PlayerHand]>, BTreeSet<u8>), String> {
+) -> std::result::Result<(Box<[PlayerHand]>, BitmaskSet), String> {
     let packed_set = pack_set(set);
     let mut starting_hands = empty_hands(players);
 
@@ -670,12 +831,12 @@ fn infer_internal(
             "innocent" => {
                 starting_hands[known.player]
                     .has
-                    .insert(pack_card(known.card_type, known.card));
+                    .add(pack_card(known.card_type, known.card));
             }
             "guilty" => {
                 let packed = pack_card(known.card_type, known.card);
                 for hand in &mut starting_hands {
-                    hand.missing.insert(packed);
+                    hand.missing.add(packed);
                 }
             }
             _ => return Err(format!("Unexpected known type: {:?}", known.known_type)),
@@ -685,9 +846,9 @@ fn infer_internal(
     // For the user themself, if any card is not explicitly known as innocent, they must not have it
     if first_is_self {
         // Mark as missing if they are not contained in the hand
-        for card in &packed_set {
+        for &card in &packed_set {
             if !starting_hands[0].has.contains(card) {
-                starting_hands[0].missing.insert(*card);
+                starting_hands[0].missing.add(card);
             }
         }
     }
@@ -702,18 +863,18 @@ fn infer_internal(
                 // A player specifically _did not_ show a card
                 CardType::NOTHING => starting_hands[response.player]
                     .missing
-                    .extend(suggestion_cards),
+                    .set_union(&BitmaskSet::from_iter(suggestion_cards)),
 
                 // A player showed a card, but we do not know which
                 CardType::UNKNOWN => {
                     starting_hands[response.player]
                         .maybe_groups
-                        .push(BTreeSet::from_iter(suggestion_cards));
+                        .push(BitmaskSet::from_iter(suggestion_cards));
                 }
 
                 // A player showed a card we know exactly
                 _ => {
-                    starting_hands[response.player].has.insert(pack_card(
+                    starting_hands[response.player].has.add(pack_card(
                         response.card_type as u8,
                         response.card.unwrap() as u8,
                     ));
@@ -736,7 +897,7 @@ fn infer_internal(
     // Figure that one out!
 
     // All innocent cards, derived from knowns
-    let all_known_innocents = knowns
+    let mut all_known_innocents = knowns
         .iter()
         .filter_map(|known| {
             if known.known_type == "innocent" {
@@ -745,21 +906,21 @@ fn infer_internal(
                 None
             }
         })
-        .collect::<BTreeSet<_>>();
+        .collect::<BitmaskSet>();
 
     // All innocent cards, derived from hands
     let all_hand_innocents =
         hands
             .iter()
             .map(|hand| &hand.has)
-            .fold(BTreeSet::new(), |mut union, current| {
-                union.extend(current);
+            .fold(BitmaskSet::new(), |mut union, current| {
+                union.set_union(current);
                 union
             });
 
-    let innocents = &all_known_innocents | &all_hand_innocents;
+    all_known_innocents.set_union(&all_hand_innocents);
 
-    Ok((hands, innocents))
+    Ok((hands, all_known_innocents))
 }
 
 /// Create player hand info based on suggestions and other inference.
@@ -808,7 +969,7 @@ pub fn infer(
     );
 
     let innocents_js = js_sys::Set::default();
-    for value in innocents {
+    for value in &innocents {
         innocents_js.add(&JsValue::from(value));
     }
 
@@ -877,7 +1038,7 @@ fn probabilities_recursive(
         let packed = packed_set[packed_index];
 
         for (player, hand) in hands.iter().enumerate() {
-            if hand.has.contains(&packed) || hand.missing.contains(&packed) {
+            if hand.has.contains(packed) || hand.missing.contains(packed) {
                 continue;
             }
 
