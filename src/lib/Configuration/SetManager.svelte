@@ -60,7 +60,7 @@
      * @param category The category to push to (modified directly)
      */
     function tryAddNew(category: string[]): boolean {
-        if (category.length < 17) {
+        if (category.length < 16) {
             category.push('');
             return true;
         }
