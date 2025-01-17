@@ -52,6 +52,21 @@
         return true;
     });
 
+    /**
+     * Tries to add a new empty field to a set category, keeping max card count in mind
+     * (can be at most 16 cards per set due to bitmask implementation in inference).
+     * This situation can never happen in a standard Clue set, but I'm trying to keep the implementation
+     * mostly generic so that people can use their own weird modified sets if they want.
+     * @param category The category to push to (modified directly)
+     */
+    function tryAddNew(category: string[]): boolean {
+        if (category.length < 17) {
+            category.push('');
+            return true;
+        }
+        return false;
+    }
+
     function resetSet() {
         updating = null;
         setName = '';
@@ -135,19 +150,19 @@
 
         <div class="creator-fields">
             <div>
-                <button class="btn w-full" onclick={() => set.suspects.push('')}>
+                <button class="btn w-full" onclick={() => tryAddNew(set.suspects)}>
                     Add Suspect
                     <span class="material-icons">add</span>
                 </button>
             </div>
             <div>
-                <button class="btn w-full" onclick={() => set.weapons.push('')}>
+                <button class="btn w-full" onclick={() => tryAddNew(set.weapons)}>
                     Add Weapon
                     <span class="material-icons">add</span>
                 </button>
             </div>
             <div>
-                <button class="btn w-full" onclick={() => set.rooms.push('')}>
+                <button class="btn w-full" onclick={() => tryAddNew(set.rooms)}>
                     Add Room
                     <span class="material-icons">add</span>
                 </button>
