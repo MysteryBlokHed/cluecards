@@ -6,7 +6,7 @@
     clippy::struct_field_names,
     clippy::too_many_lines
 )]
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, HashSet};
 
 use itertools::Itertools;
 use serde::{de::Visitor, Deserialize, Serialize};
@@ -997,7 +997,7 @@ fn probabilities_recursive(
     knowns: &mut Vec<Known>,
     packed_set: &[u8],
     pack_offset: usize,
-    seen: &mut BTreeSet<String>,
+    seen: &mut HashSet<String>,
     limit: f64,
     occurrences: &mut BTreeMap<(u8, u8, u8), usize>,
     start: f64,
@@ -1143,7 +1143,7 @@ pub fn probabilities(
         &mut knowns,
         &packed_set,
         0,
-        &mut BTreeSet::new(),
+        &mut HashSet::new(),
         limit.unwrap_or(10_000.0),
         &mut occurrences,
         js_now(),
