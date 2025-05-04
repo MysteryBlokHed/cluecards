@@ -10,7 +10,8 @@ Two reasons:
 
 1. It is much, much faster. The speed difference is negligible under normal use,
    but the "Calculate Odds" feature requires a huge amount of iterations, which is incredibly slow with JavaScript.
-   I've noticed it being upwards of 4&times; faster than the [original implementation].
+   I've measured it to be around 30&times; faster than the [original implementation],
+   and sometimes even better when more iterations are required.
 
 2. It's a neat experiment! I haven't used WASM before, and this felt like a good excuse.
    I also found that the change in bundle size is relatively negligible (~124 KB), espcially when compressed (~44 KB with Brotli).
