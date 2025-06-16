@@ -4,6 +4,8 @@ on:
         branches:
             - main
         paths:
+            - inference/Cargo.*
+            - inference/src/**/*
             - public/**/*
             - src/**/*
             - '*.config.*'
@@ -17,6 +19,8 @@ on:
         branches:
             - main
         paths:
+            - inference/Cargo.*
+            - inference/src/**/*
             - public/**/*
             - src/**/*
             - '*.config.*'
