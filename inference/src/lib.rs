@@ -8,7 +8,6 @@
 )]
 use std::collections::{BTreeMap, HashSet};
 
-use itertools::Itertools;
 use serde::{de::Visitor, Deserialize, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
 use wasm_bindgen::prelude::*;
@@ -653,7 +652,7 @@ fn infer_iterative(
                             for k in 0..player_count {
                                 if i == k || j == k {
                                     continue;
-                                };
+                                }
                                 // This needs to be unsafe because there is an active borrow on `hands`
                                 let missing = unsafe { &mut (*hands_ptr.add(k)).missing };
                                 missing.add(card1);
