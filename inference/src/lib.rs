@@ -808,8 +808,9 @@ fn infer_iterative(
     Ok(hands)
 }
 
-/// This is the internal function used by [`infer`].
-/// [`infer`] is just a wrapper around this function, converting its return type into JavaScript types.
+/// Runs inference, but without determining the innocent cards.
+/// This logic is separated because [`probabilities_recursive`] doesn't use this information,
+/// so it's wasteful to generate it.
 fn infer_internal(
     suggestions: &[Suggestion],
     knowns: &[Known],
@@ -817,7 +818,7 @@ fn infer_internal(
     player_card_counts: &[usize],
     set: &GameSet,
     first_is_self: bool,
-) -> std::result::Result<(Box<[PlayerHand]>, BitmaskSet), String> {
+) -> std::result::Result<Box<[PlayerHand]>, String> {
     let packed_set = pack_set(set);
     let mut starting_hands = empty_hands(players);
 
@@ -889,11 +890,27 @@ fn infer_internal(
     // Run iterative inference
     let hands = infer_iterative(player_card_counts, set, starting_hands, &packed_set)?;
 
-    // Note: it may seem wasteful that innocents are generated in this function
-    // even though [probabilities] throws them away,
-    // but my testing has shown that separating the innocents logic
-    // into its own function actually _slows down_ the probabilities function!
-    // Figure that one out!
+    Ok(hands)
+}
+
+/// This is the internal function used by [`infer`].
+/// [`infer`] is just a wrapper around this function, converting its return type into JavaScript types.
+fn infer_internal_with_innocents(
+    suggestions: &[Suggestion],
+    knowns: &[Known],
+    players: usize,
+    player_card_counts: &[usize],
+    set: &GameSet,
+    first_is_self: bool,
+) -> Result<(Box<[PlayerHand]>, BitmaskSet), String> {
+    let hands = infer_internal(
+        suggestions,
+        knowns,
+        players,
+        player_card_counts,
+        set,
+        first_is_self,
+    )?;
 
     // All innocent cards, derived from knowns
     let mut all_known_innocents = knowns
@@ -949,7 +966,7 @@ pub fn infer(
     let set: GameSet =
         from_value(set).map_err(|_| JsError::new("Failed to parse set."))?;
 
-    let (hands, innocents) = infer_internal(
+    let (hands, innocents) = infer_internal_with_innocents(
         &suggestions,
         &knowns,
         players,
@@ -1064,7 +1081,7 @@ fn probabilities_recursive(
                 first_is_self,
             );
 
-            if let Ok((new_hands, _)) = new_hands {
+            if let Ok(new_hands) = new_hands {
                 // Recurse
                 probabilities_recursive(
                     suggestions,
