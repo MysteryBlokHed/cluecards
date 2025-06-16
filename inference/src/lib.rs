@@ -450,15 +450,29 @@ fn infer_iterative(
     mut hands: Box<[PlayerHand]>,
     packed_set: &[u8],
 ) -> Result<Box<[PlayerHand]>, String> {
-    let mut last_hands: Box<[PlayerHand]>;
     let total_cards = packed_set.len();
     let player_count = hands.len();
 
     let hands_ptr = hands.as_mut_ptr();
 
     loop {
-        // Tracked to see if anything changes after inference
-        last_hands = hands.clone();
+        // If a hand changes this iteration, this variable is set to true and we loop again
+        let mut hands_changed = false;
+
+        /// A helper macro to identify whether an expression has changed the hands.
+        /// The first parameter is the property to observe for changes,
+        /// and the second parameter is the expression to execute.
+        ///
+        /// A [`Copy`] type should ideally be used.
+        macro_rules! check_change {
+            ($target:expr, $body:block) => {{
+                let __old = $target.clone();
+                $body
+                if $target != __old {
+                    hands_changed = true;
+                }
+            }};
+        }
 
         // Hand-by-hand inferences
         for (i, hand) in hands.iter_mut().enumerate() {
@@ -474,13 +488,15 @@ fn infer_iterative(
                     .find(|group| group.is_disjoint(&hand.has));
 
                 if let Some(group) = group {
-                    hand.missing.set_union(
-                        &packed_set
-                            .iter()
-                            .filter(|&&card| !group.contains(card) && !hand.has.contains(card))
-                            .copied()
-                            .collect(),
-                    );
+                    check_change!(hand.missing, {
+                        hand.missing.set_union(
+                            &packed_set
+                                .iter()
+                                .filter(|&&card| !group.contains(card) && !hand.has.contains(card))
+                                .copied()
+                                .collect(),
+                        )
+                    });
                 }
             }
             // =========================
@@ -519,7 +535,10 @@ fn infer_iterative(
                                     !hand.has.contains(card) && !cards_in_hand.contains(card)
                                 })
                                 .copied();
-                            hand.missing.set_union(&missing_cards.collect());
+
+                            check_change!(hand.missing, {
+                                hand.missing.set_union(&missing_cards.collect())
+                            });
                         }
                     }
                 }
@@ -530,22 +549,26 @@ fn infer_iterative(
             // =========================
             if hand.has.len() >= player_card_counts[i] {
                 // If a player has all the cards allowed in their hand, check everything else off
-                hand.missing.set_union(
-                    &packed_set
-                        .iter()
-                        .filter(|&&card| !hand.has.contains(card))
-                        .copied()
-                        .collect(),
-                );
+                check_change!(hand.missing, {
+                    hand.missing.set_union(
+                        &packed_set
+                            .iter()
+                            .filter(|&&card| !hand.has.contains(card))
+                            .copied()
+                            .collect(),
+                    )
+                });
             } else if hand.missing.len() >= total_cards - player_card_counts[i] {
                 // If a player has every card crossed off except for the # of cards in their hand, they must have those cards
-                hand.has.set_union(
-                    &packed_set
-                        .iter()
-                        .filter(|&&card| !hand.missing.contains(card))
-                        .copied()
-                        .collect(),
-                );
+                check_change!(hand.has, {
+                    hand.has.set_union(
+                        &packed_set
+                            .iter()
+                            .filter(|&&card| !hand.missing.contains(card))
+                            .copied()
+                            .collect(),
+                    )
+                });
             }
 
             // =========================
@@ -569,12 +592,12 @@ fn infer_iterative(
                 }
 
                 // Remove any cards from maybe groups that are marked missing
-                maybe_group.set_difference(&hand.missing);
+                check_change!(*maybe_group, { maybe_group.set_difference(&hand.missing) });
 
                 // If the group has one card, mark it as held
                 if maybe_group.len() == 1 {
                     let last = unsafe { maybe_group.iter().next().unwrap_unchecked() };
-                    hand.has.add(last);
+                    check_change!(hand.has, { hand.has.add(last) });
                 }
 
                 // If the group is empty, mark it for deletion
@@ -583,12 +606,18 @@ fn infer_iterative(
                 }
             }
 
-            let mut index = 0;
-            hand.maybe_groups.retain(|_| {
-                let retain = !maybe_groups_to_delete.contains(index);
-                index += 1;
-                retain
-            });
+            if !maybe_groups_to_delete.is_empty() {
+                // No need for check_change! here--if there are groups to delete,
+                // then the hands obviously have changed
+                hands_changed = true;
+
+                let mut index = 0;
+                hand.maybe_groups.retain(|_| {
+                    let retain = !maybe_groups_to_delete.contains(index);
+                    index += 1;
+                    retain
+                });
+            }
 
             // =========================
             // If a player is confirmed to have a card, mark it as missing for everyone else
@@ -597,8 +626,14 @@ fn infer_iterative(
                 if i == j {
                     continue;
                 }
+
                 // This needs to be unsafe because there is an active mutable borrow on `hands`
-                unsafe { (*hands_ptr.add(j)).missing.set_union(&hand.has) };
+                unsafe {
+                    let other_hand = &mut *hands_ptr.add(j);
+                    check_change!(other_hand.missing, {
+                        other_hand.missing.set_union(&hand.has)
+                    });
+                }
             }
         }
 
@@ -653,10 +688,12 @@ fn infer_iterative(
                                 if i == k || j == k {
                                     continue;
                                 }
-                                // This needs to be unsafe because there is an active borrow on `hands`
-                                let missing = unsafe { &mut (*hands_ptr.add(k)).missing };
-                                missing.add(card1);
-                                missing.add(card2);
+                                check_change!(hands[k].missing, {
+                                    // This needs to be unsafe because there is an active borrow on `hands`
+                                    let missing = unsafe { &mut (*hands_ptr.add(k)).missing };
+                                    missing.add(card1);
+                                    missing.add(card2);
+                                });
                             }
                         }
                     }
@@ -692,7 +729,7 @@ fn infer_iterative(
                 // Mark this card as missing for all players
                 let packed = pack_card(card_type as u8, card);
                 for hand in &mut hands {
-                    hand.missing.add(packed);
+                    check_change!(hand.missing, { hand.missing.add(packed) });
                 }
             }
         }
@@ -728,11 +765,12 @@ fn infer_iterative(
                 }
 
                 // Find the player that does not have the card marked missing
-                let player =
-                    (0..player_count).find(|player| !missing_players.contains(*player as u8));
+                let player = (0..player_count)
+                    .find(|player| !missing_players.contains(*player as u8))
+                    .unwrap();
 
                 // Mark them as having the card
-                hands[player.unwrap()].has.add(packed);
+                check_change!(hands[player].has, { hands[player].has.add(packed) });
             }
         }
         if guilty_is_known[0].is_none()
@@ -795,12 +833,14 @@ fn infer_iterative(
                     })
                     .copied();
 
-                hands[player].missing.set_union(&new_missing.collect());
+                check_change!(hands[player].missing, {
+                    hands[player].missing.set_union(&new_missing.collect())
+                });
             }
         }
 
         // Stop once nothing changes after trying inference
-        if hands == last_hands {
+        if !hands_changed {
             break;
         }
     }
