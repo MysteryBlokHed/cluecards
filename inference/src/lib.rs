@@ -50,7 +50,7 @@ struct Suggestion {
 }
 
 /// Bitmask to efficiently represent a set of bytes.
-#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize)]
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Hash)]
 pub struct BitmaskSet(u64);
 
 impl BitmaskSet {
@@ -981,8 +981,8 @@ pub fn infer(
 }
 
 /// Used by [`probabilities`] to keep track of which hand configurations have already been seen.
-fn hands_has_to_string(hands: &[PlayerHand]) -> String {
-    hands.iter().map(|hand| hand.has.iter().join(",")).join("|")
+fn hands_to_has(hands: &[PlayerHand]) -> Box<[BitmaskSet]> {
+    hands.iter().map(|hand| hand.has).collect::<Box<_>>()
 }
 
 /// This is the internal function used by [`probabilities`].
@@ -997,7 +997,7 @@ fn probabilities_recursive(
     knowns: &mut Vec<Known>,
     packed_set: &[u8],
     pack_offset: usize,
-    seen: &mut HashSet<String>,
+    seen: &mut HashSet<Box<[BitmaskSet]>>,
     limit: f64,
     occurrences: &mut BTreeMap<(u8, u8, u8), usize>,
     start: f64,
@@ -1023,11 +1023,11 @@ fn probabilities_recursive(
             };
 
             // Do not count if this particular arrangement of cards has already been seen
-            let as_string = hands_has_to_string(hands);
-            if seen.contains(&as_string) {
+            let has_only = hands_to_has(hands);
+            if seen.contains(&has_only) {
                 return Ok(());
             }
-            seen.insert(as_string);
+            seen.insert(has_only);
 
             *occurrences.entry((suspect, weapon, room)).or_default() += 1;
             return Ok(());
