@@ -85,7 +85,6 @@
             }
 
             // Run inferences
-            console.log('calling');
             const [newHands, newInnocents] = await inference.infer(
                 $state.snapshot($suggestions) as Suggestion[], // I have no idea why this assertion is needed
                 $state.snapshot($startingKnowns),
@@ -94,8 +93,6 @@
                 $state.snapshot($set[1]),
                 $preferences.firstIsSelf,
             );
-            console.log('called');
-            console.log(newHands);
 
             // Update suggestion details
             amendedSuggestions = updateSuggestions(
