@@ -3,8 +3,11 @@
 
     import { untrack } from 'svelte';
 
-    import { stripSuggestions, updateSuggestions } from './inference';
-    import { infer } from '../inference/pkg/inference';
+    import {
+        inference as inferencePromise,
+        stripSuggestions,
+        updateSuggestions,
+    } from './inference';
     import {
         startingKnowns,
         set,
@@ -23,6 +26,9 @@
     import GameTools from './lib/GameTools/';
     import Hands from './lib/Hands';
     import Suggestions from './lib/Suggestions.svelte';
+
+    let inference = $state<Awaited<typeof inferencePromise> | null>(null);
+    inferencePromise.then(resolved => (inference = resolved));
 
     let amendedSuggestions: Suggestion[] = $state(
         structuredClone($state.snapshot($suggestions) as Suggestion[]),
@@ -43,7 +49,8 @@
     $effect(() => {
         // @ts-expect-error Just to manually set dependencies
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        $suggestions,
+        inference,
+            $suggestions,
             $startingKnowns,
             $players.length,
             $playerCardCounts,
@@ -52,31 +59,43 @@
             $playerPov;
 
         // Figuring out dependencies was too much of a disaster so let's just untrack the whole thing
-        untrack(() => {
+        untrack(async () => {
+            if (inference == null) {
+                console.warn('[Main App]', 'Inference worker is not ready yet');
+                return;
+            }
+
+            console.time('Running inference');
+
             if ($preferences.disableInference) {
                 amendedSuggestions = $state.snapshot($suggestions) as Suggestion[];
-                const [newHands, newInnocents] = infer(
+                const [newHands, newInnocents] = await inference.infer(
                     [],
                     [],
                     $players.length,
-                    $playerCardCounts,
-                    $set[1],
+                    $state.snapshot($playerCardCounts),
+                    $state.snapshot($set[1]),
                     false,
                 );
                 $playerHands = newHands;
                 $innocents = newInnocents;
+
+                console.timeEnd('Running inference');
                 return;
             }
 
             // Run inferences
-            const [newHands, newInnocents] = infer(
-                $suggestions,
-                $startingKnowns,
+            console.log('calling');
+            const [newHands, newInnocents] = await inference.infer(
+                $state.snapshot($suggestions) as Suggestion[], // I have no idea why this assertion is needed
+                $state.snapshot($startingKnowns),
                 $players.length,
-                $playerCardCounts,
-                $set[1],
+                $state.snapshot($playerCardCounts),
+                $state.snapshot($set[1]),
                 $preferences.firstIsSelf,
             );
+            console.log('called');
+            console.log(newHands);
 
             // Update suggestion details
             amendedSuggestions = updateSuggestions(
@@ -99,18 +118,20 @@
                 );
 
                 // Re-run inferences
-                const [newHands, newInnocents] = infer(
+                const [newHands, newInnocents] = await inference.infer(
                     updatedSuggestions,
                     updatedStartingKnowns,
                     $players.length,
-                    $playerCardCounts,
-                    $set[1],
+                    $state.snapshot($playerCardCounts),
+                    $state.snapshot($set[1]),
                     false,
                 );
 
                 $playerHands = newHands;
                 $innocents = newInnocents;
             }
+
+            console.timeEnd('Running inference');
         });
     });
 

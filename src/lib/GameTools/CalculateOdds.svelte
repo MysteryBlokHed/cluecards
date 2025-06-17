@@ -1,6 +1,5 @@
 <script lang="ts">
     import { cardTypeToKey } from '../../cards';
-    import { probabilities } from '../../../inference/pkg/inference';
     import { playerCardCounts, playerHands, preferences, set, startingKnowns } from '../../stores';
     import type { Suggestion } from '../../types';
 
@@ -10,13 +9,34 @@
 
     let { amendedSuggestions }: Props = $props();
 
+    import { inference as inferencePromise } from '../../inference';
+
+    let inference = $state<Awaited<typeof inferencePromise> | null>(null);
+    inferencePromise.then(resolved => (inference = resolved));
+
+    let runningProbabilities = $state(false);
+
     let oddsDialog: HTMLDialogElement;
     let showPercentages = $state(true);
     let overrideBody = $state('');
     let oddsTable: Record<string, number> = $state({});
     let totalOccurences = $state(0);
 
-    function calculateOdds() {
+    async function calculateOdds() {
+        if (inference == null) {
+            console.warn('[Calculate Odds]', 'Inference worker is not ready yet');
+            overrideBody = 'Inference worker is still initializing, try again shortly.';
+            oddsDialog.showModal();
+            return;
+        }
+
+        // Silently ignore if the user tried to run probabilities more than once.
+        // If it's taking too long, then it'll time out anyway
+        if (runningProbabilities) {
+            console.warn('Already running probabilities, ignoring request');
+            return;
+        }
+
         if ($preferences.disableInference) {
             overrideBody = 'Inference is disabled; probabilities calculations cannot be run.';
             oddsDialog.showModal();
@@ -30,8 +50,9 @@
 
         console.time('Calculating and displaying probabilities');
 
+        runningProbabilities = true;
         try {
-            probs = probabilities(
+            probs = await inference.probabilities(
                 $state.snapshot(amendedSuggestions) as Suggestion[],
                 $set[1],
                 $state.snapshot($playerHands),
@@ -47,6 +68,8 @@
                 'Probability calculations took too long. Try narrowing down your clues first.';
             oddsDialog.showModal();
             return;
+        } finally {
+            runningProbabilities = false;
         }
 
         for (const [triplet, count] of probs.entries()) {

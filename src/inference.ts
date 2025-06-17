@@ -2,6 +2,34 @@ import { packSet, packCard, unpackCard } from './cards.js';
 import { CardType, RevealMethod } from './types.js';
 import type { GameSet, PlayerHand, Suggestion } from './types.js';
 
+// Uses a web worker to run WASM code instead of doing it on the main thread.
+// For normal inference this was never really an issue,
+// but the probabilities code is prone to running for a long time,
+// and it blocks the main thread while it runs.
+// My tests have shown that moving it to a web worker doesn't negatively affect its performance.
+import InferenceWorker from './inference-worker.ts?worker';
+import type { InferenceWorkerApi } from './inference-worker';
+import { wrap } from 'comlink';
+
+export const inference = (async () => {
+    // The Comlink API isn't available immediately since the worker
+    // first needs to import the WASM module, which takes a few hundred milliseconds.
+    // This code waits until the worker reports that it's ready before doing anything else.
+    const inferenceWorker = new InferenceWorker({ name: 'inference-worker' });
+    await new Promise<void>(resolve => {
+        inferenceWorker.addEventListener('message', function listener(e) {
+            if (e.data?.__ready) {
+                inferenceWorker.removeEventListener('message', listener);
+                resolve();
+            }
+        });
+    });
+
+    // Comlink is now available--return the wrapped object
+    const wrapped = wrap<InferenceWorkerApi>(inferenceWorker);
+    return wrapped;
+})();
+
 /**
  * Determine guilty cards from hands.
  * @returns Guilty cards in a format similar to {@link Suggestion} cards.

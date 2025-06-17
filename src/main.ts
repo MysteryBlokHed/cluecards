@@ -18,7 +18,6 @@ const app = mount(App, {
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker
         .register('/sw.js')
-        .then(() => console.log('Worker registered'))
         .catch(err => console.error('Worker registration failed:', err));
 }
 
