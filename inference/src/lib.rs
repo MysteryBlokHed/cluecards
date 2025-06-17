@@ -495,7 +495,7 @@ fn infer_iterative(
                                 .filter(|&&card| !group.contains(card) && !hand.has.contains(card))
                                 .copied()
                                 .collect(),
-                        )
+                        );
                     });
                 }
             }
@@ -537,7 +537,7 @@ fn infer_iterative(
                                 .copied();
 
                             check_change!(hand.missing, {
-                                hand.missing.set_union(&missing_cards.collect())
+                                hand.missing.set_union(&missing_cards.collect());
                             });
                         }
                     }
@@ -556,7 +556,7 @@ fn infer_iterative(
                             .filter(|&&card| !hand.has.contains(card))
                             .copied()
                             .collect(),
-                    )
+                    );
                 });
             } else if hand.missing.len() >= total_cards - player_card_counts[i] {
                 // If a player has every card crossed off except for the # of cards in their hand, they must have those cards
@@ -567,7 +567,7 @@ fn infer_iterative(
                             .filter(|&&card| !hand.missing.contains(card))
                             .copied()
                             .collect(),
-                    )
+                    );
                 });
             }
 
@@ -631,7 +631,7 @@ fn infer_iterative(
                 unsafe {
                     let other_hand = &mut *hands_ptr.add(j);
                     check_change!(other_hand.missing, {
-                        other_hand.missing.set_union(&hand.has)
+                        other_hand.missing.set_union(&hand.has);
                     });
                 }
             }
@@ -834,7 +834,7 @@ fn infer_iterative(
                     .copied();
 
                 check_change!(hands[player].missing, {
-                    hands[player].missing.set_union(&new_missing.collect())
+                    hands[player].missing.set_union(&new_missing.collect());
                 });
             }
         }
