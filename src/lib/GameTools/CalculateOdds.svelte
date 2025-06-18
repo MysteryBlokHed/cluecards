@@ -54,11 +54,11 @@
         try {
             probs = await inference.probabilities(
                 $state.snapshot(amendedSuggestions) as Suggestion[],
-                $set[1],
+                $state.snapshot($set[1]),
                 $state.snapshot($playerHands),
-                $playerCardCounts,
+                $state.snapshot($playerCardCounts),
                 $preferences.firstIsSelf,
-                $startingKnowns,
+                $state.snapshot($startingKnowns),
             );
             overrideBody = '';
         } catch (e) {
