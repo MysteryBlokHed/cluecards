@@ -25,6 +25,19 @@ so it will not display properly unless you're looking at this repository [on Git
 
 ## Building
 
+### Nix
+
+A [Nix](https://nixos.org/) flake is available to build the project in release mode.
+To use it, run:
+
+```sh
+$ nix build
+```
+
+The build website's static files will be available at `./result`.
+
+### Manually
+
 The inference logic must be built _before_ the rest of the website.
 Instructions are available [here](./inference/README.md).
 
