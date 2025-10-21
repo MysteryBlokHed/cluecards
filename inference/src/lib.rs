@@ -453,8 +453,6 @@ fn infer_iterative(
     let total_cards = packed_set.len();
     let player_count = hands.len();
 
-    let hands_ptr = hands.as_mut_ptr();
-
     loop {
         // If a hand changes this iteration, this variable is set to true and we loop again
         let mut hands_changed = false;
@@ -475,7 +473,21 @@ fn infer_iterative(
         }
 
         // Hand-by-hand inferences
-        for (i, hand) in hands.iter_mut().enumerate() {
+        #[allow(clippy::needless_range_loop)]
+        for i in 0..player_count {
+            // Split hands so that the active hand can be borrowed separately from the others
+            let (left, right) = hands.split_at_mut(i);
+            let (hand, right) = right.split_first_mut().unwrap();
+
+            /// Iterate over the hands other than the current one.
+            /// Should take either `iter` or `iter_mut` as the argument
+            /// to choose whether to iterate mutably or immutably.
+            macro_rules! other_hands {
+                ($iter:ident) => {
+                    left.$iter().chain(right.$iter())
+                };
+            }
+
             // =========================
             // If we know all but one card in a player's hand, and there exists a "maybe group"
             // which has no intersection with the "has" set,
@@ -622,18 +634,10 @@ fn infer_iterative(
             // =========================
             // If a player is confirmed to have a card, mark it as missing for everyone else
             // =========================
-            for j in 0..player_count {
-                if i == j {
-                    continue;
-                }
-
-                // This needs to be unsafe because there is an active mutable borrow on `hands`
-                unsafe {
-                    let other_hand = &mut *hands_ptr.add(j);
-                    check_change!(other_hand.missing, {
-                        other_hand.missing.set_union(&hand.has);
-                    });
-                }
+            for other_hand in other_hands!(iter_mut) {
+                check_change!(other_hand.missing, {
+                    other_hand.missing.set_union(&hand.has);
+                });
             }
         }
 
@@ -658,6 +662,7 @@ fn infer_iterative(
                 hand.maybe_groups
                     .iter()
                     .filter(|group| group.len() == 2)
+                    .copied()
                     .collect::<Box<_>>()
             })
             .collect::<Box<_>>();
@@ -689,10 +694,8 @@ fn infer_iterative(
                                     continue;
                                 }
                                 check_change!(hands[k].missing, {
-                                    // This needs to be unsafe because there is an active borrow on `hands`
-                                    let missing = unsafe { &mut (*hands_ptr.add(k)).missing };
-                                    missing.add(card1);
-                                    missing.add(card2);
+                                    hands[k].missing.add(card1);
+                                    hands[k].missing.add(card2);
                                 });
                             }
                         }
