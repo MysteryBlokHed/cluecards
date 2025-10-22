@@ -1,35 +1,9 @@
 name: Build & Test
 on:
     pull_request:
-        branches:
-            - main
-        paths:
-            - inference/Cargo.*
-            - inference/src/**/*
-            - public/**/*
-            - src/**/*
-            - '*.config.*'
-            - index.html
-            - package.json
-            - tsconfig*.json
-            - pnpm-lock.yaml
-            - .github/workflows/build_and_test.yml
-            - .prettier*
+      branches: [main]
     push:
-        branches:
-            - main
-        paths:
-            - inference/Cargo.*
-            - inference/src/**/*
-            - public/**/*
-            - src/**/*
-            - '*.config.*'
-            - index.html
-            - package.json
-            - tsconfig*.json
-            - pnpm-lock.yaml
-            - .github/workflows/build_and_test.yml
-            - .prettier*
+      branches: [main]
 
 jobs:
     build:
@@ -37,65 +11,30 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-
-            - name: pnpm cache
-              uses: actions/cache@v4
-              id: pnpm-cache
+            - uses: actions/checkout@v4
+            - uses: DeterminateSystems/nix-installer-action@main
+            - uses: DeterminateSystems/magic-nix-cache-action@main
+            - uses: DeterminateSystems/flake-checker-action@main
+            - uses: cachix/cachix-action@v14
               with:
-                  path: ~/.local/share/pnpm/store/v3/
-                  key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-                  restore-keys: |
-                      ${{ runner.os }}-pnpm-
+                name: nix-community
 
-            - name: Rust cache
-              uses: actions/cache@v4
-              id: rust-cache
-              with:
-                  path: |
-                      ~/.cargo/bin/
-                      ~/.cargo/registry/index/
-                      ~/.cargo/registry/cache/
-                      ~/.cargo/git/db/
-                      ~/.rustup/
-                      inference/target/
-                  key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-            - name: Set up Node
-              uses: actions/setup-node@v4
-              with:
-                  node-version: lts/*
-
-            - name: Set up Rust and wasm-pack
+            - name: Lint Rust
               run: |
-                  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-                  . ~/.cargo/env
-                  rustup update
-                  curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-
-            - name: Lint and Build Rust
-              run: |
-                  cd inference
-                  cargo check
-                  cargo clippy
-                  wasm-pack build --release --target bundler
-                  cd ..
-
-            - name: Set up pnpm
-              run: |
-                  corepack enable
-                  corepack install
-                  pnpm --version
-                  pnpm install
+                cd inference
+                nix develop --command cargo fmt -- --check
+                nix develop --command cargo clippy --all-targets --all-features -- -D warnings
+                cd -
 
             - name: Lint TypeScript
               run: |
-                  pnpm run lint
-                  pnpm run check
+                nix develop --command pnpm run lint
 
-            - name: Build TypeScipt
-              run: pnpm run build
+            - name: Build project
+              run: nix build .
 
             - name: Test project
-              run: pnpm run test -- --run
+              run: nix flake check
+
+            - name: Temporary check
+              run: ls -al
