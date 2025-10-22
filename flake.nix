@@ -83,7 +83,7 @@
 
           checkPhase = ''
             runHook preCheck
-            pnpm run test
+            pnpm run test --run
             runHook postCheck
           '';
 
@@ -98,6 +98,10 @@
         });
       in {
         formatter = pkgs.alejandra;
+
+        checks = {
+          cluecards = cluecards.overrideAttrs {doCheck = true;};
+        };
 
         packages = {
           inherit inference;
