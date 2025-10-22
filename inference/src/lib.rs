@@ -988,7 +988,7 @@ fn infer_internal_with_innocents(
 /// @param knowns Any knowns to take into consideration (that are _not_ derived from suggestions)
 /// @param hands The hands to update
 /// @param firstIsSelf Whether the player at index 0 is the user
-/// @returns {[hands: PlayerHand[], innocents: Set<number>]}
+/// @returns {[hands: `PlayerHand`[], innocents: Set<number>]}
 #[wasm_bindgen]
 pub fn infer(
     suggestions: JsReadonlySuggestions,
