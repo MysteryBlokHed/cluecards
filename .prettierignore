@@ -3,6 +3,7 @@ dist/
 inference/pkg/
 inference/target/
 smui/
+flake.lock
 pnpm-lock.yaml
 vite.config.*.timestamp*
 .cargo/
