@@ -31,7 +31,7 @@
           ];
         craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
 
-        commonArgs = {
+        commonRustArgs = {
           pname = "inference";
           version = "0.0.0";
 
@@ -39,15 +39,19 @@
           strictDeps = true;
         };
 
-        cargoArtifacts = craneLib.buildDepsOnly (commonArgs // {});
+        cargoArtifacts = craneLib.buildDepsOnly (commonRustArgs // {});
 
-        clippy = craneLib.cargoClippy (commonArgs
+        inference-clippy = craneLib.cargoClippy (commonRustArgs
           // {
             inherit cargoArtifacts;
             cargoClippyExtraArgs = "--all-targets -- --deny warnings";
           });
 
-        inference = craneLib.buildPackage (commonArgs
+        inference-fmt = craneLib.cargoFmt {
+          inherit (commonRustArgs) src;
+        };
+
+        inference = craneLib.buildPackage (commonRustArgs
           // {
             inherit cargoArtifacts;
 
@@ -64,12 +68,12 @@
             dontInstall = true;
           });
 
-        # Build website
-        cluecards = pkgs.stdenv.mkDerivation (finalAttrs: {
+        commonNodeArgs = let
           pname = "cluecards";
           version = "0.0.0";
-
           src = ./.;
+        in {
+          inherit pname version src;
 
           nativeBuildInputs = [pkgs.nodejs pkgs.pnpm.configHook inference];
 
@@ -83,32 +87,75 @@
           '';
 
           pnpmDeps = pkgs.pnpm.fetchDeps {
-            inherit (finalAttrs) pname version src;
+            inherit pname version src;
             fetcherVersion = 2;
             hash = "sha256-EXYDaVbZbQpczrCYWgiNv+RqiZ5b/GvPotfoH0v/zwI=";
           };
+        };
 
-          buildPhase = ''
-            runHook preBuild
-            pnpm run build
-            runHook postBuild
-          '';
+        cluecards-fmt = pkgs.stdenv.mkDerivation (finalAttrs:
+          commonNodeArgs
+          // {
+            doCheck = true;
 
-          checkPhase = ''
-            runHook preCheck
-            pnpm run test -- --run
-            runHook postCheck
-          '';
+            # Do not patch since it may affect formatting
+            postPatch = "";
 
-          installPhase = ''
-            runHook preInstall
+            checkPhase = ''
+              runHook preCheck
+              pnpm run prettier --check .
+              runHook postCheck
+            '';
 
-            mkdir -p $out
-            cp -r dist/* $out/
+            installPhase = ''touch $out'';
+          });
 
-            runHook postInstall
-          '';
-        });
+        cluecards-lint = pkgs.stdenv.mkDerivation (finalAttrs:
+          commonNodeArgs
+          // {
+            doCheck = true;
+
+            checkPhase = ''
+              runHook preCheck
+              pnpm run check
+              runHook postCheck
+            '';
+
+            installPhase = ''touch $out'';
+          });
+
+        cluecards-test = pkgs.stdenv.mkDerivation (finalAttrs:
+          commonNodeArgs
+          // {
+            doCheck = true;
+
+            checkPhase = ''
+              runHook preCheck
+              pnpm run test --run
+              runHook postCheck
+            '';
+
+            installPhase = ''touch $out'';
+          });
+
+        cluecards = pkgs.stdenv.mkDerivation (finalAttrs:
+          commonNodeArgs
+          // {
+            buildPhase = ''
+              runHook preBuild
+              pnpm run build
+              runHook postBuild
+            '';
+
+            installPhase = ''
+              runHook preInstall
+
+              mkdir -p $out
+              cp -r dist/* $out/
+
+              runHook postInstall
+            '';
+          });
       in {
         formatter = pkgs.alejandra;
 
@@ -118,7 +165,7 @@
         };
 
         checks = {
-          inherit clippy;
+          inherit inference-clippy inference-fmt cluecards-fmt cluecards-lint cluecards-test;
         };
 
         devShells.default = pkgs.mkShell {
