@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    crane.url = "github:ipetkov/crane";
     fenix = {
       url = "github:nix-community/fenix/monthly";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -12,8 +13,9 @@
 
   outputs = {
     nixpkgs,
-    fenix,
     flake-utils,
+    crane,
+    fenix,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (
@@ -21,35 +23,46 @@
         pkgs = nixpkgs.legacyPackages.${system};
 
         target = "wasm32-unknown-unknown";
+
         toolchain = with fenix.packages.${system};
           combine [
             default.toolchain
             targets.${target}.latest.rust-std
           ];
+        craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
 
-        rustPlatform = pkgs.makeRustPlatform {
-          cargo = toolchain;
-          rustc = toolchain;
-        };
-
-        # Build inference logic
-        inference = rustPlatform.buildRustPackage {
+        commonArgs = {
           pname = "inference";
           version = "0.0.0";
 
-          src = ./inference;
-          cargoLock.lockFile = ./inference/Cargo.lock;
-
-          nativeBuildInputs = with pkgs; [wasm-pack wasm-bindgen-cli binaryen];
-
-          buildPhase = ''
-            runHook preBuild
-            HOME=$TMPDIR wasm-pack build --release --target bundler --out-dir $out/pkg
-            # Do not run postBuild since it breaks
-          '';
-
-          dontInstall = true;
+          src = craneLib.cleanCargoSource ./inference;
+          strictDeps = true;
         };
+
+        cargoArtifacts = craneLib.buildDepsOnly (commonArgs // {});
+
+        clippy = craneLib.cargoClippy (commonArgs
+          // {
+            inherit cargoArtifacts;
+            cargoClippyExtraArgs = "--all-targets -- --deny warnings";
+          });
+
+        inference = craneLib.buildPackage (commonArgs
+          // {
+            inherit cargoArtifacts;
+
+            nativeBuildInputs = with pkgs; [wasm-pack wasm-bindgen-cli binaryen];
+
+            doNotPostBuildInstallCargoBinaries = true;
+
+            buildPhase = ''
+              runHook preBuild
+              HOME=$TMPDIR wasm-pack build --release --target bundler --out-dir $out/pkg
+              runHook postBuild
+            '';
+
+            dontInstall = true;
+          });
 
         # Build website
         cluecards = pkgs.stdenv.mkDerivation (finalAttrs: {
@@ -58,7 +71,7 @@
 
           src = ./.;
 
-          nativeBuildInputs = with pkgs; [nodejs pnpm.configHook inference];
+          nativeBuildInputs = [pkgs.nodejs pkgs.pnpm.configHook inference];
 
           # Use the Nix store's inference build
           postPatch = ''
@@ -72,7 +85,7 @@
           pnpmDeps = pkgs.pnpm.fetchDeps {
             inherit (finalAttrs) pname version src;
             fetcherVersion = 2;
-            hash = "sha256-w/BbuUBRB9ANyEvJRlQQSKRqOaw2NmFg5+EFmlyAqoU=";
+            hash = "sha256-EXYDaVbZbQpczrCYWgiNv+RqiZ5b/GvPotfoH0v/zwI=";
           };
 
           buildPhase = ''
@@ -83,7 +96,7 @@
 
           checkPhase = ''
             runHook preCheck
-            pnpm run test
+            pnpm run test -- --run
             runHook postCheck
           '';
 
@@ -102,6 +115,10 @@
         packages = {
           inherit inference;
           default = cluecards;
+        };
+
+        checks = {
+          inherit clippy;
         };
 
         devShells.default = pkgs.mkShell {
