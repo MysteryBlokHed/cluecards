@@ -4,19 +4,6 @@ stages:
     - build
     - deploy
 
-.changes: &changes
-    - inference/src/**/*
-    - inference/Cargo.*
-    - public/**/*
-    - src/**/*
-    - '*.config.*'
-    - index.html
-    - package.json
-    - tsconfig*.json
-    - pnpm-lock.yaml
-    - .gitlab-ci.yml
-    - .prettier*
-
 build:
     variables:
         CARGO_HOME: $CI_PROJECT_DIR/.cargo
@@ -45,6 +32,7 @@ build:
         - wasm-pack build --release --target bundler
         - cd ..
         # TypeScript configuration + build
+        - npm install --global --force corepack@latest
         - corepack enable
         - corepack install
         - pnpm config set store-dir .pnpm
@@ -55,9 +43,7 @@ build:
         - pnpm run test -- --run
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-          changes: *changes
         - if: $CI_MERGE_REQUEST_ID
-          changes: *changes
     artifacts:
         paths: ['dist']
 
@@ -76,7 +62,6 @@ pages:
         - echo Done. Deploying to Pages
     rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-          changes: *changes
     artifacts:
         paths: ['dist']
     publish: dist
