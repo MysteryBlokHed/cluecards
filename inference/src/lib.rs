@@ -6,7 +6,10 @@
     clippy::struct_field_names,
     clippy::too_many_lines
 )]
-use std::collections::{BTreeMap, HashSet};
+use std::{
+    collections::{BTreeMap, HashSet},
+    iter::FusedIterator,
+};
 
 use serde::{de::Visitor, Deserialize, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
@@ -113,10 +116,7 @@ impl BitmaskSet {
     /// Iterates over the contained items.
     #[must_use]
     pub fn iter(&self) -> BitmaskSetIterator {
-        BitmaskSetIterator {
-            set: self.0,
-            current: 0,
-        }
+        BitmaskSetIterator { set: self.0 }
     }
 }
 
@@ -161,36 +161,39 @@ impl<'de> Deserialize<'de> for BitmaskSet {
 
 pub struct BitmaskSetIterator {
     set: u64,
-    current: u8,
 }
 
 impl Iterator for BitmaskSetIterator {
     type Item = u8;
 
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        while self.current < 64 {
-            let mut next_val = None;
-            if (self.set & (1 << u64::from(self.current))) != 0 {
-                next_val = Some(self.current);
-            }
-            self.current += 1;
-            if next_val.is_some() {
-                return next_val;
-            }
+        if self.set == 0 {
+            return None;
         }
-        None
+        // Get the index of the LSB (which will be the next item to yield)
+        let trailing = self.set.trailing_zeros() as u8;
+        // Clear that bit
+        self.set &= self.set - 1;
+        Some(trailing)
+    }
+
+    #[inline]
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let remaining = self.set.count_ones() as usize;
+        (remaining, Some(remaining))
     }
 }
+
+impl ExactSizeIterator for BitmaskSetIterator {}
+impl FusedIterator for BitmaskSetIterator {}
 
 impl IntoIterator for &BitmaskSet {
     type Item = u8;
     type IntoIter = BitmaskSetIterator;
 
     fn into_iter(self) -> Self::IntoIter {
-        BitmaskSetIterator {
-            set: self.0,
-            current: 0,
-        }
+        self.iter()
     }
 }
 
