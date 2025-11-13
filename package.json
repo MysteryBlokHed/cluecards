@@ -15,6 +15,7 @@
         "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"
     },
     "devDependencies": {
+        "@eslint/js": "^9.39.1",
         "@sveltejs/vite-plugin-svelte": "^5.1.0",
         "@tsconfig/svelte": "^5.0.4",
         "@types/eslint": "^9.6.1",

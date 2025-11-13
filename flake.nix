@@ -89,7 +89,7 @@
           pnpmDeps = pkgs.pnpm.fetchDeps {
             inherit pname version src;
             fetcherVersion = 2;
-            hash = "sha256-EXYDaVbZbQpczrCYWgiNv+RqiZ5b/GvPotfoH0v/zwI=";
+            hash = "sha256-C3sXC0vPk+Qkamia7/AdoiaxNKYxxK5WCZhAyhgl4eg=";
           };
         };
 
@@ -103,7 +103,7 @@
 
             checkPhase = ''
               runHook preCheck
-              pnpm run prettier --check .
+              pnpm prettier --check .
               runHook postCheck
             '';
 
@@ -118,6 +118,7 @@
             checkPhase = ''
               runHook preCheck
               pnpm run check
+              pnpm eslint .
               runHook postCheck
             '';
 
