@@ -1,3 +1,4 @@
+#![feature(trusted_len)]
 #![warn(clippy::pedantic)]
 #![allow(
     clippy::cast_sign_loss,
@@ -8,7 +9,7 @@
 )]
 use std::{
     collections::{BTreeMap, HashSet},
-    iter::FusedIterator,
+    iter::{FusedIterator, TrustedLen},
 };
 
 use serde::{de::Visitor, Deserialize, Serialize};
@@ -185,6 +186,7 @@ impl Iterator for BitmaskSetIterator {
     }
 }
 
+unsafe impl TrustedLen for BitmaskSetIterator {}
 impl ExactSizeIterator for BitmaskSetIterator {}
 impl FusedIterator for BitmaskSetIterator {}
 
