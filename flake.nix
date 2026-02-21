@@ -71,11 +71,19 @@
         commonNodeArgs = let
           pname = "cluecards";
           version = "0.0.0";
-          src = ./.;
+          src = let
+            root = ./.;
+            fs = pkgs.lib.fileset;
+          in
+            # Exclude inference source code from node build
+            fs.toSource {
+              inherit root;
+              fileset = fs.difference root (root + /inference);
+            };
         in {
           inherit pname version src;
 
-          nativeBuildInputs = [pkgs.nodejs pkgs.pnpm.configHook inference];
+          nativeBuildInputs = [pkgs.nodejs pkgs.pnpm pkgs.pnpmConfigHook inference];
 
           # Use the Nix store's inference build
           postPatch = ''
@@ -86,10 +94,10 @@
               --replace-fail '../inference/pkg' '${inference}/pkg'
           '';
 
-          pnpmDeps = pkgs.pnpm.fetchDeps {
+          pnpmDeps = pkgs.fetchPnpmDeps {
             inherit pname version src;
-            fetcherVersion = 2;
-            hash = "sha256-WiEcjn+jX7ugNP9xL4qrhFbTTw8RjUi7AzfI1WQtMF4=";
+            fetcherVersion = 3;
+            hash = "sha256-KEqRAju0iHAseI+s8XximJW5+qI2aSXcf0yXVZjKpsc=";
           };
         };
 
