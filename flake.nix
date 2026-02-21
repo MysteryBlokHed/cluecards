@@ -55,7 +55,7 @@
           // {
             inherit cargoArtifacts;
 
-            nativeBuildInputs = with pkgs; [wasm-pack wasm-bindgen-cli binaryen];
+            nativeBuildInputs = with pkgs; [wasm-pack wasm-bindgen-cli_0_2_108 binaryen];
 
             doNotPostBuildInstallCargoBinaries = true;
 
