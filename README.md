@@ -12,13 +12,14 @@ You don't need to read it to use the website, but it might be interesting.
 
 ## Folder structure
 
-| Folder    | Purpose                                                            |
-| :-------- | :----------------------------------------------------------------- |
-| inference | Rust WebAssembly implementation of the site's inference logic.     |
-| public    | Static website assets.                                             |
-| scripts   | Convenience scripts for testing/development.                       |
-| src       | Source code for the UI and the TypeScript portions of the website. |
-| test      | Unit and integration tests for the inference logic.                |
+| Folder          | Purpose                                                            |
+| :-------------- | :----------------------------------------------------------------- |
+| inference       | Rust WebAssembly implementation of the site's inference logic.     |
+| website         | Parent folder for the Svelte app.                                  |
+| website/public  | Static website assets.                                             |
+| website/scripts | Convenience scripts for testing/development.                       |
+| website/src     | Source code for the UI and the TypeScript portions of the website. |
+| website/test    | Unit and integration tests for the inference logic.                |
 
 ## Building
 
