@@ -71,15 +71,7 @@
         commonNodeArgs = let
           pname = "cluecards";
           version = "0.0.0";
-          src = let
-            root = ./.;
-            fs = pkgs.lib.fileset;
-          in
-            # Exclude inference source code from node build
-            fs.toSource {
-              inherit root;
-              fileset = fs.difference root (root + /inference);
-            };
+          src = ./website;
         in {
           inherit pname version src;
 
@@ -91,7 +83,7 @@
               test/inference.test.ts \
               test/utils.ts \
               src/inference-worker.ts \
-              --replace-fail '../inference/pkg' '${inference}/pkg'
+              --replace-fail '../../inference/pkg' '${inference}/pkg'
           '';
 
           pnpmDeps = pkgs.fetchPnpmDeps {
