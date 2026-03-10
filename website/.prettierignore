@@ -1,14 +1,9 @@
-node_modules/
-dist/
-inference/pkg/
-inference/target/
-smui/
-flake.lock
+# Package Managers
+package-lock.json
 pnpm-lock.yaml
-vite.config.*.timestamp*
-.cargo/
-.pnpm/
-.rustup/
+yarn.lock
+bun.lock
+bun.lockb
 
-# For some reason Prettier messes with LaTeX here
-Inference.md
+# Miscellaneous
+/static/

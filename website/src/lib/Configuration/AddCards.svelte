@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { cardTypeToKey, cardTypeToString } from '../../cards';
-    import { players, set, startingKnowns } from '../../stores';
-    import { CardType, RevealMethod } from '../../types';
+    import { cardTypeToKey, cardTypeToString } from '$lib/cards';
+    import { players, set, startingKnowns } from '$lib/stores';
+    import { CardType, RevealMethod } from '$lib/types';
 
     let player: number = $state(0);
     let cards: Array<[type?: CardType, card?: number]> = $state([]);

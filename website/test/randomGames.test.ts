@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
 
-import { deepTest, TestData } from './utils.js';
+import { deepTest, type TestData } from './utils.js';
 import { randomGames } from './states/';
 
 describe('random games', () => {

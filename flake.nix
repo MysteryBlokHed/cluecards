@@ -80,16 +80,19 @@
           # Use the Nix store's inference build
           postPatch = ''
             substituteInPlace \
+              src/lib/inference-worker.ts \
+              --replace-fail '../../../inference/pkg' '${inference}/pkg'
+
+            substituteInPlace \
               test/inference.test.ts \
               test/utils.ts \
-              src/inference-worker.ts \
               --replace-fail '../../inference/pkg' '${inference}/pkg'
           '';
 
           pnpmDeps = pkgs.fetchPnpmDeps {
             inherit pname version src;
             fetcherVersion = 3;
-            hash = "sha256-RB0nGhSeaYOS0sqEf/Q5mYS38iM7SsU/xHTT/tU+ViI=";
+            hash = "sha256-ZxTq1QLyU538PPRfWjA+f3oOfpmPM7HC/FvVAxe446s=";
           };
         };
 
@@ -144,6 +147,7 @@
           // {
             buildPhase = ''
               runHook preBuild
+              pnpm run prepare
               pnpm run build
               runHook postBuild
             '';
@@ -152,7 +156,7 @@
               runHook preInstall
 
               mkdir -p $out
-              cp -r dist/* $out/
+              cp -r build/* $out/
 
               runHook postInstall
             '';

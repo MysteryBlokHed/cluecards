@@ -2,8 +2,8 @@
     import { decompressFromBase64 } from 'lz-string';
     import { untrack } from 'svelte';
 
-    import { set as activeSet, sets } from '../../stores';
-    import type { GameSet } from '../../types';
+    import { set as activeSet, sets } from '$lib/stores';
+    import type { GameSet } from '$lib/types';
 
     let creator: HTMLDialogElement;
 
