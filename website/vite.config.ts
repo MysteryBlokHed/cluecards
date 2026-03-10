@@ -1,11 +1,9 @@
 import { defineConfig, searchForWorkspaceRoot } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { sveltekit } from '@sveltejs/kit/vite';
 import wasm from 'vite-plugin-wasm';
 
-// https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [svelte(), wasm()],
+    plugins: [sveltekit(), wasm()],
     worker: { plugins: () => [wasm()], format: 'es' },
-    build: { target: 'es2022' },
     server: { fs: { allow: [searchForWorkspaceRoot(process.cwd()), '../inference'] } },
 });

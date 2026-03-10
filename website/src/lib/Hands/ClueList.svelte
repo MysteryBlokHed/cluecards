@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { cardTypeToKey, cardTypeToString, packCard } from '../../cards';
-    import { CardType } from '../../types';
+    import { cardTypeToKey, cardTypeToString, packCard } from '$lib/cards';
+    import { CardType } from '$lib/types';
     import {
         players,
         playerHands,
@@ -9,7 +9,7 @@
         set,
         preferences,
         playerPov,
-    } from '../../stores';
+    } from '$lib/stores';
 
     export interface Props {
         type: CardType;

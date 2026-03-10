@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { preferences } from '../../stores';
+    import { preferences } from '$lib/stores';
 </script>
 
 {#snippet preference(

@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 
-import { packSet } from '../src/cards.js';
+import { packSet } from '../src/lib/cards.js';
 import { infer } from '../../inference/pkg/inference.js';
-import SETS from '../src/sets.js';
-import { CardType, RevealMethod, type Known, type Suggestion } from '../src/types.js';
+import SETS from '../src/lib/sets.js';
+import { CardType, RevealMethod, type Known, type Suggestion } from '../src/lib/types.js';
 
 import { inference } from './states/';
-import { deepTest, TestData } from './utils.js';
+import { deepTest, type TestData } from './utils.js';
 
 const EMPTY_SET: Set<unknown> = new Set();
 

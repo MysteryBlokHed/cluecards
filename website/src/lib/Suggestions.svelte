@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { cardTypeToKey, cardTypeToString, packCard } from '../cards';
-    import { players, playerHands, set } from '../stores';
-    import { CardType, RevealMethod, type Suggestion } from '../types';
+    import { cardTypeToKey, cardTypeToString, packCard } from '$lib/cards';
+    import { players, playerHands, set } from '$lib/stores';
+    import { CardType, RevealMethod, type Suggestion } from '$lib/types';
 
     import SourceTooltip from './SourceTooltip.svelte';
 
@@ -92,6 +92,7 @@
                                 {#each possibleCards as possibleCard, possibleIndex}
                                     <b>{possibleCard}</b>
                                     {#if possibleIndex != possibleCards.length - 1}
+                                        <!-- eslint-disable-next-line svelte/no-useless-mustaches -->
                                         {'or '}
                                     {/if}
                                 {/each}

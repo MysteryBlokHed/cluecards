@@ -1,13 +1,12 @@
 <script lang="ts">
-    import './app.css';
-
     import { untrack } from 'svelte';
+    import { browser } from '$app/environment';
 
     import {
         inference as inferencePromise,
         stripSuggestions,
         updateSuggestions,
-    } from './inference';
+    } from '$lib/inference';
     import {
         startingKnowns,
         set,
@@ -18,14 +17,14 @@
         preferences,
         innocents,
         playerPov,
-    } from './stores';
-    import type { Suggestion } from './types';
+    } from '$lib/stores';
+    import type { Suggestion } from '$lib/types';
 
-    import AddSuggestion from './lib/AddSuggestion.svelte';
-    import Configuration from './lib/Configuration/';
-    import GameTools from './lib/GameTools/';
-    import Hands from './lib/Hands';
-    import Suggestions from './lib/Suggestions.svelte';
+    import AddSuggestion from '$lib/AddSuggestion.svelte';
+    import Configuration from '$lib/Configuration/';
+    import GameTools from '$lib/GameTools/';
+    import Hands from '$lib/Hands';
+    import Suggestions from '$lib/Suggestions.svelte';
 
     let inference = $state<Awaited<typeof inferencePromise> | null>(null);
     inferencePromise.then(resolved => (inference = resolved));
@@ -35,16 +34,18 @@
     );
 
     // Update viewport based on device size
-    window.addEventListener(
-        'load',
-        () => {
-            if (screen.width < 750) {
-                const viewport = document.getElementById('viewport') as HTMLMetaElement;
-                viewport.content = 'width=750';
-            }
-        },
-        { once: true },
-    );
+    if (browser) {
+        window.addEventListener(
+            'load',
+            () => {
+                if (screen.width < 750) {
+                    const viewport = document.getElementById('viewport') as HTMLMetaElement;
+                    viewport.content = 'width=750';
+                }
+            },
+            { once: true },
+        );
+    }
 
     $effect(() => {
         // @ts-expect-error Just to manually set dependencies
@@ -138,7 +139,7 @@
     }
 </script>
 
-<main>
+<main id="app">
     <h1 class="flex items-center justify-center gap-4 text-4xl">
         Cluecards
         <a href="https://github.com/MysteryBlokHed/cluecards" target="_blank">

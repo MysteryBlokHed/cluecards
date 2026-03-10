@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { infer, probabilities } from '../../inference/pkg/inference.js';
+import { infer, probabilities } from '../../../inference/pkg/inference.js';
 
 export interface InferenceWorkerApi {
     infer: typeof infer;

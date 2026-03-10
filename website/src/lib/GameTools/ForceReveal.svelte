@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { unpackCard, packSet, cardTypeToKey } from '../../cards';
-    import { findSuggestionForces } from '../../inference';
-    import { players, playerHands, set } from '../../stores';
+    import { unpackCard, packSet, cardTypeToKey } from '$lib/cards';
+    import { findSuggestionForces } from '$lib/inference';
+    import { players, playerHands, set } from '$lib/stores';
 
     let forceDialog: HTMLDialogElement;
 

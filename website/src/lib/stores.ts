@@ -1,6 +1,10 @@
+import { browser } from '$app/environment';
 import { get, writable } from 'svelte/store';
 import SETS from './sets.js';
 import type { Known, GameSet, Suggestion, PlayerHand, Preferences } from './types.js';
+
+const dynSessionStorage = browser ? sessionStorage : ({} as Storage);
+const dynLocalStorage = browser ? localStorage : ({} as Storage);
 
 /**
  * Creates a {@link writable} store which automatically loads from/saves to a storage.
@@ -11,7 +15,7 @@ import type { Known, GameSet, Suggestion, PlayerHand, Preferences } from './type
 function persistent<T>(
     key: string,
     defaultValue: T,
-    storage = sessionStorage,
+    storage = dynSessionStorage,
     replacer?: (this: unknown, key: string, value: unknown) => unknown,
     reviver?: (this: unknown, key: string, value: unknown) => unknown,
 ) {
@@ -39,7 +43,7 @@ function mapReviver(key: string, value: unknown) {
 export const sets = persistent<Map<string, GameSet>>(
     'customSets',
     new Map(Object.entries(structuredClone(SETS))),
-    localStorage,
+    dynLocalStorage,
     mapReplacer,
     mapReviver,
 );
@@ -53,9 +57,9 @@ sets.subscribe(newValue => {
 });
 
 // This is stored slightly differently and cannot use persistentStore()
-const storedSet: string = sessionStorage.setName ?? 'Clue';
+const storedSet: string = dynSessionStorage.setName ?? 'Clue';
 export const set = writable<[string, GameSet]>([storedSet, $sets.get(storedSet)!]);
-set.subscribe(newSet => (sessionStorage.setName = newSet[0]));
+set.subscribe(newSet => (dynSessionStorage.setName = newSet[0]));
 
 export const players = persistent('players', ['', '', '']);
 
@@ -89,7 +93,7 @@ export const preferences = persistent<Preferences>(
         autoHideImpossible: true,
         selectNextPlayers: true,
     },
-    localStorage,
+    dynLocalStorage,
 );
 
 /**

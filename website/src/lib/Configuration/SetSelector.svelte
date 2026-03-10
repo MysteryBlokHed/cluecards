@@ -2,8 +2,8 @@
     import { compressToBase64 } from 'lz-string';
     import { untrack } from 'svelte';
 
-    import SETS from '../../sets';
-    import { set, sets } from '../../stores';
+    import SETS from '$lib/sets';
+    import { set, sets } from '$lib/stores';
 
     import SetManager from './SetManager.svelte';
 

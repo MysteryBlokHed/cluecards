@@ -1,7 +1,7 @@
 import { expect } from 'vitest';
 import { infer } from '../../inference/pkg/inference.js';
-import SETS from '../src/sets.js';
-import type { Known, PlayerHand, Suggestion } from '../src/types.js';
+import SETS from '../src/lib/sets.js';
+import type { Known, PlayerHand, Suggestion } from '../src/lib/types.js';
 
 export interface GameData {
     players: number;

@@ -7,12 +7,6 @@ import 'core-js/actual/set/intersection';
 import 'core-js/actual/set/is-disjoint-from';
 import 'core-js/actual/set/symmetric-difference';
 import 'core-js/actual/set/union';
-import App from './App.svelte';
-import { mount } from 'svelte';
-
-const app = mount(App, {
-    target: document.getElementById('app')!,
-});
 
 // Load service worker
 if ('serviceWorker' in navigator) {
@@ -21,4 +15,4 @@ if ('serviceWorker' in navigator) {
         .catch(err => console.error('Worker registration failed:', err));
 }
 
-export default app;
+export const prerender = true;
