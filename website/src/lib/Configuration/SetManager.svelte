@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { decompressFromBase64 } from 'lz-string';
+    import lzString from 'lz-string';
+    const { decompressFromBase64 } = lzString;
     import { untrack } from 'svelte';
 
     import { set as activeSet, sets } from '$lib/stores';
