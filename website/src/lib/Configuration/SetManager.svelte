@@ -105,7 +105,7 @@
     <div class="flex">
         <input type="text" class="input input-bordered" bind:value={set[i]} {placeholder} />
         <button class="btn btn-circle btn-ghost" onclick={() => set.splice(i, 1)}>
-            <span class="material-icons">delete</span>
+            <span class="material-icons" aria-hidden="true">delete</span>
         </button>
         <br />
     </div>
@@ -138,7 +138,7 @@
             }}
         >
             Import
-            <span class="material-icons">download</span>
+            <span class="material-icons" aria-hidden="true">download</span>
         </button>
         <br />
         <input
@@ -152,19 +152,19 @@
             <div>
                 <button class="btn w-full" onclick={() => tryAddNew(set.suspects)}>
                     Add Suspect
-                    <span class="material-icons">add</span>
+                    <span class="material-icons" aria-hidden="true">add</span>
                 </button>
             </div>
             <div>
                 <button class="btn w-full" onclick={() => tryAddNew(set.weapons)}>
                     Add Weapon
-                    <span class="material-icons">add</span>
+                    <span class="material-icons" aria-hidden="true">add</span>
                 </button>
             </div>
             <div>
                 <button class="btn w-full" onclick={() => tryAddNew(set.rooms)}>
                     Add Room
-                    <span class="material-icons">add</span>
+                    <span class="material-icons" aria-hidden="true">add</span>
                 </button>
             </div>
 
@@ -198,7 +198,7 @@
                     }}
                 >
                     Cancel
-                    <span class="material-icons">delete_forever</span>
+                    <span class="material-icons" aria-hidden="true">delete_forever</span>
                 </button>
                 <button
                     class="btn btn-primary"
@@ -209,7 +209,7 @@
                     disabled={!setIsValid}
                 >
                     Save
-                    <span class="material-icons">save</span>
+                    <span class="material-icons" aria-hidden="true">save</span>
                 </button>
             </form>
         </div>

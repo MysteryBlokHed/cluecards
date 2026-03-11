@@ -89,7 +89,7 @@
 <div>
     <button class="btn btn-secondary w-full" onclick={calculateOdds}>
         Calculate Odds
-        <span class="material-icons">casino</span>
+        <span class="material-icons" aria-hidden="true">casino</span>
     </button>
     <br />
     Try to find the most likely murder cards. Probabilities are not foolproof&mdash;only use this as

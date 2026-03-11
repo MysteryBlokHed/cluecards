@@ -145,12 +145,12 @@
             Responses
             <button class="btn btn-primary h-10 min-h-10" onclick={addResponse}>
                 Add
-                <span class="material-icons">add_circle</span>
+                <span class="material-icons" aria-hidden="true">add_circle</span>
             </button>
             <div class="tooltip" data-tip="None of the players showed a card.">
                 <button class="btn btn-secondary h-10 min-h-10" onclick={addNoneResponses}>
                     No Responses
-                    <span class="material-icons">help</span>
+                    <span class="material-icons" aria-hidden="true">help</span>
                 </button>
             </div>
         </h3>
@@ -198,7 +198,7 @@
                         responses = responses;
                     }}
                 >
-                    <span class="material-icons"> delete </span>
+                    <span class="material-icons" aria-hidden="true"> delete </span>
                 </button>
                 <br />
             </div>
@@ -208,7 +208,7 @@
 
         <button class="btn btn-primary" onclick={saveSuggestion} disabled={!responses.length}>
             Save Suggestion
-            <span class="material-icons">save</span>
+            <span class="material-icons" aria-hidden="true">save</span>
         </button>
     </div>
 </div>

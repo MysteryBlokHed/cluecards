@@ -79,7 +79,7 @@
 <div>
     <button class="btn btn-secondary w-full" onclick={forceReveal}>
         Force Reveal
-        <span class="material-icons">build</span>
+        <span class="material-icons" aria-hidden="true">build</span>
     </button>
     <br />
     See if there are any cards that can be forced to reveal with a suggestion.

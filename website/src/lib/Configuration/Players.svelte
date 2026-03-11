@@ -99,7 +99,7 @@
                         disabled={uneditable || $players.length === 1}
                         onclick={() => removePlayer(i)}
                     >
-                        <span class="material-icons">delete</span>
+                        <span class="material-icons" aria-hidden="true">delete</span>
                     </button>
                 </div>
             </div>
@@ -107,7 +107,7 @@
 
         <button class="btn btn-ghost text-primary" disabled={uneditable} onclick={addPlayer}>
             Add
-            <span class="material-icons">add</span>
+            <span class="material-icons" aria-hidden="true">add</span>
         </button>
     </div>
 </div>

@@ -47,7 +47,7 @@
                 disabled={!suggestions.length}
             >
                 Expand All
-                <span class="material-icons">unfold_more</span>
+                <span class="material-icons" aria-hidden="true">unfold_more</span>
             </button>
             <button
                 class="btn btn-ghost text-primary"
@@ -59,7 +59,7 @@
                 disabled={!suggestions.length}
             >
                 Collapse All
-                <span class="material-icons">unfold_less</span>
+                <span class="material-icons" aria-hidden="true">unfold_less</span>
             </button>
         </div>
 
@@ -123,7 +123,7 @@
                     {/each}
                     <button class="btn" onclick={() => remove(suggestions.length - i - 1)}>
                         Delete
-                        <span class="material-icons">delete</span>
+                        <span class="material-icons" aria-hidden="true">delete</span>
                     </button>
                 </div>
             </div>

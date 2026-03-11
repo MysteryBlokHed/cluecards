@@ -23,6 +23,6 @@
     <p>Click the button below to reset the current game (players, cards, and suggestions).</p>
     <button class="btn btn-primary" onclick={restart}>
         Restart
-        <span class="material-icons">restart_alt</span>
+        <span class="material-icons" aria-hidden="true">restart_alt</span>
     </button>
 </div>

@@ -145,7 +145,7 @@
         <a href="https://github.com/MysteryBlokHed/cluecards" target="_blank">
             <button class="btn">
                 Source
-                <span class="material-icons">open_in_new</span>
+                <span class="material-icons" aria-hidden="true">open_in_new</span>
             </button>
         </a>
     </h1>

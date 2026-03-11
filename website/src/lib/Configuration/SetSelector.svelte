@@ -56,7 +56,7 @@
         </select>
 
         <button class="btn btn-circle" onclick={() => creator.openCreator(setName)}>
-            <span class="material-icons">edit</span>
+            <span class="material-icons" aria-hidden="true">edit</span>
         </button>
         <div class="tooltip" data-tip="Export this set to a shareable string.">
             <button
@@ -65,18 +65,18 @@
                     navigator.clipboard.writeText(compressToBase64(JSON.stringify($set)));
                 }}
             >
-                <span class="material-icons">content_copy</span>
+                <span class="material-icons" aria-hidden="true">content_copy</span>
             </button>
         </div>
         <button class="btn btn-circle" onclick={deleteSet}>
-            <span class="material-icons">delete</span>
+            <span class="material-icons" aria-hidden="true">delete</span>
         </button>
     </div>
 
     <div>
         <button class="btn btn-ghost text-primary" onclick={() => creator.openCreator(null)}>
             Create New Set
-            <span class="material-icons">add</span>
+            <span class="material-icons" aria-hidden="true">add</span>
         </button>
         <div
             class="tooltip tooltip-bottom"
@@ -84,7 +84,7 @@
         >
             <button class="btn btn-ghost text-primary" onclick={restore}>
                 Reload Builtin Sets
-                <span class="material-icons">restart_alt</span>
+                <span class="material-icons" aria-hidden="true">restart_alt</span>
             </button>
         </div>
     </div>

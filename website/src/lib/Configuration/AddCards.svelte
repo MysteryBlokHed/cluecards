@@ -74,7 +74,7 @@
                         cards = cards;
                     }}
                 >
-                    <span class="material-icons">delete</span>
+                    <span class="material-icons" aria-hidden="true">delete</span>
                 </button>
                 <br />
             {/each}
@@ -82,7 +82,7 @@
 
         <button class="btn btn-secondary" onclick={() => cards.push([undefined, undefined])}>
             Add Card
-            <span class="material-icons">add</span>
+            <span class="material-icons" aria-hidden="true">add</span>
         </button>
 
         <button
@@ -91,7 +91,7 @@
             onclick={saveCards}
         >
             Save
-            <span class="material-icons">save</span>
+            <span class="material-icons" aria-hidden="true">save</span>
         </button>
     </div>
 </div>
