@@ -175,7 +175,11 @@
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [inference cluecards];
-          packages = [toolchain];
+          packages = [
+            toolchain
+            pkgs.svelte-language-server
+            pkgs.tailwindcss-language-server
+          ];
         };
       }
     );
