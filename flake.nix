@@ -55,7 +55,7 @@
           // {
             inherit cargoArtifacts;
 
-            nativeBuildInputs = with pkgs; [wasm-pack wasm-bindgen-cli_0_2_108 binaryen];
+            nativeBuildInputs = with pkgs; [wasm-pack wasm-bindgen-cli_0_2_114 binaryen];
 
             doNotPostBuildInstallCargoBinaries = true;
 
@@ -92,7 +92,7 @@
           pnpmDeps = pkgs.fetchPnpmDeps {
             inherit pname version src;
             fetcherVersion = 3;
-            hash = "sha256-vL7S9oXxalxwVOxgHOoEEetrEtqvpHAKx9FQyQIwyLg=";
+            hash = "sha256-O+FdN/Sp9ZwEHgeYKZd31c+tfIeEiBDzGzs4Ate0X88=";
           };
         };
 
