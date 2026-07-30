@@ -4,5 +4,7 @@ import { deepTest, type TestData } from './utils.js';
 import { randomGames } from './states/';
 
 describe('random games', () => {
-    it('0', () => deepTest(randomGames[0] as TestData));
+    randomGames.forEach((game, i) => {
+        it(`${i}`, () => deepTest(game as TestData));
+    });
 });
