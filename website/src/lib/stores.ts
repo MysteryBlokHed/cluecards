@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import { get, writable } from 'svelte/store';
 import SETS from './sets.js';
+import { resolveSet } from './resolveSet.js';
 import type { Known, GameSet, Suggestion, PlayerHand, Preferences } from './types.js';
 
 const dynSessionStorage = browser ? sessionStorage : ({} as Storage);
@@ -58,7 +59,7 @@ sets.subscribe(newValue => {
 
 // This is stored slightly differently and cannot use persistentStore()
 const storedSet: string = dynSessionStorage.setName ?? 'Clue';
-export const set = writable<[string, GameSet]>([storedSet, $sets.get(storedSet)!]);
+export const set = writable<[string, GameSet]>(resolveSet(storedSet, $sets));
 set.subscribe(newSet => (dynSessionStorage.setName = newSet[0]));
 
 export const players = persistent('players', ['', '', '']);
