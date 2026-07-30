@@ -1,8 +1,8 @@
 // Test-fixture generator for the WASM inference engine.
 //
-// NOTE: This module CANNOT run under plain Node. The inference package
+// NOTE: This module can't run under plain Node. The inference package
 // (`../../inference/pkg`) is built with `wasm-pack ... --target bundler` and
-// requires a bundler to load. Run it via the Vitest entry point instead:
+// requires a bundler to load. It can be run via Vitest:
 //   GENERATE_INPUT=<path to GameData json> pnpm exec vitest run test/generateFixture.test.ts
 // (see `website/test/generateFixture.test.ts`).
 
@@ -28,14 +28,13 @@ function handsReplacer(key: string, value: unknown): unknown {
 }
 
 /**
- * Generate a `<inputPath>.out.ts` test fixture module from a `GameData` JSON file.
+ * Generate an `<inputPath>.out.ts` test module from a {@link GameData} JSON file.
  *
- * Runs `infer` on each growing prefix of the recorded suggestions and writes the
+ * Runs {@link infer} on each state of the recorded suggestions and writes the
  * per-suggestion output alongside the input as an `export default` module. Sets and
- * Maps are serialized via marker strings so they round-trip as literal
- * `new Set(...)` / `new Map(...)` expressions in the emitted TypeScript.
+ * Maps are serialized via marker strings so they can be parsed properly.
  *
- * @returns the path of the written fixture file.
+ * @returns The path of the written fixture file.
  */
 export function generateFixture(inputPath: string): string {
     // Read game data from file
