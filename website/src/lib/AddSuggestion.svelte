@@ -24,7 +24,7 @@
     let roomPacked = $derived(room != null ? packCard(CardType.Room, room) : -1);
 
     function addResponse() {
-        let responder: number;
+        let responder = 0;
         if ($preferences.selectNextPlayers) {
             // Auto-select either the player after the most recent response, or just the player after the suggestor
             if (responses.length) {
@@ -47,7 +47,7 @@
         }
 
         responses.push({
-            player: responder!,
+            player: responder,
             packed: -1,
         });
     }

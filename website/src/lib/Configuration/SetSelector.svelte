@@ -4,6 +4,7 @@
     import { untrack } from 'svelte';
 
     import SETS from '$lib/sets';
+    import { resolveSet } from '$lib/resolveSet';
     import { set, sets } from '$lib/stores';
 
     import SetManager from './SetManager.svelte';
@@ -14,7 +15,7 @@
     $effect(() => {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         setName;
-        untrack(() => ($set = [setName, $sets.get(setName)!]));
+        untrack(() => ($set = resolveSet(setName, $sets)));
     });
 
     // Update setName if the active set changes

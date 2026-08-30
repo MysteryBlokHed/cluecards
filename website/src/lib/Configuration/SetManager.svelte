@@ -5,6 +5,11 @@
 
     import { set as activeSet, sets } from '$lib/stores';
     import type { GameSet } from '$lib/types';
+    import {
+        MAX_CARDS_PER_CATEGORY,
+        isGameSetShaped,
+        setIsValid as validateSet,
+    } from '$lib/setValidation';
 
     let creator: HTMLDialogElement;
 
@@ -27,31 +32,7 @@
         }
     });
 
-    let setIsValid = $derived.by(() => {
-        if (!set) return false;
-        // Ensure at least 2 of each category
-        if (set.suspects.length < 2 || set.weapons.length < 2 || set.rooms.length < 2) {
-            return false;
-        }
-        // Ensure everything has a value
-        if (
-            set.suspects.some(val => !val) ||
-            set.weapons.some(val => !val) ||
-            set.rooms.some(val => !val)
-        ) {
-            return false;
-        }
-        // Ensure values are unique across all categories
-        const suspectSet = new Set(set.suspects.map(val => val.trim()));
-        const weaponSet = new Set(set.weapons.map(val => val.trim()));
-        const roomSet = new Set(set.rooms.map(val => val.trim()));
-        const totalSet = suspectSet.union(weaponSet).union(roomSet);
-        if (totalSet.size !== set.suspects.length + set.weapons.length + set.rooms.length) {
-            return false;
-        }
-
-        return true;
-    });
+    let setIsValid = $derived.by(() => validateSet(set));
 
     /**
      * Tries to add a new empty field to a set category, keeping max card count in mind
@@ -61,7 +42,7 @@
      * @param category The category to push to (modified directly)
      */
     function tryAddNew(category: string[]): boolean {
-        if (category.length < 16) {
+        if (category.length < MAX_CARDS_PER_CATEGORY) {
             category.push('');
             return true;
         }
@@ -130,6 +111,14 @@
                 if (data) {
                     try {
                         const parsed = JSON.parse(decompressFromBase64(data));
+                        if (
+                            !Array.isArray(parsed) ||
+                            typeof parsed[0] !== 'string' ||
+                            !isGameSetShaped(parsed[1])
+                        ) {
+                            alert('Invalid data.');
+                            return;
+                        }
                         setName = parsed[0];
                         set = parsed[1];
                     } catch {
