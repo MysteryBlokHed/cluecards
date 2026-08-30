@@ -5,13 +5,25 @@ on:
     push:
         branches: [main]
 
+permissions: {}
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    # Safe to cancel a PR build that has been superseded
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
     build:
         name: Build and Check Project
         runs-on: ubuntu-latest
 
+        permissions:
+            contents: read # actions/checkout
+
         steps:
             - uses: actions/checkout@v5
+              with:
+                  persist-credentials: false
             - uses: DeterminateSystems/nix-installer-action@main
             - uses: DeterminateSystems/magic-nix-cache-action@main
             - uses: DeterminateSystems/flake-checker-action@main
@@ -41,8 +53,8 @@ jobs:
         if: github.ref == 'refs/heads/main'
 
         permissions:
-            pages: write
-            id-token: write
+            pages: write # Publish pages
+            id-token: write # OIDC token for actions/deploy-pages
 
         environment:
             name: github-pages
