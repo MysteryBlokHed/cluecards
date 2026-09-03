@@ -79,14 +79,10 @@
 
           # Use the Nix store's inference build
           postPatch = ''
-            substituteInPlace \
-              src/lib/inference-worker.ts \
-              --replace-fail '../../../inference/pkg' '${inference}/pkg'
-
-            substituteInPlace \
-              test/inference.test.ts \
-              test/utils.ts \
-              --replace-fail '../../inference/pkg' '${inference}/pkg'
+            find . -type f -exec sed -i \
+              -e 's#\.\./\.\./\.\./inference/pkg#${inference}/pkg#' \
+              -e 's#\.\./\.\./inference/pkg#${inference}/pkg#' \
+              {} +
           '';
 
           pnpmDeps = pkgs.fetchPnpmDeps {
