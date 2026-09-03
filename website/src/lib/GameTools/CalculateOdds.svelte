@@ -92,8 +92,8 @@
         <span class="material-icons" aria-hidden="true">casino</span>
     </button>
     <br />
-    Try to find the most likely murder cards. Probabilities are not foolproof&mdash;only use this as
-    a last-resort if you think a player is going to make a correct accusation before you.
+    Try to find the most likely murder cards. Probabilities are not foolproof&mdash;only use this as a
+    last-resort if you think a player is going to make a correct accusation before you.
 </div>
 
 <dialog

@@ -50,14 +50,14 @@
     $effect(() => {
         // @ts-expect-error Just to manually set dependencies
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        inference,
+        (inference,
             $suggestions,
             $startingKnowns,
             $players.length,
             $playerCardCounts,
             $set,
             $preferences,
-            $playerPov;
+            $playerPov);
 
         // Figuring out dependencies was too much of a disaster so let's just untrack the whole thing
         untrack(async () => {
