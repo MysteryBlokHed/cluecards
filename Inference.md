@@ -513,5 +513,5 @@ N^p_3 &= (D \setminus H^p_3) \setminus \{ \textrm{Green}, \textrm{Plum}, \textrm
 
 ## License
 
-This project is licensed under the GNU Affero General Public License, Version 3.0
-([LICENSE](LICENSE) or <https://www.gnu.org/licenses/agpl-3.0.en.html>).
+This document is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License
+([LICENSE-docs](LICENSE-docs) or <https://creativecommons.org/licenses/by-sa/4.0/>).

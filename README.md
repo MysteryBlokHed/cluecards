@@ -57,3 +57,7 @@ pnpm run build
 
 This project is licensed under the GNU Affero General Public License, Version 3.0
 ([LICENSE](LICENSE) or <https://www.gnu.org/licenses/agpl-3.0.en.html>).
+
+The [inference documentation](Inference.md) is licensed under the
+Creative Commons Attribution-ShareAlike 4.0 International License
+([LICENSE-docs](LICENSE-docs) or <https://creativecommons.org/licenses/by-sa/4.0/>).
