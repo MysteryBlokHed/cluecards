@@ -31,7 +31,7 @@ importers:
         version: 26.4.1
       autoprefixer:
         specifier: ^10.5.4
-        version: 10.5.4(postcss@8.5.26)
+        version: 10.5.4(postcss@8.5.33)
       comlink:
         specifier: ^4.4.2
         version: 4.4.2
@@ -40,7 +40,7 @@ importers:
         version: 3.50.0
       daisyui:
         specifier: ^4.12.24
-        version: 4.12.24(postcss@8.5.26)
+        version: 4.12.24(postcss@8.5.33)
       eslint:
         specifier: ^10.9.1
         version: 10.9.1(jiti@1.21.7)(supports-color@7.2.0)
@@ -1440,10 +1440,6 @@ packages:
     resolution: {integrity: sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==}
     engines: {node: '>=18'}
 
-  source-map-js@1.2.1:
-    resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
-    engines: {node: '>=0.10.0'}
-
   source-map-js@1.2.2:
     resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
     engines: {node: '>=0.10.0'}
@@ -2154,13 +2150,13 @@ snapshots:
 
   assertion-error@2.0.1: {}
 
-  autoprefixer@10.5.4(postcss@8.5.26):
+  autoprefixer@10.5.4(postcss@8.5.33):
     dependencies:
       browserslist: 4.28.8
       caniuse-lite: 1.0.30001810
       fraction.js: 5.3.4
       picocolors: 1.1.1
-      postcss: 8.5.26
+      postcss: 8.5.33
       postcss-value-parser: 4.2.0
 
   axobject-query@4.1.0: {}
@@ -2236,12 +2232,12 @@ snapshots:
 
   culori@3.3.0: {}
 
-  daisyui@4.12.24(postcss@8.5.26):
+  daisyui@4.12.24(postcss@8.5.33):
     dependencies:
       css-selector-tokenizer: 0.8.0
       culori: 3.3.0
       picocolors: 1.1.1
-      postcss-js: 4.1.0(postcss@8.5.26)
+      postcss-js: 4.1.0(postcss@8.5.33)
     transitivePeerDependencies:
       - postcss
 
@@ -2690,6 +2686,11 @@ snapshots:
       camelcase-css: 2.0.1
       postcss: 8.5.26
 
+  postcss-js@4.1.0(postcss@8.5.33):
+    dependencies:
+      camelcase-css: 2.0.1
+      postcss: 8.5.33
+
   postcss-load-config@3.1.4(postcss@8.5.26):
     dependencies:
       lilconfig: 2.1.0
@@ -2733,7 +2734,7 @@ snapshots:
     dependencies:
       nanoid: 3.3.18
       picocolors: 1.1.1
-      source-map-js: 1.2.1
+      source-map-js: 1.2.2
 
   postcss@8.5.33:
     dependencies:
@@ -2822,8 +2823,6 @@ snapshots:
       '@polka/url': 1.0.0-next.29
       mrmime: 2.0.1
       totalist: 3.0.1
-
-  source-map-js@1.2.1: {}
 
   source-map-js@1.2.2: {}
 
