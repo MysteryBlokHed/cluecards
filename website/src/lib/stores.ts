@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { get, writable } from 'svelte/store';
 import SETS from './sets.js';
 import { resolveSet } from './resolveSet.js';

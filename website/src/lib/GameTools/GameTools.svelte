@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Suggestion } from '$lib/types';
+    import type { Suggestion } from '#lib/types.ts';
 
     import CalculateOdds from './CalculateOdds.svelte';
     import ForceReveal from './ForceReveal.svelte';

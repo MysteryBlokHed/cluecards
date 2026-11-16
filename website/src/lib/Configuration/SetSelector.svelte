@@ -3,9 +3,9 @@
     const { compressToBase64 } = lzString;
     import { untrack } from 'svelte';
 
-    import SETS from '$lib/sets';
-    import { resolveSet } from '$lib/resolveSet';
-    import { set, sets } from '$lib/stores';
+    import SETS from '#lib/sets.ts';
+    import { resolveSet } from '#lib/resolveSet.ts';
+    import { set, sets } from '#lib/stores.ts';
 
     import SetManager from './SetManager.svelte';
 

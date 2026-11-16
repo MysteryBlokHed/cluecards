@@ -3,13 +3,13 @@
     const { decompressFromBase64 } = lzString;
     import { untrack } from 'svelte';
 
-    import { set as activeSet, sets } from '$lib/stores';
-    import type { GameSet } from '$lib/types';
+    import { set as activeSet, sets } from '#lib/stores.ts';
+    import type { GameSet } from '#lib/types.ts';
     import {
         MAX_CARDS_PER_CATEGORY,
         isGameSetShaped,
         setIsValid as validateSet,
-    } from '$lib/setValidation';
+    } from '#lib/setValidation.ts';
 
     let creator: HTMLDialogElement;
 

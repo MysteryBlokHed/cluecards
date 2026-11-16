@@ -1,12 +1,12 @@
 <script lang="ts">
     import { untrack } from 'svelte';
-    import { browser } from '$app/environment';
+    import { browser } from '$app/env';
 
     import {
         inference as inferencePromise,
         stripSuggestions,
         updateSuggestions,
-    } from '$lib/inference';
+    } from '#lib/inference.ts';
     import {
         startingKnowns,
         set,
@@ -17,14 +17,14 @@
         preferences,
         innocents,
         playerPov,
-    } from '$lib/stores';
-    import type { Suggestion } from '$lib/types';
+    } from '#lib/stores.ts';
+    import type { Suggestion } from '#lib/types.ts';
 
-    import AddSuggestion from '$lib/AddSuggestion.svelte';
-    import Configuration from '$lib/Configuration/';
-    import GameTools from '$lib/GameTools/';
-    import Hands from '$lib/Hands';
-    import Suggestions from '$lib/Suggestions.svelte';
+    import AddSuggestion from '#lib/AddSuggestion.svelte';
+    import Configuration from '#lib/Configuration/index.ts';
+    import GameTools from '#lib/GameTools/index.ts';
+    import Hands from '#lib/Hands/index.ts';
+    import Suggestions from '#lib/Suggestions.svelte';
 
     let inference = $state<Awaited<typeof inferencePromise> | null>(null);
     inferencePromise.then(resolved => (inference = resolved));

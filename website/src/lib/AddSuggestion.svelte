@@ -1,7 +1,12 @@
 <script lang="ts">
-    import { packCard, unpackCard } from '$lib/cards';
-    import { players, playerHands, set, suggestions, preferences } from '$lib/stores';
-    import { CardType, RevealMethod, type Suggestion, type SuggestionResponse } from '$lib/types';
+    import { packCard, unpackCard } from '#lib/cards.ts';
+    import { players, playerHands, set, suggestions, preferences } from '#lib/stores.ts';
+    import {
+        CardType,
+        RevealMethod,
+        type Suggestion,
+        type SuggestionResponse,
+    } from '#lib/types.ts';
 
     interface WorkingSuggestionRespose extends Partial<SuggestionResponse> {
         player: number;

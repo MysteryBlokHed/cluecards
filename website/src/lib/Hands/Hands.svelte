@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { players, preferences, playerPov } from '$lib/stores';
-    import { CardType } from '$lib/types';
+    import { players, preferences, playerPov } from '#lib/stores.ts';
+    import { CardType } from '#lib/types.ts';
 
     import ClueList from './ClueList.svelte';
 </script>

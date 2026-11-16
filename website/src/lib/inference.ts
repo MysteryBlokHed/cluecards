@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { packSet, packCard, unpackCard } from './cards.js';
 import { CardType, RevealMethod } from './types.js';
 import type { GameSet, PlayerHand, Suggestion } from './types.js';

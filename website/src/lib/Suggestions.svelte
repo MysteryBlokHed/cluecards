@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { cardTypeToKey, cardTypeToString, packCard } from '$lib/cards';
-    import { players, playerHands, set } from '$lib/stores';
-    import { CardType, RevealMethod, type Suggestion } from '$lib/types';
+    import { cardTypeToKey, cardTypeToString, packCard } from '#lib/cards.ts';
+    import { players, playerHands, set } from '#lib/stores.ts';
+    import { CardType, RevealMethod, type Suggestion } from '#lib/types.ts';
 
     import SourceTooltip from './SourceTooltip.svelte';
 

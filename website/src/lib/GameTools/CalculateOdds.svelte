@@ -1,7 +1,13 @@
 <script lang="ts">
-    import { cardTypeToKey } from '$lib/cards';
-    import { playerCardCounts, playerHands, preferences, set, startingKnowns } from '$lib/stores';
-    import type { Suggestion } from '$lib/types';
+    import { cardTypeToKey } from '#lib/cards.ts';
+    import {
+        playerCardCounts,
+        playerHands,
+        preferences,
+        set,
+        startingKnowns,
+    } from '#lib/stores.ts';
+    import type { Suggestion } from '#lib/types.ts';
 
     export interface Props {
         amendedSuggestions: readonly Suggestion[];
@@ -9,7 +15,7 @@
 
     let { amendedSuggestions }: Props = $props();
 
-    import { inference as inferencePromise } from '$lib/inference';
+    import { inference as inferencePromise } from '#lib/inference.ts';
 
     let inference = $state<Awaited<typeof inferencePromise> | null>(null);
     inferencePromise.then(resolved => (inference = resolved));
